@@ -1,0 +1,72 @@
+{
+  "service_name": "다둥이 차량렌탈 지원사업",
+  "judgeable": true,
+  "not_judgeable_reason": "",
+  "conditions": [
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "대구광역시 북구",
+      "group": "",
+      "evidence": "대구 북구 거주"
+    },
+    {
+      "field": "child_count",
+      "op": ">=",
+      "value": "2",
+      "group": "",
+      "evidence": "두 자녀 이상"
+    },
+    {
+      "field": "child_age",
+      "op": "<",
+      "value": "10",
+      "group": "",
+      "evidence": "10세 미만 자녀를 1명 이상 둔 가정"
+    },
+    {
+      "field": "child_count",
+      "op": ">=",
+      "value": "3",
+      "group": "소득요건 또는 3자녀 이상",
+      "evidence": "세 자녀 이상은 소득무관"
+    },
+    {
+      "field": "recipient_status",
+      "op": "in",
+      "value": "생계,의료,주거,교육",
+      "group": "소득요건 또는 3자녀 이상",
+      "evidence": "기초생활수급권자"
+    },
+    {
+      "field": "recipient_status",
+      "op": "==",
+      "value": "차상위",
+      "group": "소득요건 또는 3자녀 이상",
+      "evidence": "차상위계층(기준중위소득 50% 이하)"
+    },
+    {
+      "field": "income_recognized_pct_median",
+      "op": "<=",
+      "value": "50",
+      "group": "소득요건 또는 3자녀 이상",
+      "evidence": "기준중위소득 50% 이하"
+    }
+  ],
+  "benefit": {
+    "type": "inkind",
+    "amount_text": "5인승 ~ 12인승 차량 렌트 지원",
+    "monthly_amount_won": 0,
+    "evidence": "5인승 ~ 12인승 차량 렌트 지원"
+  },
+  "_meta": {
+    "source_file": "n03_WLF00002178.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-14T00:40:13+00:00",
+    "seconds": 187.0,
+    "input_tokens": 2762,
+    "output_tokens": 3627,
+    "request_id": "chatcmpl-Ejw3OUrJazfi4wGRSIBcaxVcVOKQX"
+  }
+}

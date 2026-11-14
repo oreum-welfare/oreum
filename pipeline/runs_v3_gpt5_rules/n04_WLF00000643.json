@@ -1,0 +1,30 @@
+{
+  "service_name": "참전유공자 사망위로금 지원",
+  "judgeable": false,
+  "not_judgeable_reason": "대상은 사망한 ‘참전유공자’의 유족(배우자·자녀·부모)이며, 사망 사건과 참전유공자 여부(보훈대상자 등록 전제) 같은 핵심 요건이 목록 필드로 표현되지 않아 신청자 입력만으로 1차 판정이 불가합니다.",
+  "conditions": [
+    {
+      "field": "other",
+      "op": "==",
+      "value": "사망일 현재 북구 거주 참전유공자의 배우자 또는 자녀(혹은 부모)",
+      "group": "",
+      "evidence": "사망일 현재 북구 거주 참전유공자의 배우자 또는 자녀(혹은 부모)"
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_text": "참전유공자 사망위로금 지원(일인당 10만원)",
+    "monthly_amount_won": 100000,
+    "evidence": "참전유공자 사망위로금 지원(일인당 10만원)"
+  },
+  "_meta": {
+    "source_file": "n04_WLF00000643.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-14T00:41:53+00:00",
+    "seconds": 99.9,
+    "input_tokens": 2588,
+    "output_tokens": 2486,
+    "request_id": "chatcmpl-Ejw6PkabcKvcL8AAcL83k7znO1Swl"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "service_name": "보훈명예수당",
+  "judgeable": false,
+  "not_judgeable_reason": "대상은 특정 법률상의 국가유공자 해당 호수 본인 또는 선순위유족 여부로 결정되며, 이는 제공된 입력 필드로 표현할 수 없어(국가유공자 등록·유족 해당 여부 확인 필요) 신청자 입력만으로 1차 판정이 불가능합니다.",
+  "conditions": [
+    {
+      "field": "other",
+      "op": "==",
+      "value": "해당",
+      "group": "대상",
+      "evidence": "국가유공자 제 1호, 2호, 3호, 5호, 6호, 8호, 9호, 11호~18호 본인"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "해당",
+      "group": "대상",
+      "evidence": "본인 사망시 해당 호의 선순위유족 1인"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "해당",
+      "group": "대상",
+      "evidence": "및 4호 7호의 선순위 유족"
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_text": "보훈명예수당 월 15만원 지급",
+    "monthly_amount_won": 150000,
+    "evidence": "보훈명예수당 월 15만원 지급"
+  },
+  "_meta": {
+    "source_file": "n15_WLF00002041.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-14T01:08:02+00:00",
+    "seconds": 52.2,
+    "input_tokens": 2537,
+    "output_tokens": 1891,
+    "request_id": "chatcmpl-EjwWVYjropqxlONNgHk16jKgWX47M"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "service_name": "무연고 사망자 장제비 지급",
+  "judgeable": false,
+  "not_judgeable_reason": "핵심 조건이 '무연고 사망자'(사망 사실 및 무연고 여부)로, 제공된 입력 필드로 판정할 수 없는 사건·신분 조건입니다.",
+  "conditions": [
+    {
+      "field": "other",
+      "op": "==",
+      "value": "무연고 사망자",
+      "group": "",
+      "evidence": "무연고 사망자"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "무연고 사망자를 장례를 담당한 법인이나 개인",
+      "group": "",
+      "evidence": "무연고 사망자를 장례를 담당한 법인이나 개인"
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_text": "무연고 사망자 장례비 지원",
+    "monthly_amount_won": 0,
+    "evidence": "무연고 사망자 장례비 지원"
+  },
+  "_meta": {
+    "source_file": "n16_WLF00002248.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-14T01:09:24+00:00",
+    "seconds": 81.9,
+    "input_tokens": 2523,
+    "output_tokens": 1868,
+    "request_id": "chatcmpl-EjwXLndoEAcCAigbT3cEKLS0uEbUP"
+  }
+}

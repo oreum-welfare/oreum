@@ -1,0 +1,121 @@
+{
+  "service_name": "영천시 청년근로자 월세 지원",
+  "judgeable": false,
+  "not_judgeable_reason": "근로자 요건(청년근로자 여부)과 ‘부모와 별도 거주’ 요건은 제공된 입력 항목 목록에 해당 필드가 없어 필수 조건을 자동 판정할 수 없음",
+  "conditions": [
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "영천시",
+      "group": "",
+      "evidence": "- 영천시에 부모와 별도 거주하는 만 19세 ~ 45세 이하의 청년근로자"
+    },
+    {
+      "field": "age",
+      "op": "between",
+      "value": "19,45",
+      "group": "",
+      "evidence": "- 영천시에 부모와 별도 거주하는 만 19세 ~ 45세 이하의 청년근로자"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "부모와 별도 거주",
+      "group": "",
+      "evidence": "- 영천시에 부모와 별도 거주하는 만 19세 ~ 45세 이하의 청년근로자"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "청년근로자",
+      "group": "",
+      "evidence": "- 영천시에 부모와 별도 거주하는 만 19세 ~ 45세 이하의 청년근로자"
+    },
+    {
+      "field": "income_recognized_pct_median",
+      "op": "<=",
+      "value": "120",
+      "group": "",
+      "evidence": "- (청년가구) 기준 중위소득 120%* 이하"
+    },
+    {
+      "field": "assets",
+      "op": "<=",
+      "value": "122000000",
+      "group": "",
+      "evidence": "- (재산기준) 청년 가구재산 1억 2천 2백만원 이하"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "해당하지 않아야 함",
+      "group": "",
+      "evidence": "❍ 주택 소유자(분양권, 입주권 포함)"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "해당하지 않아야 함",
+      "group": "",
+      "evidence": "❍ 정부 등 유사 주거 지원사업을 지원 받고있는 자(지급 완료자는 가능)"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "해당하지 않아야 함",
+      "group": "",
+      "evidence": "❍ 공공임대(국민임대, 영구임대, LH임대, 행복주택, 공무원 임대주택 등) 거주자"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "해당하지 않아야 함",
+      "group": "",
+      "evidence": "❍ 기초생활수급자 중 주거급여 수혜자, 2촌이내 주택 임차자, 1실방 다수 거주 방식 전대차"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "해당하지 않아야 함",
+      "group": "",
+      "evidence": "❍ 국토부 청년월세한시특별지원사업 대상자"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "해당하지 않아야 함",
+      "group": "",
+      "evidence": "❍ 임대인이 '가족관계증명서'에 등재된 신청인의 '부모,형제,자매'인 경우"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "해당하지 않아야 함",
+      "group": "",
+      "evidence": "❍ 기타 사업 취지에 부합하지 않다고 판단되는 경우"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "해당하지 않아야 함",
+      "group": "",
+      "evidence": "❍ 국가 및 지방자치단체 공무원(공무직 포함)"
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_text": "월세지원금 200,000원 최대 12회 매월 25일 지급",
+    "monthly_amount_won": 200000,
+    "evidence": "월세지원금 200,000원 최대 12회 매월 25일 지급"
+  },
+  "_meta": {
+    "source_file": "n07_WLF00005860.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-14T00:46:56+00:00",
+    "seconds": 195.3,
+    "input_tokens": 2751,
+    "output_tokens": 4400,
+    "request_id": "chatcmpl-Ejw9lXOzByLlFnkKHgC3RQz6hpUL4"
+  }
+}

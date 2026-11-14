@@ -1,0 +1,86 @@
+{
+  "service_name": "신혼부부 전세자금 대출이자 지원사업",
+  "judgeable": false,
+  "not_judgeable_reason": "핵심 요건(혼인신고 7년 이내, 무주택, 금융기관 전세자금 대출 보유, 영천시 소재 임차보증금 3억원 이하, 종전 지원 이력 없음, 부부 모두의 계속 거주 등)이 입력 항목 목록에 없어 자동 판정이 불가합니다.",
+  "conditions": [
+    {
+      "field": "age",
+      "op": "<=",
+      "value": "49",
+      "group": "",
+      "evidence": "만49세 이하 남녀"
+    },
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "영천시",
+      "group": "",
+      "evidence": "부부 모두 시에 주소를 두고"
+    },
+    {
+      "field": "income_recognized_pct_median",
+      "op": "<=",
+      "value": "180",
+      "group": "",
+      "evidence": "기준 중위소득 180% 이하 무주택 신혼부부"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "혼인신고일로부터 7년 이내의 신혼부부여야 함",
+      "group": "",
+      "evidence": "혼인신고일로부터 7년이 경과하지 않은"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "부부 모두 시에 주소를 두고 계속 거주해야 함",
+      "group": "",
+      "evidence": "계속 거주하는 경우 지원"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "무주택 신혼부부여야 함",
+      "group": "",
+      "evidence": "무주택 신혼부부"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "금융기관에서 주택 전세자금 대출을 받은 사실이 있어야 함",
+      "group": "",
+      "evidence": "금융기관에서 주택 전세자금 대출을 받은 신혼부부"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "영천시 소재 임차보증금 3억원 이하 주택에 해당해야 함",
+      "group": "",
+      "evidence": "영천시 소재 임차보증금 3억원 이하 주택"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "부부 중 누구도 기존에 본 사업 지원을 받은 이력이 없어야 함",
+      "group": "",
+      "evidence": "부부 중 한명이라도 기존에 지원을 받은 이력이 없을 경우 지원"
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_text": "연 1.5% 이내 대출이자 지원(대출한도 1억원). 3년간 지급, 연간 최대 150만원 한도 이내 지원, 자녀수에 따라 1명 당 1년 최장 2년 연장 가능",
+    "monthly_amount_won": 0,
+    "evidence": "3년간 지급, 연간 최대 150만원 한도 이내 지원, 자녀수에 따라 1명 당 1년 최장 2년 연장 가능"
+  },
+  "_meta": {
+    "source_file": "n08_WLF00005541.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-14T00:49:36+00:00",
+    "seconds": 160.0,
+    "input_tokens": 2622,
+    "output_tokens": 4525,
+    "request_id": "chatcmpl-EjwCvAIApwvwyjTxMA1vFbQfpY1j8"
+  }
+}

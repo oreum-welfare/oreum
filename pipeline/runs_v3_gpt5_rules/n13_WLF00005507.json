@@ -1,0 +1,44 @@
+{
+  "service_name": "중고등학교 신입생 교복구입비 지원",
+  "judgeable": false,
+  "not_judgeable_reason": "핵심 조건인 ‘중·고등학교 신입생 또는 1학년 전입생’ 여부와 ‘교복을 입는 학교’ 여부를 입력 필드로 판정할 수 없습니다.",
+  "conditions": [
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "영천시",
+      "group": "",
+      "evidence": "기준일 현재 영천시에 주민등록을 두고"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "교복을 입는 관내외 중고등학교에 입학하는 신입생",
+      "group": "대상경로",
+      "evidence": "교복을 입는 관내외 중고등학교에 입학하는 신입생"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "교복을 입는 관내 학교에 전입하는 1학년 학생",
+      "group": "대상경로",
+      "evidence": "교복을 입는 관내 학교에 전입하는 1학년 학생"
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_text": "1인당 30만원 지원",
+    "monthly_amount_won": 300000,
+    "evidence": "1인당 30만원 지원"
+  },
+  "_meta": {
+    "source_file": "n13_WLF00005507.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-14T01:02:34+00:00",
+    "seconds": 179.0,
+    "input_tokens": 2602,
+    "output_tokens": 3159,
+    "request_id": "chatcmpl-EjwP92H0McIuzytmlikjGXBiCqS8A"
+  }
+}

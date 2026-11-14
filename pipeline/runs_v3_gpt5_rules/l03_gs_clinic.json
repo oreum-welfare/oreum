@@ -1,0 +1,37 @@
+{
+  "service_name": "65세 이상 어르신 진료비 감면 사업",
+  "judgeable": true,
+  "not_judgeable_reason": "",
+  "conditions": [
+    {
+      "field": "age",
+      "op": ">=",
+      "value": "65",
+      "group": "",
+      "evidence": "경산시에 주민등록 주소를 둔 65세 이상 지역주민"
+    },
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "경산시",
+      "group": "",
+      "evidence": "경산시에 주민등록 주소를 둔 65세 이상 지역주민"
+    }
+  ],
+  "benefit": {
+    "type": "inkind",
+    "amount_text": "경산시 보건기관(19개소: 경산시보건소, 보건지소 8개소, 보건진료소 10개소) 내과 진료 급여 본인부담금 면제 (치과, 한방, 물리치료 단독 제외) - 원내처방(의약분업예외지역) : 진료비 및 약제비 - 원외처방 : 진료비",
+    "monthly_amount_won": 0,
+    "evidence": "경산시 보건기관(19개소: 경산시보건소, 보건지소 8개소, 보건진료소 10개소) 내과 진료 급여 본인부담금 면제 (치과, 한방, 물리치료 단독 제외)"
+  },
+  "_meta": {
+    "source_file": "l03_gs_clinic.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-14T00:27:17+00:00",
+    "seconds": 53.1,
+    "input_tokens": 2538,
+    "output_tokens": 1264,
+    "request_id": "chatcmpl-Ejvt3qfi1Gange4f48GSw39ywlvwq"
+  }
+}

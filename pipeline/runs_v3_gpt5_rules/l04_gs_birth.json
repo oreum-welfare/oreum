@@ -1,0 +1,44 @@
+{
+  "service_name": "출산축하금 및 장려금 지원",
+  "judgeable": true,
+  "not_judgeable_reason": "",
+  "conditions": [
+    {
+      "field": "newborn",
+      "op": "==",
+      "value": "",
+      "group": "",
+      "evidence": "신생아 출생일을 기준으로"
+    },
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "경산시",
+      "group": "",
+      "evidence": "부모, 부 또는 모가 경산시에 주민등록을 두고 거주하며"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "경산시에 신생아를 출생신고한 가정",
+      "group": "",
+      "evidence": "경산시에 신생아를 출생신고한 가정"
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_text": "<출산축하금> 출생아 1인당 50만원(일시금)\n<출산장려금> 첫째 자녀 : 120만원(10만원 * 12개월), 둘째 자녀 : 240만원(20만원 * 12개월), 셋째 자녀 : 360만원(30만원 * 12개월), 넷째 자녀 이상 : 1,200만원(50만원 * 24개월)",
+    "monthly_amount_won": 100000,
+    "evidence": "<출산축하금> 출생아 1인당 50만원(일시금)\n<출산장려금> 첫째 자녀 : 120만원(10만원 * 12개월), 둘째 자녀 : 240만원(20만원 * 12개월), 셋째 자녀 : 360만원(30만원 * 12개월), 넷째 자녀 이상 : 1,200만원(50만원 * 24개월)"
+  },
+  "_meta": {
+    "source_file": "l04_gs_birth.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-14T00:30:09+00:00",
+    "seconds": 171.9,
+    "input_tokens": 2632,
+    "output_tokens": 4026,
+    "request_id": "chatcmpl-Ejvtup3DeTm0V0GEURZ68lKAMyD9E"
+  }
+}

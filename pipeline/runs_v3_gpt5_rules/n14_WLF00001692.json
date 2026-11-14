@@ -1,0 +1,51 @@
+{
+  "service_name": "영천시 출산양육장려금 지원",
+  "judgeable": true,
+  "not_judgeable_reason": "",
+  "conditions": [
+    {
+      "field": "newborn",
+      "op": "==",
+      "value": "true",
+      "group": "",
+      "evidence": "신생아의 출생일 기준, 영천시 주민등록에 등재되어 있는 자녀만 인정"
+    },
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "영천시",
+      "group": "",
+      "evidence": "신생아의 출생일 현재 부 또는 모가 영천시에 주민등록을 두고 거주하는 경우"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "신생아가 영천시 주민등록에 등재되어 있어야 함",
+      "group": "",
+      "evidence": "신생아의 출생일 기준, 영천시 주민등록에 등재되어 있는 자녀만 인정"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "출생 후 90일 이내 신청",
+      "group": "",
+      "evidence": "출생일로부터 90일 이내"
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_text": "1. 신생아가 첫째 자녀인 경우 출생 시 100만원, 20개월간 매월 10만원 정액 지원 (출생시 100만원, 월10만원*20회)\n2. 신생아가 둘째 자녀인 경우 출생 시 100만원, 60개월간 매월 20만원 정액 지원 (출생시 100만원, 월20만원*60회)\n3. 신생아가 셋째 자녀인 경우 출생 시 100만원, 60개월간 매월 25만원 정액 지원 (출생시 100만원, 월25만원*60회)\n4. 신생아가 넷째 자녀 이상인 경우 출생 시 100만원, 60개월간 매월 30만원 정액 지원 (출생시 100만원, 월30만원*60회)",
+    "monthly_amount_won": 100000,
+    "evidence": "20개월간 매월 10만원 정액 지원"
+  },
+  "_meta": {
+    "source_file": "n14_WLF00001692.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-14T01:07:10+00:00",
+    "seconds": 275.6,
+    "input_tokens": 3200,
+    "output_tokens": 6657,
+    "request_id": "chatcmpl-EjwS26ifrGmqc89G7V6WhM1owVudX"
+  }
+}

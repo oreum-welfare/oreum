@@ -1,0 +1,30 @@
+{
+  "service_name": "보훈대상자자활지원금(3.1절,광복절)",
+  "judgeable": false,
+  "not_judgeable_reason": "핵심 요건이 '국가유공자 및 유족' 여부로, 특정 법률의 보훈대상자 등록 여부 확인이 필요하나 제공 입력 항목에 해당 필드가 없어 1차 판정 불가(분류 (f)).",
+  "conditions": [
+    {
+      "field": "other",
+      "op": "==",
+      "value": "국가유공자 및 유족",
+      "group": "",
+      "evidence": "국가유공자 및 유족"
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_text": "100,000원 × 80인 × 2회(매년 3.1절, 광복절)",
+    "monthly_amount_won": 0,
+    "evidence": "100,000원 × 80인 × 2회(매년 3.1절, 광복절)"
+  },
+  "_meta": {
+    "source_file": "n05_WLF00000642.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-14T00:43:26+00:00",
+    "seconds": 93.1,
+    "input_tokens": 2504,
+    "output_tokens": 1753,
+    "request_id": "chatcmpl-Ejw827dO9XKKXaKluDWkuCpYeJAUI"
+  }
+}

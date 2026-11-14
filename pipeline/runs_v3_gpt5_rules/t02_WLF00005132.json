@@ -1,0 +1,37 @@
+{
+  "service_name": "임신부 태아기형아 검사비 지원",
+  "judgeable": false,
+  "not_judgeable_reason": "핵심 조건인 ‘임신부 여부’는 제공된 입력 항목 목록에 없는 상태(임신·임신부)로, 이를 제외하면 사실상 모든 주민이 대상이 되므로 입력만으로 1차 판정 불가",
+  "conditions": [
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "경산시",
+      "group": "",
+      "evidence": "관내에 주소를 두고 있는 임신부"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "임신부",
+      "group": "",
+      "evidence": "관내에 주소를 두고 있는 임신부"
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_text": "금액 미기재",
+    "monthly_amount_won": 0,
+    "evidence": "임신부 태아기형아 검사비 지원"
+  },
+  "_meta": {
+    "source_file": "t02_WLF00005132.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-14T01:11:16+00:00",
+    "seconds": 35.1,
+    "input_tokens": 2472,
+    "output_tokens": 1353,
+    "request_id": "chatcmpl-EjwZtWLeH8B7uZcUMrkvgSZKyUTPa"
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "service_name": "대구 북구 통합돌봄 사업",
+  "judgeable": false,
+  "not_judgeable_reason": "핵심 조건인 ‘돌봄이 필요한 자’ 여부와 세부 대상(장기요양등급자·등급외자, 퇴원환자, 심한 장애 등)은 담당자 판단·의료/장기요양 등 행정정보 확인이 필요한 사항으로 일반 입력 항목만으로 1차 판정이 어렵습니다.",
+  "conditions": [
+    {
+      "field": "other",
+      "op": "==",
+      "value": "돌봄이 필요한 자",
+      "group": "",
+      "evidence": "대상자 : 돌봄이 필요한 자"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "장기요양등급자 중 재가급여자",
+      "group": "대상 분류",
+      "evidence": "- 장기요양등급자 중 재가급여자"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "장기요양등급외 자",
+      "group": "대상 분류",
+      "evidence": "- 장기요양등급외 자"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "노인맞춤돌봄대상자",
+      "group": "대상 분류",
+      "evidence": "- 노인맞춤돌봄대상자"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "퇴원환자",
+      "group": "대상 분류",
+      "evidence": "- 퇴원환자"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "65세 미만 심한 장애인",
+      "group": "대상 분류",
+      "evidence": "- 65세 미만 심한 장애인"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "그 외 돌봄이 필요한 노인 등",
+      "group": "대상 분류",
+      "evidence": "- 그 외 돌봄이 필요한 노인 등"
+    }
+  ],
+  "benefit": {
+    "type": "inkind",
+    "amount_text": "가사지원: 주2회, 월24시간, 3개월 / 병원동행: 월2회, 월 6시간, 3개월. 소득 지원 기준: 기초수급·차상위 면제, 기초연금·장애인연금 자부담 20%, 초과 자부담 100%.",
+    "monthly_amount_won": 0,
+    "evidence": "- 가사지원 : 주2회, 월24시간, 3개월\n- 병원동행 : 월2회, 월 6시간, 3개월"
+  },
+  "_meta": {
+    "source_file": "n01_WLF00006788.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-14T00:34:23+00:00",
+    "seconds": 152.9,
+    "input_tokens": 2665,
+    "output_tokens": 3733,
+    "request_id": "chatcmpl-EjvyIHWO2b9i4xbrTXpbHmaEhDJEz"
+  }
+}

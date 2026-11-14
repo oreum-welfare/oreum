@@ -1,0 +1,37 @@
+{
+  "service_name": "경산시 화장장려금 지원",
+  "judgeable": false,
+  "not_judgeable_reason": "핵심 요건이 사망 관련 사건과 연고자 여부에 해당하여 제공 필드로 판정 불가: (1) 사망일 기준 1년 이상 시 주소를 가진 사망자, (2) 시 외 화장장에서 화장을 치른 연고자. 이는 ‘사망·장례’ 사건 및 연고자 판단으로 목록 필드에 없음.",
+  "conditions": [
+    {
+      "field": "other",
+      "op": "==",
+      "value": "사망일 기준으로 1년 이전부터 시에 주소를 가진 사람(사망자)",
+      "group": "",
+      "evidence": "사망일 기준으로 1년 이전부터 시에 주소를 가진 사람의 사망에 따라"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "시 지역 외의 화장장에서 화장을 치른 연고자",
+      "group": "",
+      "evidence": "시 지역 외의 화장장에서 화장을 치른 연고자"
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_text": "경산시민이 타 지역 화장장을 이용할 경우 그 지역 주민이 부담하는 화장료를 제외한 금액의 100% 지원",
+    "monthly_amount_won": 0,
+    "evidence": "경산시민이 타 지역 화장장을 이용할 경우 그 지역 주민이 부담하는 화장료를 제외한 금액의 100% 지원"
+  },
+  "_meta": {
+    "source_file": "t01_WLF00003932.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-14T01:10:41+00:00",
+    "seconds": 77.2,
+    "input_tokens": 2606,
+    "output_tokens": 2748,
+    "request_id": "chatcmpl-EjwYe1lkpYdUw4o2xvPFy2WHbaTiG"
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "service_name": "이동통신요금감면",
+  "judgeable": true,
+  "not_judgeable_reason": "",
+  "conditions": [
+    {
+      "field": "recipient_status",
+      "op": "in",
+      "value": "생계,의료,주거,교육",
+      "group": "대상 중 하나",
+      "evidence": "(기초생활수급자) 「국민기초생활보장법」에 따라 국가로부터 지원을 받는 기초생활수급자 - 생계, 의료, 주거, 교육급여 수급자"
+    },
+    {
+      "field": "recipient_status",
+      "op": "==",
+      "value": "차상위",
+      "group": "대상 중 하나",
+      "evidence": "(차상위계층) 「국민기초생활보장법」에 따라 소득 인정액이 기준 중위소득의 100분의 50 이하이며, 아래 법령에 따라 지원을 받는 사람 및 그 가구원"
+    },
+    {
+      "field": "basic_pension_recipient",
+      "op": "==",
+      "value": "true",
+      "group": "대상 중 하나",
+      "evidence": "(기초연금수급자) 「기초연금법」 제2조 제3호에 따른 기초연금 수급자"
+    },
+    {
+      "field": "disabled",
+      "op": "==",
+      "value": "true",
+      "group": "대상 중 하나",
+      "evidence": "(장애인) 「장애인복지법」에 의한 장애인"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "국가유공자(감면대상 보훈대상 코드 해당)",
+      "group": "대상 중 하나",
+      "evidence": "(국가유공자) 감면대상 보훈대상 코드가 전상군경(21), 공상군경(23), 4.19혁명 상이자(51) 등"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "단체 또는 시설",
+      "group": "대상 중 하나",
+      "evidence": "기초생활수급자, 차상위계층, 기초연금수급자, 장애인, 국가유공자, 단체 및 시설을 지원합니다."
+    }
+  ],
+  "benefit": {
+    "type": "inkind",
+    "amount_text": "(기초생활수급자) 생계·의료: 기본감면 26,000원 및 통화료 50% 감면(월최대 33,500원 감면) / 주거·교육: 기본감면 11,000원 및 통화료 35% 감면(월최대 21,500원 감면). (장애인/국가유공자/단체) 기본료, 국내 음성/데이터 통화료 35% 감면. (차상위계층) 기본감면 11,000원 및 통화료 35% 감면(월최대 21,500원 감면). (기초연금수급자) 기본료 및 통화료 50% 감면(월최대 11,000원 감면).",
+    "monthly_amount_won": 21500,
+    "evidence": "(차상위계층) 기본감면 11,000원 및 통화료 35% 감면(월최대 21,500원 감면)"
+  },
+  "_meta": {
+    "source_file": "c08_telecom.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-14T00:20:39+00:00",
+    "seconds": 125.7,
+    "input_tokens": 2814,
+    "output_tokens": 4270,
+    "request_id": "chatcmpl-EjvlTrTsXt61qKSCFt7gi5WimLbNt"
+  }
+}
