@@ -17,7 +17,7 @@
 - [ ] 화면을 바꿨다면 스크린샷을 아래에 붙였습니다
 
 ### 계산·데이터를 바꿨다면
-- [ ] `web/js/engine.js`, `oreum-app/src/lib/engine.js`, `rules.py` 세 곳을 똑같이 고쳤습니다
+- [ ] `oreum-app/src/lib/engine.js`와 `rules.py` 두 곳을 똑같이 고쳤습니다
 - [ ] `python tests/parity_py.py && node tests/parity.mjs` 가 "모두 일치"로 끝납니다
 - [ ] `rules.json`에서 바꾼 값의 `verification`(근거·확인 상태)도 고쳤습니다
 

@@ -25,23 +25,20 @@
 ## 파일 구조
 | 파일 | 설명 |
 |---|---|
-| `oreum-app/` | **React 버전 (권장)**: 시뮬레이터 + 데이터 분석 + **AI 검수 화면** ([안내](oreum-app/README.md)) |
-| `web/index.html`, `web/css/`, `web/js/app.js` | 바닐라 JS 버전 (11/16~17 중간 발표용으로 유지) |
-| `web/js/engine.js` | 판정 엔진 (JavaScript, 브라우저에서 계산) |
-| `web/data/rules.json` | **규칙·금액 데이터. 웹과 분석이 함께 읽는 단 하나의 파일** |
-| `rules.py` | 판정 엔진 (파이썬, 데이터 분석용). `rules.json`을 읽음 |
-| `app.py` | 이전 Streamlit 버전 (참고용) |
+| `oreum-app/` | **React 웹 앱**: 시뮬레이터 + 데이터 분석 + AI 검수 화면 ([안내](oreum-app/README.md)) |
+| `oreum-app/src/lib/engine.js` | 판정 엔진 (JavaScript, 브라우저에서 계산) |
+| `data/rules.json` | **규칙·금액·근거 데이터. 앱과 분석이 함께 읽는 단 하나의 파일** |
+| `rules.py` | 판정 엔진 (파이썬, 데이터 분석용). `data/rules.json`을 읽음 |
+| `analysis/` | 가구 유형별 절벽 분석 (CSV 출력) |
+| `pipeline/` | **AI 변환 파이프라인**: 원문 → GPT-5(또는 Claude) → 규칙 JSON → 정답과 비교해 정확도 ([안내](pipeline/README.md), [결과](pipeline/RESULTS.md)) |
+| `tests/` | JS 엔진과 파이썬 엔진의 계산 일치 검사. PR마다 CI가 자동 실행 |
 | `assets/logo.html` | 로고 미리보기와 PNG 다운로드 |
-| `pipeline/` | **AI 변환 파이프라인**: 원문 → GPT-5(또는 Claude) → 규칙 JSON → 정답과 비교해 정확도 ([안내](pipeline/README.md)) |
-| `tests/` | 세 계산 엔진(rules.py·web·oreum-app) 일치 검사. PR마다 CI가 자동 실행 |
-| `docs/` | [기획안](docs/01_기획안.md), [PRD](docs/02_PRD.md), [기능명세서](docs/03_기능명세서.md) |
+| `docs/` | [기획안](docs/01_기획안.md), [PRD](docs/02_PRD.md), [기능명세서](docs/03_기능명세서.md), [제안서 초안](docs/04_제안서_초안.md) |
 
-> **금액을 바꿀 때:** `web/data/rules.json`만 고치면 웹과 분석에 함께 반영됩니다.
-> 바꾼 값은 `provisional`(임시) 목록에서 지워 주세요.
-> **계산 방식을 바꿀 때:** `web/js/engine.js`와 `rules.py`를 똑같이 고쳐야 합니다.
+> **금액을 바꿀 때:** `data/rules.json`만 고치면 앱과 분석에 함께 반영됩니다. 같은 항목의 `verification`(근거·확인 상태)도 고쳐 주세요.
+> **계산 방식을 바꿀 때:** `oreum-app/src/lib/engine.js`와 `rules.py`를 똑같이 고친 뒤 `python tests/parity_py.py && node tests/parity.mjs`로 확인합니다.
 
 ## 내 컴퓨터에서 실행
-**React 버전 (권장)**
 ```bash
 cd oreum-app
 npm install
@@ -49,15 +46,7 @@ npm run dev
 ```
 브라우저에서 http://localhost:5173 접속
 
-**바닐라 JS 버전**
-브라우저 보안 때문에 `index.html`을 더블클릭하면 데이터가 안 불러와집니다. 간단한 서버로 여세요.
-```bash
-cd web
-python -m http.server 8000
-```
-브라우저에서 http://localhost:8000 접속
-
-## Vercel 배포: React 버전 (oreum-app)
+## Vercel 배포
 1. GitHub 팀 저장소에 이 폴더 전체를 push
 2. Vercel → **Add New → Project** → 저장소 Import
 3. **Root Directory: `oreum-app`** (Framework Preset은 Vite로 자동 인식, Build `npm run build`, Output `dist`)
@@ -65,21 +54,8 @@ python -m http.server 8000
 
 > 규칙·AI 결과를 바꿨다면 push 전에 `oreum-app` 폴더에서 `npm run sync-data`를 실행해 `public/data/`를 최신으로 만드세요.
 
-## Vercel 배포: 바닐라 JS 버전 (web)
-1. GitHub 팀 저장소에 이 폴더 전체를 push
-2. [vercel.com](https://vercel.com) → GitHub 계정으로 로그인 → **Add New → Project**
-3. 팀 저장소 선택 → **Import**
-4. 설정:
-   - **Framework Preset:** Other
-   - **Root Directory:** `web` ← 꼭 지정
-   - Build Command, Output Directory: 비워 두기
-5. **Deploy** → 1분 뒤 `프로젝트이름.vercel.app` 주소 생성
-6. 이후에는 GitHub에 push할 때마다 자동으로 다시 배포됩니다.
-
-> 프로젝트 이름을 `oreum`으로 하면 `oreum.vercel.app`이 됩니다 (이미 쓰는 사람이 있으면 다른 이름).
-
 ## 데이터 분석
-- **웹:** `web/analysis.html` (상단 메뉴 '데이터 분석') — 핵심 발견, 가구 유형 × 지역 절벽 요약표, 곡선 비교, 혜택 종료 구간 분포, '10만 원 더 벌면' 분석
+- **웹:** React 앱의 '데이터 분석' 페이지 (`/analysis`) — 핵심 발견, 가구 유형 × 지역 절벽 요약표, 곡선 비교, 혜택 종료 구간 분포, '10만 원 더 벌면' 분석
 - **파이썬:** 같은 분석을 CSV로 저장 (가구 유형은 `rules.json`의 `analysis_households`)
 ```bash
 pip install -r requirements.txt
