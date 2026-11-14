@@ -1,0 +1,37 @@
+{
+  "service_name": "(자체사업)사망한 참전유공자 배우자 복지수당 지급",
+  "judgeable": true,
+  "not_judgeable_reason": "",
+  "conditions": [
+    {
+      "field": "other",
+      "op": "==",
+      "value": "사망한 참전유공자의 배우자",
+      "group": "",
+      "evidence": "사망한 참전유공자의 배우자(국가보훈부 미등록자)"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "국가보훈부 미등록자",
+      "group": "",
+      "evidence": "국가보훈부 미등록자"
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_text": "매월 말 10만원/1인 지급",
+    "monthly_amount_won": 100000,
+    "evidence": "매월 말 10만원/1인 지급"
+  },
+  "_meta": {
+    "source_file": "t05_WLF00005892.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-13T22:39:24+00:00",
+    "seconds": 15.6,
+    "input_tokens": 2238,
+    "output_tokens": 1329,
+    "request_id": "chatcmpl-EjuDFfEwwwxLV5U0c5t1A45cwrrLc"
+  }
+}

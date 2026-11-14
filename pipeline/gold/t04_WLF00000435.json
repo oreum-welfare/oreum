@@ -1,0 +1,36 @@
+{
+  "judgeable": false,
+  "conditions": [
+    {
+      "field": "single_parent",
+      "op": "==",
+      "value": "true",
+      "group": ""
+    },
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_accept": [
+      16667,
+      200000
+    ],
+    "note": "가구당 20만 원, 매년 1회 (연액 → 월 16,667원 또는 20만 원)"
+  },
+  "id": "t04_WLF00000435",
+  "set": "test",
+  "written_before_ai": "2026-11-14: AI 변환 결과를 보기 전에 작성한 정답"
+}

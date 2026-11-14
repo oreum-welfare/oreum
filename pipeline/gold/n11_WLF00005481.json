@@ -1,0 +1,62 @@
+{
+  "judgeable": false,
+  "conditions": [
+    {
+      "field": "age",
+      "op": ">=",
+      "value": "70",
+      "group": ""
+    },
+    {
+      "field": "residence_months",
+      "op": ">=",
+      "value": "12",
+      "group": ""
+    },
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "recipient_status",
+      "op": "in",
+      "value": "*",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "basic_pension_recipient",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "disabled",
+      "op": "==",
+      "value": "false",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_accept": [
+      0
+    ],
+    "note": "보청기 구입비 현금 (금액 없음). 이비인후과 난청 진단이 핵심 조건 → 판정 불가"
+  },
+  "id": "n11_WLF00005481",
+  "set": "test2",
+  "written_before_ai": "2026-11-14: 프롬프트 3차 수정 후, AI 변환 결과를 보기 전에 작성한 정답"
+}

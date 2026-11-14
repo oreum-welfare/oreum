@@ -1,0 +1,42 @@
+{
+  "judgeable": true,
+  "conditions": [
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "경산시",
+      "group": ""
+    },
+    {
+      "field": "newborn",
+      "op": "==",
+      "value": "true",
+      "group": ""
+    },
+    {
+      "field": "child_birth_order",
+      "op": ">=",
+      "value": "*",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_accept": [
+      100000,
+      200000,
+      300000,
+      500000
+    ],
+    "note": "출생 순위별 월 10/20/30/50만 원 + 축하금 50만 원"
+  },
+  "id": "l04_gs_birth"
+}

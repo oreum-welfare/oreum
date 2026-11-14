@@ -1,0 +1,58 @@
+{
+  "judgeable": true,
+  "conditions": [
+    {
+      "field": "nhis_premium",
+      "op": "<=",
+      "value": "최저보험료",
+      "group": ""
+    },
+    {
+      "field": "senior_in_household",
+      "op": "==",
+      "value": "true",
+      "group": "세대"
+    },
+    {
+      "field": "disabled",
+      "op": "==",
+      "value": "true",
+      "group": "세대"
+    },
+    {
+      "field": "single_parent",
+      "op": "==",
+      "value": "true",
+      "group": "세대"
+    },
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "recipient_status",
+      "op": "in",
+      "value": "*",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    }
+  ],
+  "benefit": {
+    "type": "inkind",
+    "amount_accept": [
+      10000
+    ],
+    "note": "월 10,000원 미만 전액 → 최대 1만 원"
+  },
+  "id": "l01_bukgu_nhis"
+}

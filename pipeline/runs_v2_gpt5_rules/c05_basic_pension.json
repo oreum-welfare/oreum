@@ -1,0 +1,51 @@
+{
+  "service_name": "기초연금",
+  "judgeable": true,
+  "not_judgeable_reason": "",
+  "conditions": [
+    {
+      "field": "age",
+      "op": ">=",
+      "value": "65",
+      "group": "",
+      "evidence": "연령 : 만 65세이상인 자"
+    },
+    {
+      "field": "income_recognized_won",
+      "op": "<=",
+      "value": "2470000",
+      "group": "가구유형별 기준",
+      "evidence": "2026년도 선정기준액은 단독가구는 2,470,000원, 부부가구는 3,952,000원"
+    },
+    {
+      "field": "income_recognized_won",
+      "op": "<=",
+      "value": "3952000",
+      "group": "가구유형별 기준",
+      "evidence": "2026년도 선정기준액은 단독가구는 2,470,000원, 부부가구는 3,952,000원"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "공무원, 사립학교교직원, 군인, 별정우체국직원 등 직역연금의 수급권자와 그 배우자는 기초연금 지급대상에서 제외",
+      "group": "",
+      "evidence": "공무원, 사립학교교직원, 군인, 별정우체국직원 등 직역연금의 수급권자와 그 배우자는 기초연금 지급대상에서 제외"
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_text": "금액 미기재",
+    "monthly_amount_won": 0,
+    "evidence": "만 65세 이상 어르신으로서 소득인정액이 매년 보건복지부장관이 정하여 고시하는 금액 이하인 사람에게 지원합니다."
+  },
+  "_meta": {
+    "source_file": "c05_basic_pension.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-13T17:26:37+00:00",
+    "seconds": 83.3,
+    "input_tokens": 2447,
+    "output_tokens": 6196,
+    "request_id": "chatcmpl-EjpJTae5b6im2GBdCK8MfhEzlxTxw"
+  }
+}

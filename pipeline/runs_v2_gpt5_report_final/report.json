@@ -1,0 +1,450 @@
+{
+  "summary": {
+    "services": 13,
+    "service_accuracy": 0.8461538461538461,
+    "condition_recall": 0.9354838709677419,
+    "condition_precision": 1.0,
+    "judgeable_agreement": 1.0,
+    "evidence_grounding": 1.0,
+    "amount_accuracy": 0.9230769230769231,
+    "missing": []
+  },
+  "results": [
+    {
+      "id": "c01_saeng",
+      "service": "생계급여(맞춤형 급여)",
+      "gold_required": 1,
+      "correct": 1,
+      "ai_conditions": 1,
+      "precision_hits": 1,
+      "extras": [],
+      "evidence_total": 3,
+      "evidence_grounded": 3,
+      "judgeable_ok": true,
+      "amount_ok": true,
+      "ai_amount": 0,
+      "gold_amount": [
+        0
+      ],
+      "amount_note": "선정기준 − 소득인정액 (계산식)",
+      "service_ok": true,
+      "details": [
+        {
+          "gold": "income_recognized_pct_median <= 32",
+          "ai": "income_recognized_pct_median <= 32",
+          "result": "정답"
+        }
+      ]
+    },
+    {
+      "id": "c02_jugeo",
+      "service": "주거급여(맞춤형 급여)",
+      "gold_required": 1,
+      "correct": 1,
+      "ai_conditions": 6,
+      "precision_hits": 6,
+      "extras": [],
+      "evidence_total": 6,
+      "evidence_grounded": 6,
+      "judgeable_ok": true,
+      "amount_ok": true,
+      "ai_amount": 0,
+      "gold_amount": [
+        0
+      ],
+      "amount_note": "원문에 금액 없음",
+      "service_ok": true,
+      "details": [
+        {
+          "gold": "income_recognized_pct_median <= 48",
+          "ai": "income_recognized_pct_median <= 48",
+          "result": "정답"
+        }
+      ]
+    },
+    {
+      "id": "c03_medical_copay",
+      "service": "의료급여(본인부담 보상금)",
+      "gold_required": 1,
+      "correct": 1,
+      "ai_conditions": 1,
+      "precision_hits": 1,
+      "extras": [],
+      "evidence_total": 4,
+      "evidence_grounded": 4,
+      "judgeable_ok": true,
+      "amount_ok": true,
+      "ai_amount": 0,
+      "gold_amount": [
+        0
+      ],
+      "amount_note": "본인부담금 사용량에 따라 다름",
+      "service_ok": true,
+      "details": [
+        {
+          "gold": "recipient_status in 의료",
+          "ai": "recipient_status == 의료",
+          "result": "정답"
+        }
+      ]
+    },
+    {
+      "id": "c04_edu",
+      "service": "교육급여(맞춤형 급여)",
+      "gold_required": 2,
+      "correct": 2,
+      "ai_conditions": 3,
+      "precision_hits": 3,
+      "extras": [],
+      "evidence_total": 4,
+      "evidence_grounded": 4,
+      "judgeable_ok": true,
+      "amount_ok": true,
+      "ai_amount": 41833,
+      "gold_amount": [
+        41833,
+        58250,
+        71667
+      ],
+      "amount_note": "초 502,000 / 중 699,000 / 고 860,000원(연)",
+      "service_ok": true,
+      "details": [
+        {
+          "gold": "income_recognized_pct_median <= 50",
+          "ai": "income_recognized_pct_median <= 50",
+          "result": "정답"
+        },
+        {
+          "gold": "school_enrolled == true",
+          "ai": "school_enrolled == true",
+          "result": "정답"
+        }
+      ]
+    },
+    {
+      "id": "c05_basic_pension",
+      "service": "기초연금",
+      "gold_required": 2,
+      "correct": 2,
+      "ai_conditions": 3,
+      "precision_hits": 3,
+      "extras": [],
+      "evidence_total": 4,
+      "evidence_grounded": 4,
+      "judgeable_ok": true,
+      "amount_ok": true,
+      "ai_amount": 0,
+      "gold_amount": [
+        0
+      ],
+      "amount_note": "원문에 금액 없음 → 0이어야 함 (지식으로 채우면 오류)",
+      "service_ok": true,
+      "details": [
+        {
+          "gold": "age >= 65",
+          "ai": "age >= 65",
+          "result": "정답"
+        },
+        {
+          "gold": "income_recognized_won <= 2470000",
+          "ai": "income_recognized_won <= 2470000",
+          "result": "정답"
+        }
+      ]
+    },
+    {
+      "id": "c06_energy",
+      "service": "에너지바우처",
+      "gold_required": 6,
+      "correct": 6,
+      "ai_conditions": 6,
+      "precision_hits": 6,
+      "extras": [],
+      "evidence_total": 9,
+      "evidence_grounded": 9,
+      "judgeable_ok": true,
+      "amount_ok": true,
+      "ai_amount": 0,
+      "gold_amount": [
+        0
+      ],
+      "amount_note": "원문에 금액 없음",
+      "service_ok": true,
+      "details": [
+        {
+          "gold": "recipient_status in 생계,의료,주거,교육",
+          "ai": "recipient_status in 생계,의료,주거,교육",
+          "result": "정답"
+        },
+        {
+          "gold": "senior_in_household/age == true",
+          "ai": "senior_in_household == true",
+          "result": "정답"
+        },
+        {
+          "gold": "child_age <= 7",
+          "ai": "child_age <= 7",
+          "result": "정답"
+        },
+        {
+          "gold": "disabled == true",
+          "ai": "disabled == true",
+          "result": "정답"
+        },
+        {
+          "gold": "single_parent == true",
+          "ai": "single_parent == true",
+          "result": "정답"
+        },
+        {
+          "gold": "child_count >= 2",
+          "ai": "child_count >= 2",
+          "result": "정답"
+        }
+      ]
+    },
+    {
+      "id": "c07_eitc",
+      "service": "근로·자녀장려금",
+      "gold_required": 2,
+      "correct": 1,
+      "ai_conditions": 1,
+      "precision_hits": 1,
+      "extras": [],
+      "evidence_total": 4,
+      "evidence_grounded": 4,
+      "judgeable_ok": true,
+      "amount_ok": true,
+      "ai_amount": 0,
+      "gold_amount": [
+        0
+      ],
+      "amount_note": "원문에 금액 없음",
+      "service_ok": false,
+      "details": [
+        {
+          "gold": "total_income_annual < 22000000",
+          "ai": "",
+          "result": "누락"
+        },
+        {
+          "gold": "assets < 240000000",
+          "ai": "assets < 240000000",
+          "result": "정답"
+        }
+      ]
+    },
+    {
+      "id": "c08_telecom",
+      "service": "이동통신요금감면",
+      "gold_required": 3,
+      "correct": 3,
+      "ai_conditions": 4,
+      "precision_hits": 4,
+      "extras": [],
+      "evidence_total": 6,
+      "evidence_grounded": 6,
+      "judgeable_ok": true,
+      "amount_ok": true,
+      "ai_amount": 11000,
+      "gold_amount": [
+        33500,
+        21500,
+        11000,
+        26000
+      ],
+      "amount_note": "월 최대 33,500 / 21,500 / 11,000원",
+      "service_ok": true,
+      "details": [
+        {
+          "gold": "recipient_status in 생계,의료,주거,교육,차상위",
+          "ai": "recipient_status in 생계,의료,주거,교육",
+          "result": "정답"
+        },
+        {
+          "gold": "basic_pension_recipient == true",
+          "ai": "basic_pension_recipient == true",
+          "result": "정답"
+        },
+        {
+          "gold": "disabled == true",
+          "ai": "disabled == true",
+          "result": "정답"
+        }
+      ]
+    },
+    {
+      "id": "l01_bukgu_nhis",
+      "service": "건강보험료지원",
+      "gold_required": 4,
+      "correct": 3,
+      "ai_conditions": 3,
+      "precision_hits": 3,
+      "extras": [],
+      "evidence_total": 6,
+      "evidence_grounded": 6,
+      "judgeable_ok": true,
+      "amount_ok": false,
+      "ai_amount": 0,
+      "gold_amount": [
+        10000
+      ],
+      "amount_note": "월 10,000원 미만 전액 → 최대 1만 원",
+      "service_ok": false,
+      "details": [
+        {
+          "gold": "nhis_premium <= 최저보험료",
+          "ai": "nhis_premium <= 최저보험료",
+          "result": "정답"
+        },
+        {
+          "gold": "senior_in_household == true",
+          "ai": "senior_in_household == true",
+          "result": "정답"
+        },
+        {
+          "gold": "disabled == true",
+          "ai": "",
+          "result": "누락"
+        },
+        {
+          "gold": "single_parent == true",
+          "ai": "single_parent == true",
+          "result": "정답"
+        }
+      ]
+    },
+    {
+      "id": "l02_gs_loan",
+      "service": "저소득주민생활안정자금지원",
+      "gold_required": 2,
+      "correct": 2,
+      "ai_conditions": 4,
+      "precision_hits": 4,
+      "extras": [],
+      "evidence_total": 10,
+      "evidence_grounded": 10,
+      "judgeable_ok": true,
+      "amount_ok": true,
+      "ai_amount": 0,
+      "gold_amount": [
+        0
+      ],
+      "amount_note": "융자 한도 1,200만 원 (월 금액 아님)",
+      "service_ok": true,
+      "details": [
+        {
+          "gold": "residence_region == 경산시",
+          "ai": "residence_region == 경산시",
+          "result": "정답"
+        },
+        {
+          "gold": "recipient_status in 생계,의료,주거",
+          "ai": "recipient_status == 생계 | recipient_status == 의료 | recipient_status == 주거",
+          "result": "정답"
+        }
+      ]
+    },
+    {
+      "id": "l03_gs_clinic",
+      "service": "65세 이상 어르신 진료비 감면 사업",
+      "gold_required": 2,
+      "correct": 2,
+      "ai_conditions": 2,
+      "precision_hits": 2,
+      "extras": [],
+      "evidence_total": 2,
+      "evidence_grounded": 2,
+      "judgeable_ok": true,
+      "amount_ok": true,
+      "ai_amount": 0,
+      "gold_amount": [
+        0
+      ],
+      "amount_note": "본인부담금 면제 (사용량에 따라 다름)",
+      "service_ok": true,
+      "details": [
+        {
+          "gold": "residence_region == 경산시",
+          "ai": "residence_region == 경산시",
+          "result": "정답"
+        },
+        {
+          "gold": "age >= 65",
+          "ai": "age >= 65",
+          "result": "정답"
+        }
+      ]
+    },
+    {
+      "id": "l04_gs_birth",
+      "service": "출산축하금 및 장려금 지원",
+      "gold_required": 2,
+      "correct": 2,
+      "ai_conditions": 2,
+      "precision_hits": 2,
+      "extras": [],
+      "evidence_total": 3,
+      "evidence_grounded": 3,
+      "judgeable_ok": true,
+      "amount_ok": true,
+      "ai_amount": 100000,
+      "gold_amount": [
+        100000,
+        200000,
+        300000,
+        500000
+      ],
+      "amount_note": "출생 순위별 월 10/20/30/50만 원 + 축하금 50만 원",
+      "service_ok": true,
+      "details": [
+        {
+          "gold": "residence_region == 경산시",
+          "ai": "residence_region == 경산시",
+          "result": "정답"
+        },
+        {
+          "gold": "newborn == true",
+          "ai": "newborn == true",
+          "result": "정답"
+        }
+      ]
+    },
+    {
+      "id": "l05_gs_multichild",
+      "service": "경산시 다자녀가정 지원사업",
+      "gold_required": 3,
+      "correct": 3,
+      "ai_conditions": 4,
+      "precision_hits": 4,
+      "extras": [],
+      "evidence_total": 5,
+      "evidence_grounded": 5,
+      "judgeable_ok": true,
+      "amount_ok": true,
+      "ai_amount": 0,
+      "gold_amount": [
+        0
+      ],
+      "amount_note": "원문에 금액 없음 → 0이어야 함 (추진계획 hwp에만 있음)",
+      "service_ok": true,
+      "details": [
+        {
+          "gold": "child_birth_order >= 3",
+          "ai": "child_birth_order >= 3",
+          "result": "정답"
+        },
+        {
+          "gold": "child_age between 7,18",
+          "ai": "child_age between 7,18",
+          "result": "정답"
+        },
+        {
+          "gold": "residence_months >= 36",
+          "ai": "residence_months >= 36",
+          "result": "정답"
+        }
+      ]
+    }
+  ]
+}

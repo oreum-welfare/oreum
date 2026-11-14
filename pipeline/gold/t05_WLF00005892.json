@@ -1,0 +1,29 @@
+{
+  "judgeable": false,
+  "conditions": [
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_accept": [
+      100000
+    ],
+    "note": "매월 10만 원"
+  },
+  "id": "t05_WLF00005892",
+  "set": "test",
+  "written_before_ai": "2026-11-14: AI 변환 결과를 보기 전에 작성한 정답"
+}

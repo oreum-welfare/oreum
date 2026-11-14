@@ -1,0 +1,38 @@
+{
+  "judgeable": false,
+  "conditions": [
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "age",
+      "op": ">=",
+      "value": "65",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_accept": [
+      0,
+      300000,
+      25000
+    ],
+    "note": "사망위로금 30만 원 1회"
+  },
+  "id": "t09_WLF00001768",
+  "set": "test",
+  "written_before_ai": "2026-11-14: AI 변환 결과를 보기 전에 작성한 정답"
+}

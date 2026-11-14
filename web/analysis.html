@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>오름 · 데이터 분석</title>
+  <meta name="description" content="가구 유형과 지역에 따라 복지 절벽이 어디에서, 얼마나 깊게 나타나는지 분석한 결과">
+  <link rel="icon" href="assets/logo-icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="./">
+        <img src="assets/logo-icon.svg" alt="" width="40" height="40">
+        <span class="brand-name">오름</span>
+      </a>
+      <nav class="nav">
+        <a href="./">시뮬레이터</a>
+        <a href="analysis.html" aria-current="page">데이터 분석</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="wrap">
+      <h1>복지 절벽은 <em>누구에게, 어디서</em> 나타날까?</h1>
+      <p>가구 유형 6개 × 지역 2곳, 총 12가지 경우를 소득 0원부터 기준중위소득 100%까지 1만 원 단위로 시뮬레이션했습니다.</p>
+    </div>
+  </section>
+
+  <main class="wrap analysis">
+    <div class="notice" id="provisional-note"></div>
+
+    <!-- 핵심 발견 -->
+    <section class="card">
+      <h2 class="card-title">📌 핵심 발견</h2>
+      <ol class="findings" id="findings"></ol>
+    </section>
+
+    <!-- 분석 1: 요약표 -->
+    <section class="card">
+      <div class="card-head">
+        <h2 class="card-title">분석 ① 가구 유형 × 지역별 절벽 요약</h2>
+      </div>
+      <p class="hint">절벽 = 소득이 1만 원 늘었는데 '근로소득 + 혜택' 합계가 줄어드는 지점. 중위소득 대비 %는 가구원 수별 기준중위소득 기준입니다.</p>
+      <div class="table-wrap" id="summary-table"></div>
+    </section>
+
+    <!-- 분석 2: 곡선 비교 -->
+    <section class="card">
+      <div class="card-head">
+        <h2 class="card-title">분석 ② 가구 유형별 '근로소득 + 혜택' 곡선</h2>
+        <label class="field-inline small">지역
+          <select id="curve-region"></select>
+        </label>
+      </div>
+      <p class="hint">가구원 수가 달라 금액을 그대로 비교할 수 없으므로, 가로·세로 모두 <b>기준중위소득 대비 %</b>로 바꿔 겹쳐 그렸습니다. 선이 아래로 꺾이는 곳이 절벽입니다.</p>
+      <div class="chart-box"><canvas id="curve-chart" role="img" aria-label="가구 유형별 곡선 비교"></canvas></div>
+    </section>
+
+    <!-- 분석 3: 혜택 종료 분포 -->
+    <section class="card">
+      <h2 class="card-title">분석 ③ 혜택이 끊기는 소득 구간 분포</h2>
+      <p class="hint">12가지 경우에서 각 혜택의 자격이 사라지는 지점을 모두 모아, 기준중위소득 대비 5% 구간별로 세었습니다.</p>
+      <div class="chart-box short"><canvas id="dist-chart" role="img" aria-label="혜택 종료 구간 분포"></canvas></div>
+      <div class="table-wrap" id="dist-table"></div>
+    </section>
+
+    <!-- 분석 4: 10만 원 더 벌 때 -->
+    <section class="card">
+      <div class="card-head">
+        <h2 class="card-title">분석 ④ 10만 원 더 벌면 실제로 얼마가 남나</h2>
+        <div class="controls">
+          <label class="field-inline small">가구
+            <select id="emtr-type"></select>
+          </label>
+          <label class="field-inline small">지역
+            <select id="emtr-region"></select>
+          </label>
+        </div>
+      </div>
+      <p class="hint">각 소득에서 월 10만 원을 더 벌 때 '근로소득 + 혜택'이 얼마나 늘어나는지입니다. <b>10만 원보다 적으면 일부를 잃는 것</b>이고, <b style="color:var(--cliff)">0원 아래면 오히려 손해</b>입니다.</p>
+      <div class="chart-box short"><canvas id="emtr-chart" role="img" aria-label="10만 원 더 벌 때 남는 돈"></canvas></div>
+      <p class="stat-inline" id="emtr-summary"></p>
+    </section>
+
+    <!-- 분석 5: 규칙 변환 검증 -->
+    <section class="card">
+      <h2 class="card-title">분석 ⑤ 선정기준 원문 → 판정 규칙 변환 검증</h2>
+      <div class="stats compact">
+        <div class="stat"><div class="label">검증한 서비스</div><div class="value">13<small>건</small></div></div>
+        <div class="stat accent"><div class="label">자동 판정 가능</div><div class="value">11<small>건 (85%)</small></div></div>
+        <div class="stat"><div class="label">복지로 중앙부처 서비스</div><div class="value">461<small>건</small></div></div>
+        <div class="stat"><div class="label">지자체 (대구 / 경북)</div><div class="value">137<small> / 289건</small></div></div>
+      </div>
+      <p class="hint">판정 불가 2건: 경산 생활안정자금('자립의욕', '상환능력'은 담당자 판단), 의료급여 본인부담보상금(사용량에 따라 달라짐).</p>
+    </section>
+
+    <!-- 방법과 한계 -->
+    <section class="card">
+      <h2 class="card-title">분석 방법과 한계</h2>
+      <div class="method-grid">
+        <div>
+          <h3>방법</h3>
+          <ol>
+            <li>복지로 선정기준 원문을 판정 규칙으로 변환 (<code>data/rules.json</code>)</li>
+            <li>가구 유형 6개 × 지역 2곳 = 12가지 경우 설정</li>
+            <li>소득 0원 ~ 기준중위소득 100%, 1만 원 단위로 받는 혜택 계산</li>
+            <li>'근로소득 + 혜택'이 1,000원 이상 줄어드는 지점을 절벽으로 기록</li>
+            <li>같은 계산을 파이썬(<code>analysis/cliff_analysis.py</code>)으로도 실행해 결과 일치 확인</li>
+          </ol>
+        </div>
+        <div>
+          <h3>한계</h3>
+          <ul id="limits"></ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-bottom">오름 · 데이터: 복지로(보건복지부), 한국사회보장정보원 · 2026년 기준 · 참고용 분석이며 실제 수급 판정이 아닙니다.</div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script type="module" src="js/analysis.js"></script>
+</body>
+</html>

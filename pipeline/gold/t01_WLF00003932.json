@@ -1,0 +1,38 @@
+{
+  "judgeable": false,
+  "conditions": [
+    {
+      "field": "residence_months",
+      "op": ">=",
+      "value": "12",
+      "group": "",
+      "op_accept": [
+        ">"
+      ]
+    },
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_accept": [
+      0
+    ],
+    "note": "화장료 차액 100% (금액이 사용량에 따라 다름) → 0"
+  },
+  "id": "t01_WLF00003932",
+  "set": "test",
+  "written_before_ai": "2026-11-14: AI 변환 결과를 보기 전에 작성한 정답"
+}

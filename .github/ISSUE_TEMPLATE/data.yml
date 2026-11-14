@@ -1,0 +1,30 @@
+name: 데이터·금액 수정
+description: 선정기준이나 금액이 틀렸거나, 새 근거를 찾았을 때
+title: "[데이터] "
+labels: ["데이터"]
+body:
+  - type: input
+    id: service
+    attributes:
+      label: 제도 이름
+      placeholder: 예) 장애인연금 부가급여
+    validations:
+      required: true
+  - type: input
+    id: now
+    attributes:
+      label: 지금 값
+      placeholder: rules.json에 들어 있는 값
+  - type: input
+    id: new
+    attributes:
+      label: 바뀌어야 할 값
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: 근거
+      description: 고시·사업안내·복지로 페이지 링크와 해당 문장. 근거 없는 값은 반영하지 않습니다.
+    validations:
+      required: true

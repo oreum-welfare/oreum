@@ -1,0 +1,392 @@
+{
+  "summary": {
+    "services": 14,
+    "service_accuracy": 0.35714285714285715,
+    "condition_recall": 0.9333333333333333,
+    "condition_precision": 1.0,
+    "judgeable_agreement": 0.42857142857142855,
+    "evidence_grounding": 1.0,
+    "amount_accuracy": 0.9285714285714286,
+    "missing": []
+  },
+  "results": [
+    {
+      "id": "t01_WLF00003932",
+      "service": "경산시 화장장려금 지원",
+      "gold_required": 1,
+      "correct": 0,
+      "ai_conditions": 0,
+      "precision_hits": 0,
+      "extras": [],
+      "evidence_total": 3,
+      "evidence_grounded": 3,
+      "judgeable_ok": false,
+      "amount_ok": true,
+      "ai_amount": 0,
+      "gold_amount": [
+        0
+      ],
+      "amount_note": "화장료 차액 100% (금액이 사용량에 따라 다름) → 0",
+      "service_ok": false,
+      "details": [
+        {
+          "gold": "residence_months >= 12",
+          "ai": "",
+          "result": "누락"
+        }
+      ]
+    },
+    {
+      "id": "t02_WLF00005132",
+      "service": "임신부 태아기형아 검사비 지원",
+      "gold_required": 1,
+      "correct": 1,
+      "ai_conditions": 1,
+      "precision_hits": 1,
+      "extras": [],
+      "evidence_total": 2,
+      "evidence_grounded": 2,
+      "judgeable_ok": false,
+      "amount_ok": true,
+      "ai_amount": 0,
+      "gold_amount": [
+        0
+      ],
+      "amount_note": "원문에 금액 없음",
+      "service_ok": false,
+      "details": [
+        {
+          "gold": "residence_region == *",
+          "ai": "residence_region == 경상북도 경산시",
+          "result": "정답"
+        }
+      ]
+    },
+    {
+      "id": "t03_WLF00004915",
+      "service": "예비부모 엽산제 지원",
+      "gold_required": 1,
+      "correct": 1,
+      "ai_conditions": 1,
+      "precision_hits": 1,
+      "extras": [],
+      "evidence_total": 2,
+      "evidence_grounded": 2,
+      "judgeable_ok": false,
+      "amount_ok": true,
+      "ai_amount": 0,
+      "gold_amount": [
+        0
+      ],
+      "amount_note": "엽산제 현물, 금액 없음",
+      "service_ok": false,
+      "details": [
+        {
+          "gold": "residence_region == *",
+          "ai": "residence_region == 경산",
+          "result": "정답"
+        }
+      ]
+    },
+    {
+      "id": "t04_WLF00000435",
+      "service": "저소득 한부모가정 긴급구호비",
+      "gold_required": 1,
+      "correct": 1,
+      "ai_conditions": 1,
+      "precision_hits": 1,
+      "extras": [],
+      "evidence_total": 3,
+      "evidence_grounded": 3,
+      "judgeable_ok": true,
+      "amount_ok": false,
+      "ai_amount": 0,
+      "gold_amount": [
+        16667,
+        200000
+      ],
+      "amount_note": "가구당 20만 원, 매년 1회 (연액 → 월 16,667원 또는 20만 원)",
+      "service_ok": false,
+      "details": [
+        {
+          "gold": "single_parent == true",
+          "ai": "single_parent == true",
+          "result": "정답"
+        }
+      ]
+    },
+    {
+      "id": "t05_WLF00005892",
+      "service": "(자체사업)사망한 참전유공자 배우자 복지수당 지급",
+      "gold_required": 0,
+      "correct": 0,
+      "ai_conditions": 0,
+      "precision_hits": 0,
+      "extras": [],
+      "evidence_total": 2,
+      "evidence_grounded": 2,
+      "judgeable_ok": false,
+      "amount_ok": true,
+      "ai_amount": 100000,
+      "gold_amount": [
+        100000
+      ],
+      "amount_note": "매월 10만 원",
+      "service_ok": false,
+      "details": []
+    },
+    {
+      "id": "t06_WLF00002040",
+      "service": "(자체사업)참전유공자 및 사망한 참전유공자 배우자복지수당 대상자 사망위로금 지원",
+      "gold_required": 1,
+      "correct": 1,
+      "ai_conditions": 1,
+      "precision_hits": 1,
+      "extras": [],
+      "evidence_total": 4,
+      "evidence_grounded": 4,
+      "judgeable_ok": false,
+      "amount_ok": true,
+      "ai_amount": 300000,
+      "gold_amount": [
+        0,
+        300000,
+        25000
+      ],
+      "amount_note": "사망위로금 30만 원 1회",
+      "service_ok": false,
+      "details": [
+        {
+          "gold": "residence_region == *",
+          "ai": "residence_region == 경산시",
+          "result": "정답"
+        }
+      ]
+    },
+    {
+      "id": "t07_WLF00001839",
+      "service": "둘째아 이상 임산부 초음파 검사비 지원",
+      "gold_required": 2,
+      "correct": 2,
+      "ai_conditions": 2,
+      "precision_hits": 2,
+      "extras": [],
+      "evidence_total": 4,
+      "evidence_grounded": 4,
+      "judgeable_ok": false,
+      "amount_ok": true,
+      "ai_amount": 0,
+      "gold_amount": [
+        0,
+        50000,
+        4167
+      ],
+      "amount_note": "최대 5만 원 (실비)",
+      "service_ok": false,
+      "details": [
+        {
+          "gold": "residence_region == *",
+          "ai": "residence_region == 경상북도 경산시",
+          "result": "정답"
+        },
+        {
+          "gold": "child_birth_order >= 2",
+          "ai": "child_birth_order >= 2",
+          "result": "정답"
+        }
+      ]
+    },
+    {
+      "id": "t08_WLF00001769",
+      "service": "(자체사업)보훈예우수당 지원",
+      "gold_required": 2,
+      "correct": 2,
+      "ai_conditions": 2,
+      "precision_hits": 2,
+      "extras": [],
+      "evidence_total": 8,
+      "evidence_grounded": 8,
+      "judgeable_ok": false,
+      "amount_ok": true,
+      "ai_amount": 120000,
+      "gold_amount": [
+        120000
+      ],
+      "amount_note": "월 12만 원",
+      "service_ok": false,
+      "details": [
+        {
+          "gold": "residence_region == *",
+          "ai": "residence_region == 경산시",
+          "result": "정답"
+        },
+        {
+          "gold": "age >= 65",
+          "ai": "age >= 65",
+          "result": "정답"
+        }
+      ]
+    },
+    {
+      "id": "t09_WLF00001768",
+      "service": "(자체사업)보훈예우수당 지급대상자 사망위로금 지원",
+      "gold_required": 0,
+      "correct": 0,
+      "ai_conditions": 1,
+      "precision_hits": 1,
+      "extras": [],
+      "evidence_total": 4,
+      "evidence_grounded": 4,
+      "judgeable_ok": false,
+      "amount_ok": true,
+      "ai_amount": 0,
+      "gold_amount": [
+        0,
+        300000,
+        25000
+      ],
+      "amount_note": "사망위로금 30만 원 1회",
+      "service_ok": false,
+      "details": []
+    },
+    {
+      "id": "t10_WLF00000437",
+      "service": "행려자 보호(의료 및 구호비)",
+      "gold_required": 0,
+      "correct": 0,
+      "ai_conditions": 0,
+      "precision_hits": 0,
+      "extras": [],
+      "evidence_total": 2,
+      "evidence_grounded": 2,
+      "judgeable_ok": true,
+      "amount_ok": true,
+      "ai_amount": 0,
+      "gold_amount": [
+        0
+      ],
+      "amount_note": "구호비 실비, 금액 없음",
+      "service_ok": true,
+      "details": []
+    },
+    {
+      "id": "t11_WLF00005141",
+      "service": "경산시 출산장려 지원에 관한 조례 개정",
+      "gold_required": 2,
+      "correct": 2,
+      "ai_conditions": 2,
+      "precision_hits": 2,
+      "extras": [],
+      "evidence_total": 3,
+      "evidence_grounded": 3,
+      "judgeable_ok": true,
+      "amount_ok": true,
+      "ai_amount": 100000,
+      "gold_amount": [
+        100000,
+        200000,
+        300000,
+        500000
+      ],
+      "amount_note": "출생 순위별 월 10/20/30/50만 원 + 축하금 50만 원",
+      "service_ok": true,
+      "details": [
+        {
+          "gold": "residence_region == *",
+          "ai": "residence_region == 경산시",
+          "result": "정답"
+        },
+        {
+          "gold": "newborn == true",
+          "ai": "newborn == true",
+          "result": "정답"
+        }
+      ]
+    },
+    {
+      "id": "t12_WLF00004906",
+      "service": "출산 축하박스 지원",
+      "gold_required": 2,
+      "correct": 2,
+      "ai_conditions": 2,
+      "precision_hits": 2,
+      "extras": [],
+      "evidence_total": 3,
+      "evidence_grounded": 3,
+      "judgeable_ok": true,
+      "amount_ok": true,
+      "ai_amount": 0,
+      "gold_amount": [
+        0,
+        150000,
+        12500
+      ],
+      "amount_note": "15만 원 상당 현물 1회",
+      "service_ok": true,
+      "details": [
+        {
+          "gold": "residence_region == *",
+          "ai": "residence_region == 경산시",
+          "result": "정답"
+        },
+        {
+          "gold": "newborn == true",
+          "ai": "newborn == true",
+          "result": "정답"
+        }
+      ]
+    },
+    {
+      "id": "t13_WLF00000436",
+      "service": "청년취업날개 코디네이터",
+      "gold_required": 1,
+      "correct": 1,
+      "ai_conditions": 2,
+      "precision_hits": 2,
+      "extras": [],
+      "evidence_total": 4,
+      "evidence_grounded": 4,
+      "judgeable_ok": true,
+      "amount_ok": true,
+      "ai_amount": 0,
+      "gold_amount": [
+        0
+      ],
+      "amount_note": "면접정장 대여 (금액 없음)",
+      "service_ok": true,
+      "details": [
+        {
+          "gold": "age between 15,39",
+          "ai": "age between 15,39",
+          "result": "정답"
+        }
+      ]
+    },
+    {
+      "id": "t14_WLF00001770",
+      "service": "(자체사업)저소득 주민생활안정자금 지원",
+      "gold_required": 1,
+      "correct": 1,
+      "ai_conditions": 3,
+      "precision_hits": 3,
+      "extras": [],
+      "evidence_total": 7,
+      "evidence_grounded": 7,
+      "judgeable_ok": true,
+      "amount_ok": true,
+      "ai_amount": 0,
+      "gold_amount": [
+        0
+      ],
+      "amount_note": "융자 한도 1,200만 원 (월 금액 아님)",
+      "service_ok": true,
+      "details": [
+        {
+          "gold": "recipient_status in 생계,의료,주거",
+          "ai": "recipient_status == 생계 | recipient_status == 의료 | recipient_status == 주거",
+          "result": "정답"
+        }
+      ]
+    }
+  ]
+}

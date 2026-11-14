@@ -1,0 +1,48 @@
+{
+  "judgeable": true,
+  "conditions": [
+    {
+      "field": "income_recognized_pct_median",
+      "op": "<=",
+      "value": "50",
+      "group": ""
+    },
+    {
+      "field": "school_enrolled",
+      "op": "==",
+      "value": "true",
+      "group": ""
+    },
+    {
+      "field": "recipient_status",
+      "op": "in",
+      "value": "*",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "child_age",
+      "op": "between",
+      "value": "*",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_accept": [
+      41833,
+      58250,
+      71667
+    ],
+    "note": "초 502,000 / 중 699,000 / 고 860,000원(연)"
+  },
+  "id": "c04_edu"
+}

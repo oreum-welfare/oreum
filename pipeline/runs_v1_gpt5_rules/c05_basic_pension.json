@@ -1,0 +1,44 @@
+{
+  "service_name": "기초연금",
+  "judgeable": false,
+  "not_judgeable_reason": "직역연금 수급권자 또는 배우자 여부, 특례·예외대상 해당 여부, 그리고 단독가구/부부가구 구분에 따라 소득인정액 기준이 달라지나 이를 직접 판단할 입력 항목이 제공 목록에 없음",
+  "conditions": [
+    {
+      "field": "age",
+      "op": ">=",
+      "value": "65",
+      "group": "",
+      "evidence": "연령 : 만 65세이상인 자"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "소득인정액이 선정기준액 이하(단독가구 2,470,000원, 부부가구 3,952,000원)일 것",
+      "group": "",
+      "evidence": "소득인정액 : 가구의 소득인정액이 선정기준액 이하인 자, 소득인정액은 아래와 같이 계산됨. 2026년도 선정기준액은 단독가구는 2,470,000원, 부부가구는 3,952,000원"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "직역연금 수급권자 또는 그 배우자에 해당하지 않거나, 해당하더라도 특례대상·예외대상에 해당할 것",
+      "group": "",
+      "evidence": "단, 직역연금 수급권자와 그 배우자는 기초연금 대상에서 제외하나, 특례대상과 예외대상에 해당하는 경우는 수급권자의 범위에 포함"
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_text": "금액 미기재",
+    "monthly_amount_won": 0,
+    "evidence": "만 65세 이상 어르신으로서 소득인정액이 매년 보건복지부장관이 정하여 고시하는 금액 이하인 사람에게 지원합니다."
+  },
+  "_meta": {
+    "source_file": "c05_basic_pension.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-13T17:09:05+00:00",
+    "seconds": 35.2,
+    "input_tokens": 2051,
+    "output_tokens": 5090,
+    "request_id": "chatcmpl-Ejp3GD31YTETvzmoItNXN5FeRlEfb"
+  }
+}

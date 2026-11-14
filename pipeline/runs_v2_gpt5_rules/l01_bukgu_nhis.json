@@ -1,0 +1,65 @@
+{
+  "service_name": "건강보험료지원",
+  "judgeable": true,
+  "not_judgeable_reason": "",
+  "conditions": [
+    {
+      "field": "other",
+      "op": "==",
+      "value": "국민건강보험공단 가입자",
+      "group": "",
+      "evidence": "국민건강보험공단 가입자이면서 보험부과액이 최저보험료 이하인 세대 중"
+    },
+    {
+      "field": "nhis_premium",
+      "op": "<=",
+      "value": "최저보험료",
+      "group": "",
+      "evidence": "건강보험 부과액이 최저보험료 이하"
+    },
+    {
+      "field": "senior_in_household",
+      "op": "==",
+      "value": "true",
+      "group": "대상 경로",
+      "evidence": "만65세이상 노인이 있는 세대"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "장애인세대",
+      "group": "대상 경로",
+      "evidence": "장애인세대"
+    },
+    {
+      "field": "single_parent",
+      "op": "==",
+      "value": "true",
+      "group": "대상 경로",
+      "evidence": "법정 한부모세대"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "만65세이상 노인만 거주하는 차상위계층",
+      "group": "대상 경로",
+      "evidence": "만65세이상 노인만 거주하는 차상위계층"
+    }
+  ],
+  "benefit": {
+    "type": "inkind",
+    "amount_text": "건강보험료 부과금액 월 10,000원 미만 전액",
+    "monthly_amount_won": 0,
+    "evidence": "건강보험료 부과금액 월 10,000원 미만 전액"
+  },
+  "_meta": {
+    "source_file": "l01_bukgu_nhis.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-13T17:32:15+00:00",
+    "seconds": 74.5,
+    "input_tokens": 2221,
+    "output_tokens": 4948,
+    "request_id": "chatcmpl-EjpP3FY4UtXA3Wki42rRZcZ6AftRa"
+  }
+}

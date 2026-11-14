@@ -1,0 +1,37 @@
+{
+  "service_name": "교육급여(맞춤형 급여)",
+  "judgeable": true,
+  "not_judgeable_reason": "",
+  "conditions": [
+    {
+      "field": "school_enrolled",
+      "op": "==",
+      "value": "true",
+      "group": "",
+      "evidence": "소득인정액이 기준중위소득의 50% 이하인 가구의 초·중·고등학생을 지원합니다."
+    },
+    {
+      "field": "income_recognized_pct_median",
+      "op": "<=",
+      "value": "50",
+      "group": "",
+      "evidence": "소득인정액이 기준중위소득의 50% 이하인 가구의 초·중·고등학생을 지원합니다."
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_text": "초·중·고등학생 교육활동지원비와 입학금, 수업료, 교과서비를 지원합니다.\n(초등학생) 교육활동지원비 502,000원(연 1회)\n(중학생) 교육활동지원비 699,000원(연 1회)\n(고등학생) 교육활동지원비 : 860,000원(연 1회), 교과서 : 해당 학년의 정규 교육과정에 편성된 교과목의 교과서 전체(연1회)\n* 입학금, 수업료, 교과서비는 수급학생 재학교에 실비 지급",
+    "monthly_amount_won": 41833,
+    "evidence": "초·중·고등학생 교육활동지원비와 입학금, 수업료, 교과서비를 지원합니다.\n(초등학생) 교육활동지원비 502,000원(연 1회)\n(중학생) 교육활동지원비 699,000원(연 1회)\n(고등학생) 교육활동지원비 : 860,000원(연 1회), 교과서 : 해당 학년의 정규 교육과정에 편성된 교과목의 교과서 전체(연1회)\n* 입학금, 수업료, 교과서비는 수급학생 재학교에 실비 지급"
+  },
+  "_meta": {
+    "source_file": "c04_edu.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-13T17:08:30+00:00",
+    "seconds": 37.2,
+    "input_tokens": 2077,
+    "output_tokens": 4632,
+    "request_id": "chatcmpl-Ejp2foaVg6psxDQDBQRLn8To2YciR"
+  }
+}

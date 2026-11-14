@@ -1,0 +1,44 @@
+{
+  "service_name": "경산시 출산장려 지원에 관한 조례 개정",
+  "judgeable": true,
+  "not_judgeable_reason": "",
+  "conditions": [
+    {
+      "field": "newborn",
+      "op": "==",
+      "value": "true",
+      "group": "",
+      "evidence": "신생아의 출생일 기준 부 또는 모가 경산시에 주소를 두고 거주하며, 출생신고 시 주소지를 경산시로 등록한 자녀를 둔 가정"
+    },
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "경산시",
+      "group": "",
+      "evidence": "부 또는 모가 경산시에 주소를 두고 거주"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "출생신고 시 자녀의 주소지가 경산시로 등록되어 있어야 함",
+      "group": "",
+      "evidence": "출생신고 시 주소지를 경산시로 등록한 자녀를 둔 가정"
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_text": "- 신생아당 출산축하금 50만원(한사람당 1회 일시금 지급)\n- 첫째아 120만원(10만원*12회)\n- 둘째아 240만원(20만원*12회)\n- 셋째아 360만원(30만원*12회)\n- 넷째아 이상 1,200만원(50만원*24회)\n- 둘째아 이상 출생아에게 3년간 월3만원 이하의 건강보험료 지원",
+    "monthly_amount_won": 100000,
+    "evidence": "첫째아 120만원(10만원*12회)"
+  },
+  "_meta": {
+    "source_file": "t11_WLF00005141.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-13T22:42:17+00:00",
+    "seconds": 40.7,
+    "input_tokens": 2577,
+    "output_tokens": 3743,
+    "request_id": "chatcmpl-EjuFdNKWkSTeDcodsUasntbQvozfy"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "judgeable": false,
+  "conditions": [
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_accept": [
+      0
+    ],
+    "note": "구호비 실비, 금액 없음"
+  },
+  "id": "t10_WLF00000437",
+  "set": "test",
+  "written_before_ai": "2026-11-14: AI 변환 결과를 보기 전에 작성한 정답"
+}

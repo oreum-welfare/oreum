@@ -1,0 +1,51 @@
+{
+  "service_name": "둘째아 이상 임산부 초음파 검사비 지원",
+  "judgeable": true,
+  "not_judgeable_reason": "",
+  "conditions": [
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "경상북도 경산시",
+      "group": "",
+      "evidence": "관내주소를 둔 둘째아 이상 출산 산모"
+    },
+    {
+      "field": "child_birth_order",
+      "op": ">=",
+      "value": "2",
+      "group": "",
+      "evidence": "둘째아 이상 출산 산모"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "출산 산모",
+      "group": "",
+      "evidence": "둘째아 이상 출산 산모"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "국민행복카드 중복지원 불가(국민행복카드 소진 확인 후 지급)",
+      "group": "",
+      "evidence": "국민행복카드 중복지원 불가(국민행복카드 소진 확인 후 지급)"
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_text": "지원금액 5만원 제한",
+    "monthly_amount_won": 0,
+    "evidence": "지원금액 5만원 제한"
+  },
+  "_meta": {
+    "source_file": "t07_WLF00001839.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-13T22:40:18+00:00",
+    "seconds": 27.4,
+    "input_tokens": 2227,
+    "output_tokens": 3062,
+    "request_id": "chatcmpl-EjuDvkFCJqBFmqk36U0Uv0kNa9juL"
+  }
+}

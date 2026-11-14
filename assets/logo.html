@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>복지 절벽 로고</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;800&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#F8F9FA; --card:#FFFFFF; --ink:#212529; --sub:#495057; --muted:#868E96; --line:#E9ECEF; --brand:#3B5BDB; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#141517; --card:#1F2125; --ink:#F1F3F5; --sub:#CED4DA; --muted:#909296; --line:#2C2E33; --brand:#91A7FF; } }
+  :root[data-theme="dark"] { --bg:#141517; --card:#1F2125; --ink:#F1F3F5; --sub:#CED4DA; --muted:#909296; --line:#2C2E33; --brand:#91A7FF; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family:"Noto Sans KR", system-ui, sans-serif; padding:32px 16px; }
+  main { max-width:880px; margin:0 auto; }
+  h1 { font-size:20px; margin:0 0 4px; }
+  p.lead { color:var(--sub); margin:0 0 24px; font-size:14px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:16px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:24px; display:flex; flex-direction:column; align-items:center; gap:16px; }
+  .card.wide { grid-column:1 / -1; }
+  .card.darkbg { background:#1B1E3C; }
+  .label { font-size:12px; color:var(--muted); align-self:flex-start; }
+  .lockup { display:flex; align-items:center; gap:16px; }
+  .lockup svg { width:84px; height:84px; flex:none; }
+  .word .ko { font-weight:800; font-size:34px; letter-spacing:-0.02em; line-height:1.1; }
+  .word .ko span { color:var(--brand); }
+  .word .en { font-size:13px; color:var(--muted); letter-spacing:0.12em; margin-top:4px; }
+  .darkbg .word .ko { color:#fff; } .darkbg .word .ko span { color:#91A7FF; } .darkbg .word .en { color:#A5B4FC; }
+  button { font:inherit; font-size:13px; border:1px solid var(--line); background:var(--bg); color:var(--ink); border-radius:8px; padding:6px 12px; cursor:pointer; }
+  button:hover { border-color:var(--brand); }
+  .sizes { display:flex; align-items:flex-end; gap:20px; }
+  .meaning { margin-top:24px; background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px 24px; font-size:14px; line-height:1.8; color:var(--sub); }
+  .meaning b { color:var(--ink); }
+  .dot { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:middle; }
+  @media (max-width:480px) { .word .ko { font-size:26px; } .lockup svg { width:64px; height:64px; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>복지 절벽 시뮬레이터 로고</h1>
+  <p class="lead">계단처럼 오르던 소득이 절벽에서 떨어지는 지점, 그리고 그 절벽을 넘어가는 자립 경로를 표현했습니다.</p>
+
+  <div class="grid">
+    <div class="card wide">
+      <div class="label">가로형 (제안서·PPT 표지)</div>
+      <div class="lockup" id="lockup-light"></div>
+      <button data-dl="horizontal-light">PNG 다운로드</button>
+    </div>
+    <div class="card wide darkbg">
+      <div class="label" style="color:#A5B4FC">어두운 배경용</div>
+      <div class="lockup" id="lockup-dark"></div>
+      <button data-dl="horizontal-dark">PNG 다운로드</button>
+    </div>
+    <div class="card">
+      <div class="label">아이콘 (앱·파비콘·프로필)</div>
+      <div class="sizes" id="sizes"></div>
+      <button data-dl="icon">PNG 다운로드 (1024px)</button>
+    </div>
+    <div class="card">
+      <div class="label">세로형 (발표 첫 화면)</div>
+      <div id="stacked" style="display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center"></div>
+      <button data-dl="stacked">PNG 다운로드</button>
+    </div>
+  </div>
+
+  <div class="meaning">
+    <b>로고의 뜻</b><br>
+    <span class="dot" style="background:#fff;border:1px solid #ADB5BD"></span><b>흰색 계단</b>: 조금씩 늘어나는 근로소득<br>
+    <span class="dot" style="background:#FF8787"></span><b>붉은 낙차</b>: 기준선을 넘는 순간 혜택이 한꺼번에 끊기는 복지 절벽<br>
+    <span class="dot" style="background:#FFD43B"></span><b>노란 점선 화살표</b>: 절벽을 손해 없이 넘어가는 자립 경로 (서비스의 목적)<br>
+    <span class="dot" style="background:#4C6EF5"></span><b>파란 배경</b>: 공공·신뢰의 색
+  </div>
+</main>
+
+<script>
+const ICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5C7CFA"/><stop offset="1" stop-color="#364FC7"/></linearGradient><marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4.2" markerHeight="4.2" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#FFD43B"/></marker></defs><rect width="128" height="128" rx="30" fill="url(#bg)"/><path d="M22 96 H40 V82 H58 V68 H76" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><path d="M76 68 V92 H96" fill="none" stroke="#FF8787" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><path d="M76 60 Q90 30 106 46" fill="none" stroke="#FFD43B" stroke-width="5" stroke-linecap="round" stroke-dasharray="1 9" marker-end="url(#arrow)"/></svg>`;
+const WORD = (dark) => `<div class="word"><div class="ko">복지 <span>절벽</span> 시뮬레이터</div><div class="en">WELFARE CLIFF SIMULATOR</div></div>`;
+
+document.getElementById('lockup-light').innerHTML = ICON + WORD();
+document.getElementById('lockup-dark').innerHTML = ICON + WORD(true);
+document.getElementById('sizes').innerHTML = [96, 56, 32].map(s => `<div style="width:${s}px;height:${s}px">${ICON.replace('<svg ', `<svg width="${s}" height="${s}" `)}</div>`).join('');
+document.getElementById('stacked').innerHTML = ICON.replace('<svg ', '<svg width="96" height="96" ') + WORD().replace('class="word"', 'class="word" style="text-align:center"');
+
+// ---- PNG export (canvas) ----
+function iconImage() {
+  return new Promise(res => {
+    const img = new Image();
+    img.onload = () => res(img);
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(ICON);
+  });
+}
+async function render(kind) {
+  await document.fonts.ready;
+  const img = await iconImage();
+  const c = document.createElement('canvas'), x = c.getContext('2d');
+  const KO = '800 136px "Noto Sans KR", sans-serif', EN = '400 50px "Noto Sans KR", sans-serif';
+  const drawWord = (left, top, dark, align = 'left') => {
+    x.textAlign = align; x.textBaseline = 'alphabetic';
+    x.font = KO;
+    const parts = [['복지 ', dark ? '#FFFFFF' : '#212529'], ['절벽', dark ? '#91A7FF' : '#3B5BDB'], [' 시뮬레이터', dark ? '#FFFFFF' : '#212529']];
+    const total = parts.reduce((s, [t]) => s + x.measureText(t).width, 0);
+    let cx = align === 'center' ? left - total / 2 : left;
+    x.textAlign = 'left';
+    for (const [t, col] of parts) { x.fillStyle = col; x.fillText(t, cx, top + 120); cx += x.measureText(t).width; }
+    x.font = EN; x.fillStyle = dark ? '#A5B4FC' : '#868E96';
+    x.letterSpacing = '6px';
+    x.textAlign = align; x.fillText('WELFARE CLIFF SIMULATOR', align === 'center' ? left : left + 4, top + 200);
+    x.letterSpacing = '0px';
+    return total;
+  };
+  if (kind === 'icon') {
+    c.width = c.height = 1024; x.drawImage(img, 0, 0, 1024, 1024);
+  } else if (kind === 'stacked') {
+    x.font = KO; const w = x.measureText('복지 절벽 시뮬레이터').width;
+    c.width = Math.ceil(w + 160); c.height = 760;
+    x.drawImage(img, (c.width - 400) / 2, 60, 400, 400);
+    drawWord(c.width / 2, 480, false, 'center');
+  } else {
+    const dark = kind === 'horizontal-dark';
+    x.font = KO; const w = x.measureText('복지 절벽 시뮬레이터').width;
+    c.width = Math.ceil(80 + 340 + 64 + w + 80); c.height = 500;
+    if (dark) { x.fillStyle = '#1B1E3C'; x.fillRect(0, 0, c.width, c.height); }
+    x.drawImage(img, 80, 80, 340, 340);
+    drawWord(80 + 340 + 64, 110, dark);
+  }
+  const a = document.createElement('a');
+  a.download = `welfare-cliff-logo-${kind}.png`;
+  a.href = c.toDataURL('image/png');
+  a.click();
+}
+document.querySelectorAll('[data-dl]').forEach(b => b.addEventListener('click', () => render(b.dataset.dl)));
+</script>
+</body>
+</html>

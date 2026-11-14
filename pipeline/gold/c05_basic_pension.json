@@ -1,0 +1,35 @@
+{
+  "judgeable": true,
+  "conditions": [
+    {
+      "field": "age",
+      "op": ">=",
+      "value": "65",
+      "group": ""
+    },
+    {
+      "field": "income_recognized_won",
+      "op": "<=",
+      "value": "2470000",
+      "group": "",
+      "accept": [
+        "3952000"
+      ]
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_accept": [
+      0
+    ],
+    "note": "원문에 금액 없음 → 0이어야 함 (지식으로 채우면 오류)"
+  },
+  "id": "c05_basic_pension"
+}

@@ -1,0 +1,44 @@
+{
+  "service_name": "출산 축하박스 지원",
+  "judgeable": true,
+  "not_judgeable_reason": "",
+  "conditions": [
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "경산시",
+      "group": "",
+      "evidence": "경산시에 주민등록을 한 2026년도 이후 출생아"
+    },
+    {
+      "field": "newborn",
+      "op": "==",
+      "value": "true",
+      "group": "",
+      "evidence": "관내 주민등록을 한 출생아"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "2026년도 이후 출생아",
+      "group": "",
+      "evidence": "경산시에 주민등록을 한 2026년도 이후 출생아"
+    }
+  ],
+  "benefit": {
+    "type": "inkind",
+    "amount_text": "출생아 1명당 출산축하박스 지원(A, B, C 세트 중 택 1). A세트: 기저귀1팩, 베이비소프트의자, 에듀테이블, 쌀 5kg / B세트: 기저귀2팩, 나비애벌레헝겊책, 이유식용기(3개), 이유식스푼(2개), 쌀 5kg / C세트: 기저귀2팩, 꼬꼬맘, 이유식텀블러, 빨대드링킹컵세트, 쌀 5kg. 15만원 상당의 출산축하박스.",
+    "monthly_amount_won": 0,
+    "evidence": "출생아 1명당 출산축하박스 지원(A, B, C 세트 중 택 1)"
+  },
+  "_meta": {
+    "source_file": "t12_WLF00004906.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-13T22:42:40+00:00",
+    "seconds": 22.9,
+    "input_tokens": 2493,
+    "output_tokens": 2395,
+    "request_id": "chatcmpl-EjuGHdPz4ZdYuUvnm94ezYl6NyaOR"
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "service_name": "(자체사업)보훈예우수당 지원",
+  "judgeable": true,
+  "not_judgeable_reason": "",
+  "conditions": [
+    {
+      "field": "age",
+      "op": ">=",
+      "value": "65",
+      "group": "",
+      "evidence": "경산시에 거주하는 만65세 이상 보훈예우수당 지급대상자 신청 시 지급"
+    },
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "경산시",
+      "group": "",
+      "evidence": "경산시에 거주하는 만65세 이상 보훈예우수당 지급대상자 신청 시 지급"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "국가보훈부에 등록된 국가보훈대상자",
+      "group": "",
+      "evidence": "지급기준일 현재 시에 주소를 둔 만65세 이상의 사람으로서 국가보훈부에 등록된 국가보훈대상자 중 아래 어느 하나에 해당하는 자"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "「국가유공자 등 예우 및 지원에 관한 법률」 제4조제1항제1호부터 제18호까지에 해당하는 사람",
+      "group": "보훈대상 법률",
+      "evidence": "1. 「국가유공자 등 예우 및 지원에 관한 법률」 제4조제1항제1호부터 제18호까지에 해당하는 사람"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "「5ㆍ18민주유공자예우 및 단체설립에 관한 법률」 제4조에 해당하는 사람",
+      "group": "보훈대상 법률",
+      "evidence": "2. 「5ㆍ18민주유공자예우 및 단체설립에 관한 법률」 제4조에 해당하는 사람"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "「고엽제후유의증 등 환자지원 및 단체설립에 관한 법률」 제3조에 해당하는 사람",
+      "group": "보훈대상 법률",
+      "evidence": "3. 「고엽제후유의증 등 환자지원 및 단체설립에 관한 법률」 제3조에 해당하는 사람"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "「특수임무유공자 예우 및 단체설립에 관한 법률」 제3조에 해당하는 사람",
+      "group": "보훈대상 법률",
+      "evidence": "4. 「특수임무유공자 예우 및 단체설립에 관한 법률」 제3조에 해당하는 사람"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "참전명예수당 지급대상자 중복 제외",
+      "group": "",
+      "evidence": "* 참전명예수당 지급대상자 중복 제외"
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_text": "보훈예우수당 : 월 12만원",
+    "monthly_amount_won": 120000,
+    "evidence": "ㅇ보훈예우수당 : 월 12만원"
+  },
+  "_meta": {
+    "source_file": "t08_WLF00001769.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-13T22:40:54+00:00",
+    "seconds": 35.5,
+    "input_tokens": 2525,
+    "output_tokens": 3900,
+    "request_id": "chatcmpl-EjuENsJJJhCJWgjsqM7kw9yKwGspd"
+  }
+}

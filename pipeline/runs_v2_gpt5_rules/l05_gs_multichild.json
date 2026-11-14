@@ -1,0 +1,58 @@
+{
+  "service_name": "경산시 다자녀가정 지원사업",
+  "judgeable": true,
+  "not_judgeable_reason": "",
+  "conditions": [
+    {
+      "field": "child_age",
+      "op": "between",
+      "value": "7,18",
+      "group": "",
+      "evidence": "사업연도 기준 7세~18세까지의 셋째 이상 자녀"
+    },
+    {
+      "field": "child_birth_order",
+      "op": ">=",
+      "value": "3",
+      "group": "",
+      "evidence": "사업연도 기준 7세~18세까지의 셋째 이상 자녀"
+    },
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "경상북도 경산시",
+      "group": "",
+      "evidence": "경상북도 경산시"
+    },
+    {
+      "field": "residence_months",
+      "op": ">=",
+      "value": "36",
+      "group": "",
+      "evidence": "신청일 현재 보호자와 지원대상 자녀가 시에 3년 이상 계속하여 주민등록이 되어 있는 경우에 지급"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "재혼 가정은 주민등록이 같이 되어 실제 함께 생활하는 자녀만 인정",
+      "group": "",
+      "evidence": "다만, 재혼 가정인 경우에는 주민등록이 같이 되어 실제 함께 생활하는 자녀의 수만 인정"
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_text": "다자녀가정 지원금 지급",
+    "monthly_amount_won": 0,
+    "evidence": "다자녀가정 지원금 지급"
+  },
+  "_meta": {
+    "source_file": "l05_gs_multichild.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-13T17:35:03+00:00",
+    "seconds": 41.0,
+    "input_tokens": 2171,
+    "output_tokens": 3056,
+    "request_id": "chatcmpl-EjpSIGo8O22Mco5CArXF3T16RoZcs"
+  }
+}

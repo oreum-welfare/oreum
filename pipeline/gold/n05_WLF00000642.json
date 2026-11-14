@@ -1,0 +1,30 @@
+{
+  "judgeable": false,
+  "conditions": [
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_accept": [
+      100000,
+      16667
+    ],
+    "note": "1회 10만 원, 연 2회 (월 환산 16,667원). 국가유공자·유족은 입력 밖"
+  },
+  "id": "n05_WLF00000642",
+  "set": "test2",
+  "written_before_ai": "2026-11-14: 프롬프트 3차 수정 후, AI 변환 결과를 보기 전에 작성한 정답"
+}

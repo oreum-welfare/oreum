@@ -1,0 +1,51 @@
+{
+  "service_name": "교육급여(맞춤형 급여)",
+  "judgeable": true,
+  "not_judgeable_reason": "",
+  "conditions": [
+    {
+      "field": "recipient_status",
+      "op": "==",
+      "value": "기초생활보장",
+      "group": "지원대상(택1)",
+      "evidence": "기초생활보장 수급자"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "「의사상자 등 예우 및 지원에 관한 법률」 제12조에 따른 의사상자의 자녀",
+      "group": "지원대상(택1)",
+      "evidence": "「의사상자 등 예우 및 지원에 관한 법률」 제12조에 따른 의사상자의 자녀"
+    },
+    {
+      "field": "school_enrolled",
+      "op": "==",
+      "value": "true",
+      "group": "",
+      "evidence": "초·중·고등학생을 지원합니다."
+    },
+    {
+      "field": "income_recognized_pct_median",
+      "op": "<=",
+      "value": "50",
+      "group": "",
+      "evidence": "소득인정액이 기준중위소득의 50% 이하인 가구"
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_text": "초·중·고등학생 교육활동지원비와 입학금, 수업료, 교과서비 지원. (초등학생) 교육활동지원비 502,000원(연 1회), (중학생) 699,000원(연 1회), (고등학생) 860,000원(연 1회), 고등학생 교과서: 해당 학년 정규 교육과정 교과서 전체(연1회). * 입학금, 수업료, 교과서비는 수급학생 재학교에 실비 지급",
+    "monthly_amount_won": 41833,
+    "evidence": "(초등학생) 교육활동지원비 502,000원(연 1회)"
+  },
+  "_meta": {
+    "source_file": "c04_edu.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-13T17:25:14+00:00",
+    "seconds": 75.0,
+    "input_tokens": 2473,
+    "output_tokens": 5781,
+    "request_id": "chatcmpl-EjpIFFq7pPuvkUBk0XSTXw6G4wGgO"
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "judgeable": true,
+  "conditions": [
+    {
+      "field": "income_recognized_pct_median",
+      "op": "<=",
+      "value": "48",
+      "group": ""
+    },
+    {
+      "field": "income_recognized_won",
+      "op": "<=",
+      "value": "1230834",
+      "group": "",
+      "accept": [
+        "2015660",
+        "2572337",
+        "3117474",
+        "3627225"
+      ],
+      "optional": true
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_accept": [
+      0
+    ],
+    "note": "원문에 금액 없음"
+  },
+  "id": "c02_jugeo",
+  "revision_note": "2026-11-14: 원문에 있는 가구원수별 금액 기준(중위 48%와 같은 뜻)을 선택 조건으로 추가. GPT-5 2차 결과를 보고 정답지가 빠뜨린 것을 확인함."
+}

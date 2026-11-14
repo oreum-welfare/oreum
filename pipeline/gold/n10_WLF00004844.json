@@ -1,0 +1,37 @@
+{
+  "judgeable": false,
+  "conditions": [
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "*",
+      "group": ""
+    },
+    {
+      "field": "age",
+      "op": "<=",
+      "value": "49",
+      "group": ""
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_accept": [
+      0,
+      1000000,
+      3000000,
+      83333
+    ],
+    "note": "300만 원을 3년간 100만 원씩 3회. 혼인신고 시점은 입력 밖. 원문 지원대상(2년)과 선정기준(7년)이 서로 다름"
+  },
+  "id": "n10_WLF00004844",
+  "set": "test2",
+  "written_before_ai": "2026-11-14: 프롬프트 3차 수정 후, AI 변환 결과를 보기 전에 작성한 정답"
+}

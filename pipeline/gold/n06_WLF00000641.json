@@ -1,0 +1,30 @@
+{
+  "judgeable": false,
+  "conditions": [
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_accept": [
+      0,
+      150000
+    ],
+    "note": "지원 대상이 개인이 아닌 이용업소 → 판정 불가. '어르신'에 나이 기준 없음"
+  },
+  "id": "n06_WLF00000641",
+  "set": "test2",
+  "written_before_ai": "2026-11-14: 프롬프트 3차 수정 후, AI 변환 결과를 보기 전에 작성한 정답"
+}

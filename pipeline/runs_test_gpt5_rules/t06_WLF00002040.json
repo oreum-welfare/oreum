@@ -1,0 +1,51 @@
+{
+  "service_name": "(자체사업)참전유공자 및 사망한 참전유공자 배우자복지수당 대상자 사망위로금 지원",
+  "judgeable": true,
+  "not_judgeable_reason": "",
+  "conditions": [
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "경산시",
+      "group": "",
+      "evidence": "경산시에 주소를 둔 참전유공자 및 사망한 참전유공자 배우자 복지수당 수령자(사망 시)"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "대상자 사망",
+      "group": "",
+      "evidence": "(사망 시)"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "참전유공자(6.25전쟁 및 월남전 참전유공자)",
+      "group": "대상 유형",
+      "evidence": "- 경산시 거주 참전유공자(6.25전쟁 및 월남전 참전유공자)"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "사망한 참전유공자 배우자 복지수당 수령자",
+      "group": "대상 유형",
+      "evidence": "- 경산시 거주 사망한 참전유공자 배우자 복지수당 수령자"
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_text": "사망위로금 30만원",
+    "monthly_amount_won": 300000,
+    "evidence": "ㅇ 참전유공자, 사망한 참전유공자의 배우자 복지수당 대상자 사망위로금 : 30만원"
+  },
+  "_meta": {
+    "source_file": "t06_WLF00002040.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-13T22:39:51+00:00",
+    "seconds": 26.7,
+    "input_tokens": 2353,
+    "output_tokens": 2968,
+    "request_id": "chatcmpl-EjuDViy7RRXoueWighORUXC1mO4Y1"
+  }
+}

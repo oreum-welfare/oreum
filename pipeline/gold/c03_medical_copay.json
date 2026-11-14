@@ -1,0 +1,29 @@
+{
+  "judgeable": false,
+  "conditions": [
+    {
+      "field": "recipient_status",
+      "op": "in",
+      "value": "의료",
+      "group": "",
+      "op_accept": [
+        "=="
+      ]
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_accept": [
+      0
+    ],
+    "note": "본인부담금 사용량에 따라 다름"
+  },
+  "id": "c03_medical_copay"
+}

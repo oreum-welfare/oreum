@@ -1,0 +1,72 @@
+{
+  "service_name": "(자체사업)저소득 주민생활안정자금 지원",
+  "judgeable": false,
+  "not_judgeable_reason": "모든 대상에게 요구되는 '자활의지' 및 융자 용도(전세금·임대보증금, 자활·자립 사업자금, 학자금 등) 충족 여부는 입력값만으로 확인하기 어려워 담당자 판단/용도 확인이 필요함",
+  "conditions": [
+    {
+      "field": "recipient_status",
+      "op": "==",
+      "value": "생계",
+      "group": "기초수급 유형",
+      "evidence": "기초수급자(생계, 의료, 주거)"
+    },
+    {
+      "field": "recipient_status",
+      "op": "==",
+      "value": "의료",
+      "group": "기초수급 유형",
+      "evidence": "기초수급자(생계, 의료, 주거)"
+    },
+    {
+      "field": "recipient_status",
+      "op": "==",
+      "value": "주거",
+      "group": "기초수급 유형",
+      "evidence": "기초수급자(생계, 의료, 주거)"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "자활의지가 있는",
+      "group": "",
+      "evidence": "자활의지가 있는 기초생활수급자"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "무주택자에 대한 전세금 또는 영구임대아파트 입주보증금 중 일부",
+      "group": "융자용도",
+      "evidence": "- 무주택자에 대한 전세금 또는 영구임대아파트 입주보증금 중 일부"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "생활안정 및 자활,자립을 위한 사업자금",
+      "group": "융자용도",
+      "evidence": "- 생활안정 및 자활,자립을 위한 사업자금"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "직계비속에 대한 대학이상의 학자금 등",
+      "group": "융자용도",
+      "evidence": "- 직계비속에 대한 대학이상의 학자금 등"
+    }
+  ],
+  "benefit": {
+    "type": "loan",
+    "amount_text": "가구당 12,000천원 한도 융자. 상환: 2년 거치 후 36개월 또는 3년 균등분할 상환 또는 동일 기간 내 일시상환. 이율: 무이자(상환기간 경과 시 연 5%).",
+    "monthly_amount_won": 0,
+    "evidence": "1) 융자금액 : 가구당 12,000천원한도 융자"
+  },
+  "_meta": {
+    "source_file": "t14_WLF00001770.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-13T22:43:32+00:00",
+    "seconds": 32.0,
+    "input_tokens": 2375,
+    "output_tokens": 3105,
+    "request_id": "chatcmpl-EjuGyRLMqvewIp6k2p1q7uLUrW3Aa"
+  }
+}

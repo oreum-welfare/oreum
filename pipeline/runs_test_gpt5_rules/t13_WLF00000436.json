@@ -1,0 +1,51 @@
+{
+  "service_name": "청년취업날개 코디네이터",
+  "judgeable": false,
+  "not_judgeable_reason": "취업면접이 예정된 자 여부는 제공된 입력 필드로 확인할 수 없어 1차 판정이 불가함",
+  "conditions": [
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "경산시",
+      "group": "거주 또는 재학",
+      "evidence": "주민등록 소재지가 경산시"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "관내 대학에 재학(휴학) 중인 학생",
+      "group": "거주 또는 재학",
+      "evidence": "관내 대학에 재학(휴학) 중인 학생"
+    },
+    {
+      "field": "age",
+      "op": "between",
+      "value": "15,39",
+      "group": "",
+      "evidence": "15세~39세 청년"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "취업면접이 예정된 자",
+      "group": "",
+      "evidence": "취업면접이 예정된 자"
+    }
+  ],
+  "benefit": {
+    "type": "inkind",
+    "amount_text": "취업면접정장대여(연 3회)",
+    "monthly_amount_won": 0,
+    "evidence": "취업면접정장대여(연 3회)"
+  },
+  "_meta": {
+    "source_file": "t13_WLF00000436.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-13T22:43:00+00:00",
+    "seconds": 20.0,
+    "input_tokens": 2205,
+    "output_tokens": 2062,
+    "request_id": "chatcmpl-EjuGeEELwCoyDKkO35QX2zyeEfTct"
+  }
+}

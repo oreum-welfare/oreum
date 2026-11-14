@@ -1,0 +1,44 @@
+{
+  "service_name": "생계급여(맞춤형 급여)",
+  "judgeable": true,
+  "not_judgeable_reason": "",
+  "conditions": [
+    {
+      "field": "income_recognized_pct_median",
+      "op": "<=",
+      "value": "32",
+      "group": "",
+      "evidence": "생계급여 기준 중위소득 32% 이하"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "타 법령에 따라 생계급여를 지원받지 않음",
+      "group": "",
+      "evidence": "타 법령에 따라 생계급여를 지원받는 경우에는 가구의 소득인정액이 생계급여 선정기준 이하더라도 생계급여를 지급하지 않습니다."
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "부양의무자의 고소득·고재산 해당 없음",
+      "group": "",
+      "evidence": "* 단, 부양의무자의 소득 연 1.3억원(월소득 1,084만원) 또는 일반재산 12억원을 초과하는 경우 생계급여 대상에서 제외"
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_text": "생계급여액은 생계급여 선정기준(급여기준)에서 가구의 소득인정액을 차감한 금액",
+    "monthly_amount_won": 0,
+    "evidence": "생계급여액은 생계급여 선정기준(급여기준)에서 가구의 소득인정액을 차감한 금액"
+  },
+  "_meta": {
+    "source_file": "c01_saeng.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-13T17:22:16+00:00",
+    "seconds": 41.5,
+    "input_tokens": 2602,
+    "output_tokens": 3524,
+    "request_id": "chatcmpl-EjpFwiEvtppWRfTPW1YU1hnsuxLDB"
+  }
+}

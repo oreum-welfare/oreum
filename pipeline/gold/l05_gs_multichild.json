@@ -1,0 +1,45 @@
+{
+  "judgeable": true,
+  "conditions": [
+    {
+      "field": "child_birth_order",
+      "op": ">=",
+      "value": "3",
+      "group": ""
+    },
+    {
+      "field": "child_age",
+      "op": "between",
+      "value": "7,18",
+      "group": ""
+    },
+    {
+      "field": "residence_months",
+      "op": ">=",
+      "value": "36",
+      "group": ""
+    },
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_accept": [
+      0
+    ],
+    "note": "원문에 금액 없음 → 0이어야 함 (추진계획 hwp에만 있음)"
+  },
+  "id": "l05_gs_multichild"
+}

@@ -1,0 +1,26 @@
+{
+  "judgeable": true,
+  "conditions": [
+    {
+      "field": "income_recognized_pct_median",
+      "op": "<=",
+      "value": "32",
+      "group": ""
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_accept": [
+      0
+    ],
+    "note": "선정기준 − 소득인정액 (계산식)"
+  },
+  "id": "c01_saeng"
+}

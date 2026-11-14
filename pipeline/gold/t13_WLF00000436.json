@@ -1,0 +1,35 @@
+{
+  "judgeable": false,
+  "conditions": [
+    {
+      "field": "age",
+      "op": "between",
+      "value": "15,39",
+      "group": ""
+    },
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    }
+  ],
+  "benefit": {
+    "type": "inkind",
+    "amount_accept": [
+      0
+    ],
+    "note": "면접정장 대여 (금액 없음)"
+  },
+  "id": "t13_WLF00000436",
+  "set": "test",
+  "written_before_ai": "2026-11-14: AI 변환 결과를 보기 전에 작성한 정답"
+}

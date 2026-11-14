@@ -1,0 +1,67 @@
+{
+  "judgeable": true,
+  "conditions": [
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "*",
+      "group": ""
+    },
+    {
+      "field": "child_count",
+      "op": ">=",
+      "value": "2",
+      "group": ""
+    },
+    {
+      "field": "child_age",
+      "op": "<",
+      "value": "10",
+      "group": "",
+      "accept": [
+        "9"
+      ],
+      "op_accept": [
+        "<="
+      ]
+    },
+    {
+      "field": "child_count",
+      "op": ">=",
+      "value": "*",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "recipient_status",
+      "op": "in",
+      "value": "*",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "income_recognized_pct_median",
+      "op": "<=",
+      "value": "*",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    }
+  ],
+  "benefit": {
+    "type": "inkind",
+    "amount_accept": [
+      0
+    ],
+    "note": "차량 렌트 현물 (금액 없음). 두 자녀는 수급·차상위, 세 자녀 이상은 소득 무관"
+  },
+  "id": "n03_WLF00002178",
+  "set": "test2",
+  "written_before_ai": "2026-11-14: 프롬프트 3차 수정 후, AI 변환 결과를 보기 전에 작성한 정답"
+}

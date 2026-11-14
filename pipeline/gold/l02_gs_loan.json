@@ -1,0 +1,32 @@
+{
+  "judgeable": false,
+  "conditions": [
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "경산시",
+      "group": ""
+    },
+    {
+      "field": "recipient_status",
+      "op": "in",
+      "value": "생계,의료,주거",
+      "group": ""
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    }
+  ],
+  "benefit": {
+    "type": "loan",
+    "amount_accept": [
+      0
+    ],
+    "note": "융자 한도 1,200만 원 (월 금액 아님)"
+  },
+  "id": "l02_gs_loan"
+}

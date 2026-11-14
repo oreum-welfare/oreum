@@ -1,0 +1,30 @@
+{
+  "service_name": "주거급여(맞춤형 급여)",
+  "judgeable": true,
+  "not_judgeable_reason": "",
+  "conditions": [
+    {
+      "field": "income_recognized_pct_median",
+      "op": "<=",
+      "value": "48",
+      "group": "",
+      "evidence": "근로능력여부, 성별, 연령 등에 관계없이 국가의 보장을 필요로 하는 대상으로 소득인정액(소득평가액+재산의 소득환산액)이 기준중위소득의 48% 이하인 가구를 대상으로 지원합니다."
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_text": "금액 미기재",
+    "monthly_amount_won": 0,
+    "evidence": "근로능력여부, 성별, 연령 등에 관계없이 국가의 보장을 필요로 하는 대상으로 소득인정액(소득평가액+재산의 소득환산액)이 기준중위소득의 48% 이하인 가구를 대상으로 지원합니다."
+  },
+  "_meta": {
+    "source_file": "c02_jugeo.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-13T17:07:15+00:00",
+    "seconds": 27.1,
+    "input_tokens": 1871,
+    "output_tokens": 2269,
+    "request_id": "chatcmpl-Ejp1dSWhrqfpcuZ3VBGIUTpoRyOt4"
+  }
+}

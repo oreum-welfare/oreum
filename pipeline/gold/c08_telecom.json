@@ -1,0 +1,51 @@
+{
+  "judgeable": true,
+  "conditions": [
+    {
+      "field": "recipient_status",
+      "op": "in",
+      "value": "생계,의료,주거,교육,차상위",
+      "group": "대상",
+      "accept": [
+        "생계,의료,주거,교육"
+      ]
+    },
+    {
+      "field": "basic_pension_recipient",
+      "op": "==",
+      "value": "true",
+      "group": "대상"
+    },
+    {
+      "field": "disabled",
+      "op": "==",
+      "value": "true",
+      "group": "대상"
+    },
+    {
+      "field": "income_recognized_pct_median",
+      "op": "<=",
+      "value": "50",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    }
+  ],
+  "benefit": {
+    "type": "inkind",
+    "amount_accept": [
+      33500,
+      21500,
+      11000,
+      26000
+    ],
+    "note": "월 최대 33,500 / 21,500 / 11,000원"
+  },
+  "id": "c08_telecom"
+}

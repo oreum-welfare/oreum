@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Node / 빌드 결과
+node_modules/
+dist/
+.vercel
+
+# 비밀 정보 (API 키는 환경변수로만)
+.env
+.env.*
+*.key
+
+# 테스트 중간 결과
+tests/py_out.json
+
+# 에디터·OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+.claude/

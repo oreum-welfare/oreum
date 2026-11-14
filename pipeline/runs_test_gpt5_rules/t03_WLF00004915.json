@@ -1,0 +1,37 @@
+{
+  "service_name": "예비부모 엽산제 지원",
+  "judgeable": true,
+  "not_judgeable_reason": "",
+  "conditions": [
+    {
+      "field": "other",
+      "op": "==",
+      "value": "임신을 준비 중인 예비 부모",
+      "group": "",
+      "evidence": "임신을 준비 중인 예비 부모"
+    },
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "경산",
+      "group": "",
+      "evidence": "여성이 경산에 주소를 두고 있어야함"
+    }
+  ],
+  "benefit": {
+    "type": "inkind",
+    "amount_text": "임신을 계획 중인 예비부모 개별 3개월분 엽산제 지원",
+    "monthly_amount_won": 0,
+    "evidence": "임신을 계획 중인 예비부모 개별 3개월분 엽산제 지원"
+  },
+  "_meta": {
+    "source_file": "t03_WLF00004915.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-13T22:38:44+00:00",
+    "seconds": 20.2,
+    "input_tokens": 2236,
+    "output_tokens": 2096,
+    "request_id": "chatcmpl-EjuCXCRwsX5x5fhxL9SAtp72aiMfc"
+  }
+}

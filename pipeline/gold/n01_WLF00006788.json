@@ -1,0 +1,64 @@
+{
+  "judgeable": false,
+  "conditions": [
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "recipient_status",
+      "op": "in",
+      "value": "*",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "basic_pension_recipient",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "disabled",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "age",
+      "op": ">=",
+      "value": "*",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "senior_in_household",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    }
+  ],
+  "benefit": {
+    "type": "inkind",
+    "amount_accept": [
+      0
+    ],
+    "note": "가사지원·병원동행 서비스 (금액 없음). 핵심 조건 '돌봄이 필요한 자'는 담당자 판단 → 판정 불가. 소득 기준은 자부담 비율이지 자격이 아님"
+  },
+  "id": "n01_WLF00006788",
+  "set": "test2",
+  "written_before_ai": "2026-11-14: 프롬프트 3차 수정 후, AI 변환 결과를 보기 전에 작성한 정답"
+}

@@ -1,0 +1,32 @@
+{
+  "judgeable": true,
+  "conditions": [
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "경산시",
+      "group": ""
+    },
+    {
+      "field": "age",
+      "op": ">=",
+      "value": "65",
+      "group": ""
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    }
+  ],
+  "benefit": {
+    "type": "inkind",
+    "amount_accept": [
+      0
+    ],
+    "note": "본인부담금 면제 (사용량에 따라 다름)"
+  },
+  "id": "l03_gs_clinic"
+}

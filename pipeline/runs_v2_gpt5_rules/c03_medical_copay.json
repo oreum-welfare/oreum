@@ -1,0 +1,51 @@
+{
+  "service_name": "의료급여(본인부담 보상금)",
+  "judgeable": false,
+  "not_judgeable_reason": "월별 급여대상 본인부담금 규모와 급여/비급여 여부 등 의료비 사용내역 확인이 필요하여 입력 항목만으로 1차 판정이 어렵습니다.",
+  "conditions": [
+    {
+      "field": "recipient_status",
+      "op": "==",
+      "value": "의료",
+      "group": "",
+      "evidence": "의료급여 수급권자 중에서 급여대상 본인부담금이 일정한 금액을 초과한 수급권자에게 지원합니다."
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "의료급여 1종: 월 급여대상 본인부담금이 2만원 초과 5만원 이하",
+      "group": "의료급여 종별 기준",
+      "evidence": "1종의 경우 매 1개월간 2만원 초과 5만원 이하인 경우 초과금액의 50%를 보상"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "의료급여 2종: 월 급여대상 본인부담금이 20만원 초과",
+      "group": "의료급여 종별 기준",
+      "evidence": "2종의 경우 매 1개월간 20만원 초과한 경우 초과금액의 50% 보상"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "급여대상 항목(비급여 제외)이어야 함",
+      "group": "",
+      "evidence": "비급여항목은 지원대상이 아닙니다."
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_text": "1종: 월 2만원 초과 5만원 이하인 경우 초과금액의 50% 보상, 2종: 월 20만원 초과 시 초과금액의 50% 보상",
+    "monthly_amount_won": 0,
+    "evidence": "1종의 경우 매 1개월간 2만원 초과 5만원 이하인 경우 초과금액의 50%를 보상"
+  },
+  "_meta": {
+    "source_file": "c03_medical_copay.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-13T17:23:59+00:00",
+    "seconds": 52.0,
+    "input_tokens": 2391,
+    "output_tokens": 3971,
+    "request_id": "chatcmpl-EjpHPcwhs2uVsyDGrwZiuvbWEhK2T"
+  }
+}

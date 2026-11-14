@@ -1,0 +1,93 @@
+{
+  "service_name": "저소득주민생활안정자금지원",
+  "judgeable": false,
+  "not_judgeable_reason": "자립의욕 판단, 자금 사용 용도 확인, 연대보증인의 재산세 납부실적 확인, 상환능력 인정 여부 등은 담당자 판단·서류 확인이 필요한 핵심 조건이어서 입력 항목만으로 1차 판정이 어렵습니다.",
+  "conditions": [
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "경산시",
+      "group": "",
+      "evidence": "경산시에 주소를 두고 있으면서"
+    },
+    {
+      "field": "recipient_status",
+      "op": "==",
+      "value": "생계",
+      "group": "수급유형",
+      "evidence": "경산시 생계·주거·의료급여 수급자"
+    },
+    {
+      "field": "recipient_status",
+      "op": "==",
+      "value": "의료",
+      "group": "수급유형",
+      "evidence": "경산시 생계·주거·의료급여 수급자"
+    },
+    {
+      "field": "recipient_status",
+      "op": "==",
+      "value": "주거",
+      "group": "수급유형",
+      "evidence": "경산시 생계·주거·의료급여 수급자"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "자립의욕이 강함",
+      "group": "",
+      "evidence": "자립의욕이 강한"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "영세 상행위를 위한 자금",
+      "group": "자금용도",
+      "evidence": "가. 영세 상행위를 위한 자금"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "재난을 당한 사람에 대한 생계자금",
+      "group": "자금용도",
+      "evidence": "나. 「재난 및 안전관리 기본법」 제3조제1호의 재난을 당한 사람에 대한 생계자금"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "무주택자 전세자금 또는 임대보증금 중 일부",
+      "group": "자금용도",
+      "evidence": "다. 무주택자에 대한 전세자금 또는 임대보증금 중 일부 등"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "연대보증인 재산세 연 12,000원 이상 납부 실적",
+      "group": "",
+      "evidence": "연대보증인은 연간 1만2천 원 이상의 재산세 납부실적이 있는 사람"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "상환능력 인정 필요(없다면 융자 불가)",
+      "group": "",
+      "evidence": "*융자금의 상환능력이 없다고 인정되는 경우 융자 불가"
+    }
+  ],
+  "benefit": {
+    "type": "loan",
+    "amount_text": "융자 한도액 : 12,000천원 / 융자금 상환 : 2년 거치 3년(또는 36개월) 균등분할 상환하거나 같은 기간 내에 일시 상환. 상환기간이 경과한 뒤에도 상환하지 아니하는 경우에는 연 5퍼센트의 율에 의한 연체이자 징수",
+    "monthly_amount_won": 0,
+    "evidence": "융자 한도액 : 12,000천원"
+  },
+  "_meta": {
+    "source_file": "l02_gs_loan.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-13T17:33:04+00:00",
+    "seconds": 49.4,
+    "input_tokens": 2371,
+    "output_tokens": 3763,
+    "request_id": "chatcmpl-EjpQGzm5jQe2lzpFzSHW1DdyJiOlm"
+  }
+}

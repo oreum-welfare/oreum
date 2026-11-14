@@ -1,0 +1,63 @@
+{
+  "judgeable": true,
+  "conditions": [
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "*",
+      "group": ""
+    },
+    {
+      "field": "age",
+      "op": "between",
+      "value": "19,45",
+      "group": ""
+    },
+    {
+      "field": [
+        "income_recognized_pct_median",
+        "total_income_annual"
+      ],
+      "op": "<=",
+      "value": "120",
+      "group": ""
+    },
+    {
+      "field": "assets",
+      "op": "<=",
+      "value": "122000000",
+      "group": ""
+    },
+    {
+      "field": "recipient_status",
+      "op": "in",
+      "value": "*",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "household_size",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_accept": [
+      200000
+    ],
+    "note": "월세 월 20만 원 최대 12회. 주택 소유·공공임대·공무원 등은 일부 제외 조건. '부모와 별도 거주'는 가구 세부 확인"
+  },
+  "id": "n07_WLF00005860",
+  "set": "test2",
+  "written_before_ai": "2026-11-14: 프롬프트 3차 수정 후, AI 변환 결과를 보기 전에 작성한 정답"
+}

@@ -1,0 +1,42 @@
+{
+  "judgeable": false,
+  "conditions": [
+    {
+      "field": "disabled",
+      "op": "==",
+      "value": "true",
+      "group": ""
+    },
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "age",
+      "op": "<=",
+      "value": "*",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    }
+  ],
+  "benefit": {
+    "type": "inkind",
+    "amount_accept": [
+      0
+    ],
+    "note": "활동지원서비스 (금액 없음). 4개 경로(긴급·탈시설·최중증 점수·구청장 인정) 모두 입력 항목 밖 → 판정 불가"
+  },
+  "id": "n02_WLF00004010",
+  "set": "test2",
+  "written_before_ai": "2026-11-14: 프롬프트 3차 수정 후, AI 변환 결과를 보기 전에 작성한 정답"
+}

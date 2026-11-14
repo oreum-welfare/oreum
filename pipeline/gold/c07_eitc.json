@@ -1,0 +1,57 @@
+{
+  "judgeable": true,
+  "conditions": [
+    {
+      "field": "total_income_annual",
+      "op": "<",
+      "value": "22000000",
+      "group": "",
+      "accept": [
+        "32000000",
+        "44000000"
+      ]
+    },
+    {
+      "field": "assets",
+      "op": "<",
+      "value": "240000000",
+      "group": ""
+    },
+    {
+      "field": "child_age",
+      "op": "<",
+      "value": "18",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "child_count",
+      "op": ">=",
+      "value": "1",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "total_income_annual",
+      "op": "<",
+      "value": "70000000",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_accept": [
+      0
+    ],
+    "note": "원문에 금액 없음"
+  },
+  "id": "c07_eitc"
+}

@@ -1,0 +1,22 @@
+{
+  "judgeable": false,
+  "conditions": [
+    {
+      "field": "other",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_accept": [
+      0
+    ],
+    "note": "무연고 사망자 장례비 (금액 없음, 신청자는 장례를 치른 법인·개인)"
+  },
+  "id": "n16_WLF00002248",
+  "set": "test2",
+  "written_before_ai": "2026-11-14: 프롬프트 3차 수정 후, AI 변환 결과를 보기 전에 작성한 정답"
+}

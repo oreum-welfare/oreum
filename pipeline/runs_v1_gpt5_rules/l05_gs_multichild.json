@@ -1,0 +1,65 @@
+{
+  "service_name": "경산시 다자녀가정 지원사업",
+  "judgeable": false,
+  "not_judgeable_reason": "보호자와 지원대상 자녀 모두의 경산시 3년 이상 계속 주민등록 요건과, 재혼 가정의 자녀 수 산정(같이 주민등록·동거) 예외 확인이 필요하여 사용자 입력 항목만으로는 최종 판정이 어렵습니다.",
+  "conditions": [
+    {
+      "field": "child_age",
+      "op": "between",
+      "value": "7,18",
+      "group": "",
+      "evidence": "사업연도 기준 7세~18세까지의 셋째 이상 자녀"
+    },
+    {
+      "field": "child_birth_order",
+      "op": ">=",
+      "value": "3",
+      "group": "",
+      "evidence": "사업연도 기준 7세~18세까지의 셋째 이상 자녀"
+    },
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "경산시",
+      "group": "",
+      "evidence": "제공주체: 경상북도 경산시"
+    },
+    {
+      "field": "residence_months",
+      "op": ">=",
+      "value": "36",
+      "group": "",
+      "evidence": "신청일 현재 보호자와 지원대상 자녀가 시에 3년 이상 계속하여 주민등록이 되어 있는 경우에 지급"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "보호자와 지원대상 자녀 모두가 경산시에서 3년 이상 계속 주민등록 요건을 충족해야 함",
+      "group": "",
+      "evidence": "신청일 현재 보호자와 지원대상 자녀가 시에 3년 이상 계속하여 주민등록이 되어 있는 경우에 지급"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "재혼 가정의 경우, 주민등록이 같이 되어 실제 함께 생활하는 자녀만 자녀 수로 인정",
+      "group": "",
+      "evidence": "다만, 재혼 가정인 경우에는 주민등록이 같이 되어 실제 함께 생활하는 자녀의 수만 인정"
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_text": "다자녀가정 지원금 지급",
+    "monthly_amount_won": 0,
+    "evidence": "[서비스 내용] 다자녀가정 지원금 지급"
+  },
+  "_meta": {
+    "source_file": "l05_gs_multichild.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-13T17:16:13+00:00",
+    "seconds": 62.4,
+    "input_tokens": 1775,
+    "output_tokens": 4487,
+    "request_id": "chatcmpl-Ejp9jsquHWQyRkBSpdinxMh6NuWZq"
+  }
+}

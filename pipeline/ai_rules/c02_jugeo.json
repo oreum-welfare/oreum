@@ -1,0 +1,65 @@
+{
+  "service_name": "주거급여(맞춤형 급여)",
+  "judgeable": true,
+  "not_judgeable_reason": "",
+  "conditions": [
+    {
+      "field": "income_recognized_pct_median",
+      "op": "<=",
+      "value": "48",
+      "group": "",
+      "evidence": "소득인정액(소득평가액+재산의 소득환산액)이 기준중위소득의 48% 이하인 가구를 대상으로 지원합니다."
+    },
+    {
+      "field": "income_recognized_won",
+      "op": "<=",
+      "value": "1230834",
+      "group": "가구원수별 소득인정액 기준(2026)",
+      "evidence": "1인 가구: 1,230,834원/월"
+    },
+    {
+      "field": "income_recognized_won",
+      "op": "<=",
+      "value": "2015660",
+      "group": "가구원수별 소득인정액 기준(2026)",
+      "evidence": "2인 가구: 2,015,660원/월"
+    },
+    {
+      "field": "income_recognized_won",
+      "op": "<=",
+      "value": "2572337",
+      "group": "가구원수별 소득인정액 기준(2026)",
+      "evidence": "3인 가구: 2,572,337원/월"
+    },
+    {
+      "field": "income_recognized_won",
+      "op": "<=",
+      "value": "3117474",
+      "group": "가구원수별 소득인정액 기준(2026)",
+      "evidence": "4인 가구: 3,117,474원/월"
+    },
+    {
+      "field": "income_recognized_won",
+      "op": "<=",
+      "value": "3627225",
+      "group": "가구원수별 소득인정액 기준(2026)",
+      "evidence": "5인 가구: 3,627,225원/월"
+    }
+  ],
+  "benefit": {
+    "type": "none",
+    "amount_text": "금액 미기재",
+    "monthly_amount_won": 0,
+    "evidence": ""
+  },
+  "_meta": {
+    "source_file": "c02_jugeo.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-13T17:23:07+00:00",
+    "seconds": 50.6,
+    "input_tokens": 2267,
+    "output_tokens": 3553,
+    "request_id": "chatcmpl-EjpGbRPbp1v5ZA5NJVp6bYs5FKgjH"
+  }
+}

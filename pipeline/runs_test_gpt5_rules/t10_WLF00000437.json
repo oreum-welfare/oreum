@@ -1,0 +1,37 @@
+{
+  "service_name": "행려자 보호(의료 및 구호비)",
+  "judgeable": false,
+  "not_judgeable_reason": "핵심 요건인 ‘행려자’ 해당 여부와 ‘숙박·교통비 필요’ 여부는 담당자 판단 및 사실 확인이 필요한 사항으로 입력 항목만으로 1차 판정 불가",
+  "conditions": [
+    {
+      "field": "other",
+      "op": "==",
+      "value": "관내에서 발생하는 행려자",
+      "group": "",
+      "evidence": "관내에서 발생하는 행려자"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "숙박, 교통비가 필요한 행려자",
+      "group": "",
+      "evidence": "숙박, 교통비가 필요한 행려자"
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_text": "행려환자의 응급구호비, 행려자 구호(숙박비. 귀향여비)",
+    "monthly_amount_won": 0,
+    "evidence": "행려환자의 응급구호비, 행려자 구호(숙박비. 귀향여비)"
+  },
+  "_meta": {
+    "source_file": "t10_WLF00000437.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-13T22:41:36+00:00",
+    "seconds": 12.0,
+    "input_tokens": 2140,
+    "output_tokens": 1006,
+    "request_id": "chatcmpl-EjuFRpkkTl70XNBfP8abgaOxhQx0u"
+  }
+}

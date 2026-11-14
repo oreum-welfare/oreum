@@ -1,0 +1,43 @@
+{
+  "judgeable": false,
+  "conditions": [
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "*",
+      "group": ""
+    },
+    {
+      "field": "child_birth_order",
+      "op": ">=",
+      "value": "2",
+      "group": ""
+    },
+    {
+      "field": "newborn",
+      "op": "==",
+      "value": "true",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_accept": [
+      0,
+      50000,
+      4167
+    ],
+    "note": "최대 5만 원 (실비)"
+  },
+  "id": "t07_WLF00001839",
+  "set": "test",
+  "written_before_ai": "2026-11-14: AI 변환 결과를 보기 전에 작성한 정답"
+}

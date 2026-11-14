@@ -1,0 +1,80 @@
+{
+  "judgeable": true,
+  "conditions": [
+    {
+      "field": "recipient_status",
+      "op": "in",
+      "value": "생계,의료,주거,교육",
+      "group": ""
+    },
+    {
+      "field": [
+        "senior_in_household",
+        "age"
+      ],
+      "op": "==",
+      "value": "true",
+      "group": "특성",
+      "accept": [
+        "65"
+      ],
+      "op_accept": [
+        ">="
+      ]
+    },
+    {
+      "field": "child_age",
+      "op": "<=",
+      "value": "7",
+      "group": "특성",
+      "accept": [
+        "0,7",
+        "6"
+      ],
+      "op_accept": [
+        "<",
+        "between"
+      ]
+    },
+    {
+      "field": "disabled",
+      "op": "==",
+      "value": "true",
+      "group": "특성"
+    },
+    {
+      "field": "single_parent",
+      "op": "==",
+      "value": "true",
+      "group": "특성"
+    },
+    {
+      "field": "child_count",
+      "op": ">=",
+      "value": "2",
+      "group": "특성"
+    },
+    {
+      "field": "child_age",
+      "op": "<",
+      "value": "19",
+      "group": "",
+      "optional": true
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "*",
+      "group": "",
+      "optional": true
+    }
+  ],
+  "benefit": {
+    "type": "inkind",
+    "amount_accept": [
+      0
+    ],
+    "note": "원문에 금액 없음"
+  },
+  "id": "c06_energy"
+}

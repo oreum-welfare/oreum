@@ -1,0 +1,44 @@
+{
+  "service_name": "저소득 한부모가정 긴급구호비",
+  "judgeable": false,
+  "not_judgeable_reason": "저소득의 판단 기준이 제시되지 않았고, ‘갑작스런 질병·사고·재해·실업 등으로 생활이 어려운’ 사유 판단이 담당자 확인·심사에 의존하여 입력 항목만으로 일괄 판정 불가",
+  "conditions": [
+    {
+      "field": "single_parent",
+      "op": "==",
+      "value": "true",
+      "group": "",
+      "evidence": "저소득 한부모가족"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "저소득",
+      "group": "",
+      "evidence": "저소득 한부모가족"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "갑작스런 질병, 사고, 재해 실업 등의 사유로 생활이 어려운",
+      "group": "",
+      "evidence": "갑작스런 질병, 사고, 재해 실업 등의 사유로 생활이 어려운"
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_text": "세대당 : 200천원 (10세대 추천)",
+    "monthly_amount_won": 0,
+    "evidence": "1) 세대당 : 200천원 (10세대 추천)"
+  },
+  "_meta": {
+    "source_file": "t04_WLF00000435.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-13T22:39:09+00:00",
+    "seconds": 24.8,
+    "input_tokens": 2202,
+    "output_tokens": 3028,
+    "request_id": "chatcmpl-EjuCqhHEXVi2SWmlmofdrVhFXI20J"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "service_name": "생계급여(맞춤형 급여)",
+  "judgeable": false,
+  "not_judgeable_reason": "부양의무자가 고소득·고재산(소득 연 1.3억원 또는 일반재산 12억원 초과)인 경우 생계급여 대상에서 제외되며, 타 법령에 따라 이미 생계를 보장받는 경우에도 지급 제외됩니다. 이 판단에 필요한 부양의무자 소득·재산 및 타 법령 생계보장 여부는 제공된 사용자 입력 항목에 없어 추가 확인이 필요합니다.",
+  "conditions": [
+    {
+      "field": "income_recognized_pct_median",
+      "op": "<=",
+      "value": "32",
+      "group": "",
+      "evidence": "생계급여 기준 중위소득 32% 이하"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "타 법령에 따른 생계보장 비해당",
+      "group": "",
+      "evidence": "타 법령에 따라 생계급여를 지원받는 경우에는 가구의 소득인정액이 생계급여 선정기준 이하더라도 생계급여를 지급하지 않습니다."
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "부양의무자 고소득·고재산 아님",
+      "group": "",
+      "evidence": "부양의무자 기준\n- 적용 : 의료급여\n- 미적용 : 생계*, 주거, 교육급여\n* 단, 부양의무자의 소득 연 1.3억원(월소득 1,084만원) 또는 일반재산 12억원을 초과하는 경우 생계급여 대상에서 제외"
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_text": "생계급여액은 생계급여 선정기준(급여기준)에서 가구의 소득인정액을 차감한 금액",
+    "monthly_amount_won": 0,
+    "evidence": "생계급여액은 생계급여 선정기준(급여기준)에서 가구의 소득인정액을 차감한 금액"
+  },
+  "_meta": {
+    "source_file": "c01_saeng.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-13T17:06:47+00:00",
+    "seconds": 96.6,
+    "input_tokens": 2206,
+    "output_tokens": 4225,
+    "request_id": "chatcmpl-Ejp05hPrrUIxPmutRW6RmAS8X6bKo"
+  }
+}
