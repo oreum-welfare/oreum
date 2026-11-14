@@ -68,13 +68,13 @@
     <b>로고의 뜻</b><br>
     <span class="dot" style="background:#fff;border:1px solid #ADB5BD"></span><b>흰색 계단</b>: 조금씩 늘어나는 근로소득<br>
     <span class="dot" style="background:#FF8787"></span><b>붉은 낙차</b>: 기준선을 넘는 순간 혜택이 한꺼번에 끊기는 복지 절벽<br>
-    <span class="dot" style="background:#FFD43B"></span><b>노란 점선 화살표</b>: 절벽을 손해 없이 넘어가는 자립 경로 (서비스의 목적)<br>
+    <span class="dot" style="background:#FFD43B"></span><b>노란 화살표</b>: 절벽을 넘어 다시 오르는 자립 경로 (서비스의 목적)<br>
     <span class="dot" style="background:#4C6EF5"></span><b>파란 배경</b>: 공공·신뢰의 색
   </div>
 </main>
 
 <script>
-const ICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5C7CFA"/><stop offset="1" stop-color="#364FC7"/></linearGradient><marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4.2" markerHeight="4.2" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#FFD43B"/></marker></defs><rect width="128" height="128" rx="30" fill="url(#bg)"/><path d="M22 96 H40 V82 H58 V68 H76" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><path d="M76 68 V92 H96" fill="none" stroke="#FF8787" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><path d="M76 60 Q90 30 106 46" fill="none" stroke="#FFD43B" stroke-width="5" stroke-linecap="round" stroke-dasharray="1 9" marker-end="url(#arrow)"/></svg>`;
+const ICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><rect width="128" height="128" rx="32" fill="#3B5BDB"/><path d="M26 94 H44 V80 H62 V66 H78" fill="none" stroke="#FFFFFF" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><path d="M78 66 V84" fill="none" stroke="#FF8787" stroke-width="9" stroke-linecap="round"/><path d="M86 52 L102 36 M90 36 H102 V48" fill="none" stroke="#FFD43B" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const WORD = (dark) => `<div class="word"><div class="ko">복지 <span>절벽</span> 시뮬레이터</div><div class="en">WELFARE CLIFF SIMULATOR</div></div>`;
 
 document.getElementById('lockup-light').innerHTML = ICON + WORD();
