@@ -76,15 +76,18 @@ python pipeline/evaluate.py --set train --ai pipeline/runs_v3_gpt5_rules --out p
 
 채점기 자체 검증: 정답을 그대로 넣으면 100%, 일부러 실수 6개를 심으면 6개 모두 잡아냄 (2026-11-13).
 
-## 더 많은 서비스로 넓히기
-공공데이터포털에서 '한국사회보장정보원 복지서비스' API 활용신청 후:
+## 공공데이터포털 API로 수집하기
+한국사회보장정보원 **지자체복지서비스** API (활용신청 후 일반 인증키 Decoding 사용):
 ```bash
-set DATA_GO_KR_KEY=발급받은_인증키
+$env:DATA_GO_KR_KEY = "발급받은_Decoding_키"
 python pipeline/fetch_bokjiro.py --local --sido 경상북도 --sigungu 경산시 --limit 30
-python pipeline/convert.py --only api_XXXX
+python pipeline/convert.py --provider openai --prefix api --out pipeline/runs_api_rules
 ```
-⚠️ `fetch_bokjiro.py`의 엔드포인트와 항목 이름은 활용가이드로 확인 후 사용하세요 (아직 실제 호출로 검증하지 않음).
-정답이 없는 서비스는 정확도 계산에서 빠지고, 규칙만 생성됩니다.
+- 결과: `raw/api_<서비스ID>.txt` (서비스 요약, 지원대상, 선정기준, 서비스 내용, 신청방법 + 담당부서·첨부파일 등 참고 정보)
+- 검증 (2026-11-14): 경산시 18건 수집. 복지로 상세 페이지에서 모은 원문과 14건 중 13건 동일, 1건은 API에 소제목이 더 있음
+- API 원문에는 줄바꿈이 없습니다.
+- 중앙부처 API(`--central`)는 아직 실제 호출로 확인하지 않았습니다.
+- 정답이 없는 서비스는 정확도 계산에서 빠지고, 규칙만 생성됩니다.
 
 ## 한계
 - `raw/`의 원문 13건은 복지로 화면 캡처를 옮겨 적은 것입니다 (API 원문 아님).

@@ -7,8 +7,9 @@
 
 결과: pipeline/raw/api_<서비스ID>.txt  (convert.py가 그대로 읽는 형식)
 
-⚠️ 엔드포인트·요청 변수·응답 항목 이름은 공공데이터포털 '활용가이드'와 반드시 대조하세요.
-   아래 기본값은 문서 확인 전 추정값이며, 응답의 모든 텍스트 항목을 저장하므로 항목 이름이 달라도 원문은 남습니다.
+검증: 2026-11-14 지자체 API로 경산시 18건 수집. 복지로 상세 페이지에서 모은 원문과 14건 중 13건 동일,
+   1건은 API 쪽이 더 완전함(소제목 포함). 중앙부처 API는 아직 실제 호출로 확인하지 않음.
+주의: API 원문에는 줄바꿈이 없음 (복지로 화면의 줄바꿈이 빠진 채 제공됨).
 """
 from __future__ import annotations
 
@@ -22,15 +23,28 @@ from pathlib import Path
 import requests
 
 RAW_DIR = Path(__file__).resolve().parent / "raw"
-ENDPOINTS = {  # 활용가이드로 확인 필요
+ENDPOINTS = {  # 지자체: 2026-11-14 실제 호출로 확인 / 중앙부처: 확인 필요
     "local": ("https://apis.data.go.kr/B554287/LocalGovernmentWelfareInformations",
               "LcgvWelfarelist", "LcgvWelfaredetailed"),
     "central": ("https://apis.data.go.kr/B554287/NationalWelfareInformationsV001",
                 "NationalWelfarelistV001", "NationalWelfaredetailedV001"),
 }
 # 상세 응답에서 원문으로 남길 항목 (있으면 이 순서로, 나머지는 뒤에)
-PREFERRED = ["servNm", "servDgst", "sprtTrgtCn", "slctCritCn", "alwServCn", "trgterIndvdlArray", "aplyMtdCn"]
+PREFERRED = ["servDgst", "sprtTrgtCn", "slctCritCn", "alwServCn", "aplyMtdCn"]
 LABELS = {"servDgst": "서비스 요약", "sprtTrgtCn": "지원대상", "slctCritCn": "선정기준", "alwServCn": "서비스 내용", "aplyMtdCn": "신청방법"}
+# 참고 정보 (파일 끝에 짧게 남김)
+META = {"bizChrDeptNm": "담당부서", "sprtCycNm": "지원주기", "srvPvsnNm": "제공유형", "aplyMtdNm": "신청 경로",
+        "trgterIndvdlNmArray": "대상 특성", "lifeNmArray": "생애주기", "intrsThemaNmArray": "관심주제",
+        "wlfareInfoReldNm": "관련 첨부파일", "lastModYmd": "최종 수정일"}
+
+
+def format_body(detail: dict) -> list:
+    """원문 본문(AI 변환용) + 참고 정보. 내부 코드 항목(resultMessage 등)은 뺀다."""
+    body = [f"[{LABELS[k]}]\n{detail[k]}" for k in PREFERRED if detail.get(k)]
+    meta = [f"- {label}: {detail[k]}" for k, label in META.items() if detail.get(k) and detail[k] != "첨부파일없음.hwp"]
+    if meta:
+        body.append("[참고 정보]\n" + "\n".join(meta))
+    return body
 
 
 def call(base: str, op: str, key: str, **params) -> ET.Element:
@@ -84,10 +98,7 @@ def main() -> None:
         detail = leaves(call(base, detail_op, key, servId=sid, **({} if args.local else {"callTp": "D"})))
         name = detail.get("servNm") or it.get("servNm", sid)
         region = " ".join(x for x in [it.get("ctpvNm"), it.get("sggNm")] if x) or "중앙"
-        body = []
-        for k in PREFERRED + [k for k in detail if k not in PREFERRED]:
-            if k in detail and k != "servNm" and len(detail[k]) > 1:
-                body.append(f"[{LABELS.get(k, k)}]\n{detail[k]}")
+        body = format_body(detail)
         (RAW_DIR / f"api_{sid}.txt").write_text(
             f"# 서비스명: {name}\n# 제공주체: {region}\n# 출처: 공공데이터포털 복지서비스 API (servId={sid})\n\n" + "\n".join(body) + "\n",
             encoding="utf-8")
