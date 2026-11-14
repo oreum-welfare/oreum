@@ -50,6 +50,28 @@ export function createEngine(data) {
   }
 
   // 월 근로소득(가구 합계) earned 일 때 받을 수 있는 혜택 목록
+  // 재산의 소득환산액 (월). basic = 기초생활보장·한부모 방식, pension = 기초연금·장애인연금 방식
+  // eitcFactor = 근로·자녀장려금 재산 요건 (1 / 0.5 / 0)
+  function assetIncomes(hh, region) {
+    const A = P.assets;
+    if (!A) return { basic: 0, pension: 0, eitcFactor: 1 };
+    const H = hh.housingAsset || 0, F = hh.financialAsset || 0, D = hh.debt || 0;
+    let hin = Math.min(H, region.housing_limit);
+    let hover = H - hin;
+    let fin = Math.max(0, F - A.basic.financial_living_allowance);
+    let ded = region.asset_base + D; // 기본재산액과 부채를 주거용(한도 내) → 한도 초과분 → 금융재산 순으로 공제
+    let t = Math.min(hin, ded); hin -= t; ded -= t;
+    t = Math.min(hover, ded); hover -= t; ded -= t;
+    t = Math.min(fin, ded); fin -= t;
+    const basic = hin * A.basic.rate_housing + hover * A.basic.rate_general + fin * A.basic.rate_financial;
+    const general = Math.max(0, H - region.pension_asset_deduction);
+    const pfin = Math.max(0, F - A.pension.financial_deduction);
+    const pension = (Math.max(0, general + pfin - D) * A.pension.annual_rate) / 12;
+    const total = H + F;
+    const eitcFactor = total >= A.eitc.limit ? 0 : total > A.eitc.half_over ? 0.5 : 1;
+    return { basic, pension, eitcFactor };
+  }
+
   function evaluate(hh, earned) {
     const d = derive(hh);
     const size = d.size;
@@ -57,13 +79,14 @@ export function createEngine(data) {
     const region = data.regions[hh.region];
     const out = [];
     const add = (id, name, level, kind, monthly, note) => out.push({ id, name, level, kind, monthly, note });
+    const asset = assetIncomes(hh, region);
 
     // 기초연금 (소득인정액 계산에 들어가므로 먼저)
     let bp = 0;
     if (hh.age >= 65) {
       const couple = hh.spouse;
       const line = P.basic_pension_line[couple ? "couple" : "single"];
-      const evalIncome = 0.7 * Math.max(0, earned - P.basic_pension_earned_deduction);
+      const evalIncome = 0.7 * Math.max(0, earned - P.basic_pension_earned_deduction) + asset.pension;
       if (evalIncome <= line) {
         bp = couple && hh.spouse65
           ? 2 * P.basic_pension_amount * (1 - P.basic_pension_couple_cut)
@@ -77,17 +100,17 @@ export function createEngine(data) {
     let dpBasic = 0;
     if (DP && hh.severeDisabled && hh.age >= DP.age_min && hh.age <= DP.age_max) {
       const line = hh.spouse ? DP.line_couple : DP.line_single;
-      if (0.7 * Math.max(0, earned - DP.earned_deduction) <= line) dpBasic = DP.basic;
+      if (0.7 * Math.max(0, earned - DP.earned_deduction) + asset.pension <= line) dpBasic = DP.basic;
     }
 
-    // 소득인정액 (재산 0 가정, 기초연금은 소득으로 반영)
+    // 소득인정액 = 소득평가액 + 재산의 소득환산액 + 기초연금·장애인연금 기초급여
     // 근로소득공제 (2026 사업안내): 청년(34세 이하) 60만 원, 노인(65세+)·장애인 20만 원을 먼저 뺀 뒤 30%
     const yd = P.youth_deduction, sd = P.senior_disabled_deduction;
     let flat = 0;
     if (yd && hh.age <= yd.age_max) flat = yd.flat;
     else if (sd && (hh.age >= sd.age_min || d.disabled)) flat = sd.flat;
     const evalEarned = Math.max(0, earned - flat);
-    const ri = evalEarned * (1 - P.earned_deduction_rate) + bp + dpBasic;
+    const ri = evalEarned * (1 - P.earned_deduction_rate) + asset.basic + bp + dpBasic;
 
     const sLine = saengLine(size);
     const saeng = Math.max(0, sLine - ri);
@@ -143,14 +166,14 @@ export function createEngine(data) {
 
     const typ = eitcType(hh, d);
     const annual = earned * 12;
-    const e = eitc(annual, typ);
+    const e = eitc(annual, typ) * asset.eitcFactor;
     if (e > 0) add("eitc", "근로장려금", "중앙", "cash", e / 12, "연 지급액을 월로 환산 (전년도 소득 기준 지급)");
-    const c = ctc(annual, typ, d.children);
+    const c = ctc(annual, typ, d.children) * asset.eitcFactor;
     if (c > 0) add("ctc", "자녀장려금", "중앙", "cash", c / 12, "연 지급액을 월로 환산");
 
     // 한부모가족 아동양육비: 소득인정액(근로소득 30% 공제) ≤ 중위 65%, 18세 미만 자녀 1인당 월 23만 원
     if (P.sp_child && hh.singleParent && d.children > 0) {
-      const riSp = earned * (1 - P.earned_deduction_rate);
+      const riSp = earned * (1 - P.earned_deduction_rate) + asset.basic;
       if (riSp <= (P.sp_child.pct_median / 100) * m) {
         add("sp_child", "한부모 아동양육비", "중앙", "cash", P.sp_child.monthly_per_child * d.children,
           `한부모 + 소득인정액 ≤ 중위 ${P.sp_child.pct_median}%, 자녀 ${d.children}명 × 월 ${P.sp_child.monthly_per_child.toLocaleString("ko-KR")}원`);
