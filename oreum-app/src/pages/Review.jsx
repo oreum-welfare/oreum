@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { won } from "../lib/format.js";
 import { useJson } from "../lib/useJson.js";
 
@@ -126,18 +127,18 @@ export default function Review() {
     <>
       <section className="hero"><div className="wrap">
         <h1>AI가 만든 규칙, <em>사람이 확인합니다</em></h1>
-        <p>복지로 원문을 GPT-5가 판정 규칙으로 바꿨습니다. 검수자는 원문과 나란히 보며 조건마다 승인·수정·삭제하고,
-          승인된 규칙만 시뮬레이터에 반영합니다. 아래는 서비스 13건의 실제 변환 결과입니다.</p>
+        <p>복지로 원문을 GPT-5가 판정 규칙으로 바꿨습니다. 검수자는 원문과 나란히 보며 조건마다 승인·수정·삭제하고, 결과를 JSON으로 내보냅니다.
+          승인된 규칙만 규칙 파일(rules.json)에 반영하는 구조이며, 지금은 이 반영을 사람이 직접 합니다. 아래는 학습용 서비스 13건의 실제 변환 결과입니다.</p>
       </div></section>
 
       <main className="wrap analysis">
         <section className="card">
           <div className="card-head">
-            <h2 className="card-title">AI 변환 정확도 (1차 → 2차, 사람이 만든 정답 13건과 비교)</h2>
+            <h2 className="card-title">이 화면의 13건: 1차 → 2차 정확도 (사람이 만든 정답과 비교)</h2>
             <span className="hint">모델 {svc.meta.model || "-"}</span>
           </div>
           <RunCompare runs={data.runs} />
-          <p className="hint">2차는 1차 오류를 분석해 프롬프트를 고친 결과입니다. 같은 13건으로 고치고 다시 쟀기 때문에 처음 보는 서비스에서는 더 낮을 수 있습니다.</p>
+          <p className="hint">2차는 1차 오류를 분석해 프롬프트를 고친 결과입니다. 같은 13건으로 고치고 다시 쟀기 때문에 실제보다 높게 나옵니다. 처음 보는 서비스로 잰 점수(2차 36% → 3차 81%)는 <Link to="/ai">AI 성능</Link> 페이지에 있습니다.</p>
         </section>
 
         <div className="review-layout">

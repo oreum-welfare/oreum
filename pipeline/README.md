@@ -1,46 +1,59 @@
 # 오름 AI 변환 파이프라인
 
-복지 서비스 **선정기준 원문**을 Claude가 **판정 규칙 JSON**으로 바꾸고, 사람이 만든 정답과 비교해 **정확도**를 계산합니다.
+복지 서비스 **선정기준 원문**을 AI(GPT-5)가 **판정 규칙 JSON**으로 바꾸고, 사람이 만든 정답과 비교해 **정확도**를 계산합니다. 결과는 사람이 검수한 뒤 규칙 파일(`data/rules.json`)에 반영합니다.
 
 ```
-[복지로 원문] ──fetch_bokjiro.py──▶ raw/*.txt
-                                     │
-                       convert.py (Claude Opus 5.5, 구조화 출력)
-                                     ▼
-                               ai_rules/*.json ──evaluate.py──▶ report/report.md
-                                     ▲                      (정답: gold/*.json)
+[공공데이터포털 복지서비스 API] ──fetch_bokjiro.py──▶ raw/*.txt
+                                                         │
+                                    convert.py (GPT-5 또는 Claude, 구조화 출력)
+                                                         ▼
+                                              runs_*/ (AI 규칙) ──evaluate.py──▶ 채점 결과
+                                                         │                (정답: gold/*.json)
+                                     export_review.py ───┤
+                                                         ▼
+                                  React 검수 화면(/review) → 사람이 승인한 규칙만 rules.json에 반영
+                                  export_ai_results.py → React AI 성능 화면(/ai)
 ```
 
 ## 폴더
 | 폴더·파일 | 내용 |
 |---|---|
-| `raw/` | 서비스 원문 13건 (복지로 화면에서 수집). API로 받은 원문도 같은 형식으로 저장 |
-| `gold/` | 사람이 원문을 보고 만든 정답 규칙 13건 |
-| `ai_rules/` | Claude가 만든 규칙 (convert.py 실행 결과) |
-| `report/` | 평가 결과: `report.md`(요약), `report.json`, `conditions.csv`(조건별 채점) |
+| `raw/` | 서비스 원문. 학습용 13건(`c*` 중앙, `l*` 지자체, 화면을 옮겨 적음), 시험용 30건(`t*` 경산, `n*` 대구 북구·영천, 복지로 상세 페이지 자동 수집), API 원문 26건(`api_*`, 지자체 18 + 중앙 8) |
+| `gold/` | 사람이 원문을 보고 만든 정답 규칙 43건 (`set`: train / test / test2) |
+| `runs_*/` | 단계별 AI 변환 결과와 채점 (`runs_v1…`, `runs_v2…`, `runs_test…`, `runs_v3…`) |
+| `RESULTS.md` | 실험 기록과 발표용 문장 |
+| `ai_results.json` | 단계별 결과 요약 (React AI 성능 화면용) |
+| `collected/` | 복지로 상세 페이지에서 자동 수집한 원본 (날짜별) |
 | `schema.py` | 규칙 형식 (조건 항목 목록, JSON Schema) |
 
 ## 실행 순서
 ```bash
 pip install -r requirements.txt
 ```
-1. **인증:** OpenAI는 `OPENAI_API_KEY`, Claude는 `ANTHROPIC_API_KEY` 환경변수 설정 (PowerShell: `$env:OPENAI_API_KEY = "키"`)
-2. **변환** (13건, 약 1~3분)
+1. **인증:** OpenAI는 `OPENAI_API_KEY`, Claude는 `ANTHROPIC_API_KEY` 환경변수 (PowerShell: `$env:OPENAI_API_KEY = "키"`). 키는 코드·채팅·GitHub에 올리지 않습니다.
+2. **변환:** 실험은 모두 GPT-5로 했습니다. 코드의 기본 제공자는 Claude라서 `--provider openai`를 붙입니다.
 ```bash
-python pipeline/convert.py --provider openai
+python pipeline/convert.py --provider openai --prefix n --out pipeline/runs_new_rules
 ```
-Claude로 하려면 `--provider claude`(기본값). 모델을 바꾸려면 `--model gpt-4.1` 처럼 지정합니다.
-두 제공자를 비교하려면 결과 폴더를 나눕니다: `--out pipeline/ai_rules_openai` → `python pipeline/evaluate.py --ai pipeline/ai_rules_openai --out pipeline/report_openai`
-3. **평가**
+`--prefix`로 세트를 고릅니다 (`c`/`l` 학습용, `t`·`n` 시험용, `api` API 원문). 모델은 `--model`로 바꿉니다.
+3. **채점:** `--set`은 train(학습용 13건), test(경산 14건), test2(대구 북구·영천 16건), all
 ```bash
-python pipeline/evaluate.py
+python pipeline/evaluate.py --set test2 --ai pipeline/runs_new_rules --out pipeline/runs_new_report
 ```
-4. `pipeline/report/report.md`에서 결과 확인
+4. **화면용 데이터:** `python pipeline/export_ai_results.py` (AI 성능), `python pipeline/export_review.py` (검수)
 
 API 호출 없이 프롬프트만 보려면 `python pipeline/convert.py --dry-run`.
 
 ## 실험 결과 (2026-11-14, GPT-5)
-1차 38% → 프롬프트 개선 후 2차 **85%** (13건 중 11건 완전 정답, 지어낸 조건·금액 0건). 자세한 내용: [RESULTS.md](RESULTS.md) 처음 보는 14건(시험용)에서는 **36%** (판정 불가 서비스 구분 오류 7건).
+| 프롬프트 | 세트 | 서비스 정확도 |
+|---|---|---|
+| 1차 | 학습용 13건 | 38% |
+| 2차 | 학습용 13건 (같은 문제로 고침) | 85% |
+| 2차 | 처음 보는 경산 14건 | 36% |
+| 3차 | **처음 보는 대구 북구·영천 16건** | **81%** |
+| 3차 | 학습용 13건 (회귀 확인) | 62% |
+
+모든 단계에서 원문에 없는 조건이나 금액을 지어낸 경우는 없었습니다. 자세한 내용: [RESULTS.md](RESULTS.md)
 
 ## 시험용 세트 (처음 보는 서비스 14건)
 복지로에 등록된 경산시 지자체 서비스 18건 중, 기존 13건에 없던 14건(`raw/t01~t14`)을 2026-11-14에 수집했습니다.
@@ -95,5 +108,5 @@ python pipeline/convert.py --provider openai --prefix api --out pipeline/runs_ap
 - 정답이 없는 서비스는 정확도 계산에서 빠지고, 규칙만 생성됩니다.
 
 ## 한계
-- `raw/`의 원문 13건은 복지로 화면 캡처를 옮겨 적은 것입니다 (API 원문 아님).
+- 학습용 원문 13건은 복지로 화면을 옮겨 적은 것입니다. 같은 서비스의 API 원문(`api_*`)과 대조하면 우리 원문의 97~100%가 API 원문 안에 있습니다.
 - 정답(gold)은 팀이 만든 것이라 해석 차이가 있을 수 있습니다. 허용 값(`accept`)과 선택 조건(`optional`)으로 일부 반영했습니다.
