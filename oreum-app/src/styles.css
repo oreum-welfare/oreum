@@ -338,3 +338,20 @@ tr.ev-row td { background: #f8f9fc; }
 .link-btn:hover { text-decoration: underline; }
 .horizon { margin: 0 0 10px; font-size: 14px; background: var(--ok-soft); border: 1px solid #b2f2bb; border-radius: 10px; padding: 8px 12px; }
 #detail-tabs { scroll-margin-top: 90px; }
+
+/* ---------- 소득 입력 · 범례 · 지역 안내 ---------- */
+.income-input { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 10px; }
+.income-input .btn { min-width: 56px; font-size: 14px; }
+.income-input .btn:disabled { opacity: 0.4; cursor: default; }
+.income-field { display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--sub); }
+.income-field input { width: 96px; text-align: right; font-size: 16px; font-weight: 700; }
+.field-note { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.chart-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 10px; font-size: 12px; color: var(--ink); }
+.chart-legend .lg { display: inline-flex; align-items: center; gap: 5px; }
+.chart-legend .lg i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; }
+.chart-legend .lg i.line { height: 0; border-top: 2.5px solid #1f2430; border-radius: 0; width: 14px; }
+.chart-legend .lg.off { color: var(--muted); opacity: 0.55; }
+.chart-legend .lg-note { color: var(--muted); width: 100%; }
+@media (max-width: 560px) {
+  .chart-legend { font-size: 11px; gap: 2px 10px; }
+}

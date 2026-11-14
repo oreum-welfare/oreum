@@ -33,7 +33,7 @@ const PRESETS = [
     hh: { region: "경상북도 경산시", age: 36, spouse: true, infants: 1, elem: 1 } },
 ];
 
-export function chartOptions(incomes, linesRef, { stacked = false } = {}) {
+export function chartOptions(incomes, linesRef, { stacked = false, legend = true } = {}) {
   return {
     responsive: true, maintainAspectRatio: false, animation: false,
     interaction: { mode: "index", intersect: false },
@@ -45,7 +45,7 @@ export function chartOptions(incomes, linesRef, { stacked = false } = {}) {
     },
     plugins: {
       vlines: { ref: linesRef },
-      legend: { position: "bottom", labels: { boxWidth: 12, boxHeight: 12, usePointStyle: true } },
+      legend: { display: legend, position: "bottom", labels: { boxWidth: 12, boxHeight: 12, usePointStyle: true } },
       tooltip: {
         filter: (item) => item.raw > 0,
         callbacks: {
@@ -73,6 +73,7 @@ function HouseholdForm({ hh, setHh, includeInkind, setIncludeInkind, regions, on
         <select value={hh.region} onChange={(e) => set("region", e.target.value)}>
           {regions.map((r) => <option key={r}>{r}</option>)}
         </select>
+        <span className="field-note">현재 대구 북구·경상북도 경산시만 지원합니다. 다른 지역은 공공데이터포털 API와 AI 변환으로 넓혀 갈 예정입니다.</span>
       </label>
       <label className="field"><span>본인 나이</span>
         <input type="number" min="19" max="100" value={hh.age} onChange={(e) => set("age", Number(e.target.value) || 40)} />
@@ -110,6 +111,42 @@ function HouseholdForm({ hh, setHh, includeInkind, setIncludeInkind, regions, on
         <span>감면·현물 혜택도 금액으로 환산</span>
       </label>
       <p className="hint">의료급여, 에너지바우처, 통신비 감면 등을 월 금액으로 바꿔 합계에 넣습니다.</p>
+    </div>
+  );
+}
+
+function IncomeControl({ inc, maxIncome, setIncome }) {
+  const clamp = (v) => Math.min(maxIncome, Math.max(0, Math.round(v / STEP) * STEP));
+  return (
+    <div className="card income-card">
+      <div className="income-head">
+        <label htmlFor="income" className="card-title">월 근로소득 (가구 합계)</label>
+        <output className="income-value">{won(inc)}</output>
+      </div>
+      <input type="range" id="income" min="0" max={maxIncome} step={STEP} value={inc} onChange={(e) => setIncome(Number(e.target.value))} />
+      <div className="income-scale"><span>0원</span><span>{man(maxIncome)}원 (중위소득 100%)</span></div>
+      <div className="income-input">
+        <button type="button" className="btn" aria-label="1만 원 줄이기" onClick={() => setIncome(clamp(inc - STEP))} disabled={inc <= 0}>−1만</button>
+        <label className="income-field">
+          <input type="number" inputMode="numeric" min="0" max={maxIncome / 10000} step="1" value={Math.round(inc / 10000)}
+            aria-label="월 근로소득 (만 원)" onChange={(e) => setIncome(clamp((Number(e.target.value) || 0) * 10000))} />
+          <span>만 원</span>
+        </label>
+        <button type="button" className="btn" aria-label="1만 원 늘리기" onClick={() => setIncome(clamp(inc + STEP))} disabled={inc >= maxIncome}>+1만</button>
+      </div>
+    </div>
+  );
+}
+
+function ChartLegend({ ids, current }) {
+  return (
+    <div className="chart-legend" aria-label="그래프 범례">
+      <span className="lg"><i style={{ background: "rgba(173,181,189,0.6)" }} />근로소득</span>
+      <span className="lg"><i className="line" />근로소득 + 혜택</span>
+      {ids.map((id) => (
+        <span key={id} className={`lg ${current.has(id) ? "" : "off"}`}><i style={{ background: COLORS[id] }} />{NAMES[id]}</span>
+      ))}
+      <span className="lg-note">진한 항목 = 지금 소득에서 받는 혜택</span>
     </div>
   );
 }
@@ -381,14 +418,7 @@ export default function Simulator() {
         </aside>
 
         <section className="content">
-          <div className="card income-card">
-            <div className="income-head">
-              <label htmlFor="income" className="card-title">월 근로소득 (가구 합계)</label>
-              <output className="income-value">{won(inc)}</output>
-            </div>
-            <input type="range" id="income" min="0" max={maxIncome} step={STEP} value={inc} onChange={(e) => setIncome(Number(e.target.value))} />
-            <div className="income-scale"><span>0원</span><span>{man(maxIncome)}원 (중위소득 100%)</span></div>
-          </div>
+          <IncomeControl inc={inc} maxIncome={maxIncome} setIncome={setIncome} />
 
           <div className="stats">
             <div className="stat"><div className="label">월 근로소득</div><div className="value">{man(inc)}<small>원</small></div></div>
@@ -405,8 +435,9 @@ export default function Simulator() {
               <div className="legend-note"><span className="swatch cliff" />절벽 <span className="swatch now" />현재 소득</div>
             </div>
             <div className="chart-box">
-              <Line data={cliffData} options={chartOptions(sim.incomes, cliffLines, { stacked: true })} plugins={[vlinePlugin]} />
+              <Line data={cliffData} options={chartOptions(sim.incomes, cliffLines, { stacked: true, legend: false })} plugins={[vlinePlugin]} />
             </div>
+            <ChartLegend ids={ids} current={new Set(benefits.filter((b) => b.monthly > 0).map((b) => b.id))} />
             <p className="hint">그래프가 아래로 꺾이는 빨간 점선이 <b>복지 절벽</b>입니다. 소득이 늘었는데 쓸 수 있는 돈이 줄어드는 지점이에요.</p>
           </div>
 
