@@ -23,6 +23,7 @@ const DEFAULT_HH = {
   region: "경상북도 경산시", age: 40, spouse: false, spouse65: false, dualEarner: false,
   infants: 0, elem: 0, middle: 0, high: 0, newborn: false, birthOrder: 1,
   disabled: false, severeDisabled: false, singleParent: false, thirdChild7to18: false, residenceMonths: 60,
+  housingAsset: 0, financialAsset: 0, debt: 0,
 };
 const PRESETS = [
   { key: "single-parent", emoji: "👩‍👧‍👦", title: "한부모 + 자녀 2명", sub: "경산 · 초·중학생", income: 3000000,
@@ -106,6 +107,16 @@ function HouseholdForm({ hh, setHh, includeInkind, setIncludeInkind, regions, on
       <label className="field"><span>현 거주지 거주 기간 (개월)</span>
         <input type="number" min="0" max="600" value={hh.residenceMonths} onChange={num("residenceMonths")} />
       </label>
+      <fieldset className="assets">
+        <legend>재산 <span className="optional">(선택, 만 원)</span></legend>
+        {[["housingAsset", "주택·전세보증금"], ["financialAsset", "예금·적금 등"], ["debt", "대출 등 부채"]].map(([k, label]) => (
+          <label key={k}><span>{label}</span>
+            <input type="number" inputMode="numeric" min="0" step="100" value={Math.round(hh[k] / 10000)}
+              onChange={(e) => set(k, Math.max(0, Number(e.target.value) || 0) * 10000)} />
+          </label>
+        ))}
+        <span className="field-note">재산은 소득으로 환산돼 소득인정액에 더해집니다. 비워 두면 재산 0원으로 계산합니다. 토지·자동차는 반영하지 않습니다.</span>
+      </fieldset>
       <label className="toggle">
         <input type="checkbox" checked={includeInkind} onChange={(e) => setIncludeInkind(e.target.checked)} />
         <span>감면·현물 혜택도 금액으로 환산</span>
