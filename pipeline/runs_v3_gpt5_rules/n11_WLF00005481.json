@@ -1,0 +1,86 @@
+{
+  "service_name": "난청 어르신 보청기 지원 사업",
+  "judgeable": false,
+  "not_judgeable_reason": "필수 진단요건(이비인후과 전문의의 난청 진단)과 난청기준(청력검사 수치)이 핵심 조건이지만 입력 항목 표준 필드에 없어 1차 판정이 불가합니다.",
+  "conditions": [
+    {
+      "field": "age",
+      "op": ">=",
+      "value": "70",
+      "group": "",
+      "evidence": "지원대상 : 만 70세 이상, 비장애인 난청 어르신 100명"
+    },
+    {
+      "field": "disabled",
+      "op": "==",
+      "value": "false",
+      "group": "",
+      "evidence": "비장애인 난청 어르신 100명"
+    },
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "영천시",
+      "group": "",
+      "evidence": "신청일 기준 1년 이상 영천시에 주민등록을 둔 실거주자"
+    },
+    {
+      "field": "residence_months",
+      "op": ">=",
+      "value": "12",
+      "group": "",
+      "evidence": "신청일 기준 1년 이상 영천시에 주민등록을 둔 실거주자"
+    },
+    {
+      "field": "recipient_status",
+      "op": "in",
+      "value": "생계,의료,주거,교육",
+      "group": "자격요건",
+      "evidence": "자격요건 : 「국민기초생활 보장법」, 「기초연금법」에 따른 수급자"
+    },
+    {
+      "field": "basic_pension_recipient",
+      "op": "==",
+      "value": "true",
+      "group": "자격요건",
+      "evidence": "자격요건 : 「국민기초생활 보장법」, 「기초연금법」에 따른 수급자"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "이비인후과 전문의로부터 난청 진단을 받은 자",
+      "group": "",
+      "evidence": "3. 진단요건: 이비인후과 전문의로부터 난청 진단을 받은 자"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "난청기준: 한쪽 구의 청력손실이 40데시벨이상이면서 80데시벨 미만, 다른 귀의 청력손실이 40데시벨이상이면서 60데시벨 미만",
+      "group": "",
+      "evidence": "※ 난청기준: 한쪽 구의 청력손실이 40데시벨이상이면서 80데시벨 미만, 다른 귀의 청력손실이 40데시벨이상이면서 60데시벨 미만"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "아래 법령 및 조례에 따라 5년 이내 지원받은 자는 제외",
+      "group": "",
+      "evidence": "나. 제외대상: 아래 법령 및 조례에 따라 5년 이내 지원받은 자"
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_text": "보청기 구입비용에 대해 현금지급",
+    "monthly_amount_won": 0,
+    "evidence": "보청기 구입비용에 대해 현금지급"
+  },
+  "_meta": {
+    "source_file": "n11_WLF00005481.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-14T00:56:58+00:00",
+    "seconds": 25.0,
+    "input_tokens": 2906,
+    "output_tokens": 3412,
+    "request_id": "chatcmpl-EjwMEZwkE8Eg7Dh0J3TcKomKg26pi"
+  }
+}

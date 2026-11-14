@@ -13,6 +13,7 @@ export default function Layout() {
           <nav className="nav">
             <NavLink to="/" end>시뮬레이터</NavLink>
             <NavLink to="/analysis">데이터 분석</NavLink>
+            <NavLink to="/ai">AI 성능</NavLink>
             <NavLink to="/review">AI 검수</NavLink>
           </nav>
         </div>

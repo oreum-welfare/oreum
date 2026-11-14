@@ -1,0 +1,30 @@
+{
+  "service_name": "주거급여(맞춤형 급여)",
+  "judgeable": true,
+  "not_judgeable_reason": "",
+  "conditions": [
+    {
+      "field": "income_recognized_pct_median",
+      "op": "<=",
+      "value": "48",
+      "group": "",
+      "evidence": "소득인정액(소득평가액+재산의 소득환산액)이 기준중위소득의 48% 이하인 가구를 대상으로 지원합니다."
+    }
+  ],
+  "benefit": {
+    "type": "none",
+    "amount_text": "금액 미기재",
+    "monthly_amount_won": 0,
+    "evidence": ""
+  },
+  "_meta": {
+    "source_file": "c02_jugeo.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-14T00:02:53+00:00",
+    "seconds": 124.3,
+    "input_tokens": 2591,
+    "output_tokens": 3145,
+    "request_id": "chatcmpl-EjvUIXyMWjGIuCjERfaJwOm2fmkMb"
+  }
+}

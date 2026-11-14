@@ -1,9 +1,10 @@
-import { useMemo, useRef, useState } from "react";
+import { Fragment, useMemo, useRef, useState } from "react";
 import { Line } from "react-chartjs-2";
 import { createEngine, KIND_LABEL } from "../lib/engine.js";
 import { vlinePlugin } from "../lib/chartSetup.js";
 import { man, won } from "../lib/format.js";
 import { useJson } from "../lib/useJson.js";
+import { analyzeNextCliff, recommendPrograms } from "../lib/guide.js";
 
 const STEP = 10000;
 export const COLORS = {
@@ -113,7 +114,14 @@ function HouseholdForm({ hh, setHh, includeInkind, setIncludeInkind, regions, on
   );
 }
 
-function NextCliff({ income, cliffs }) {
+function horizonText(h) {
+  const where = h.beforeNextCliff ? `다음 절벽 직전인 월 ${won(h.income)}` : `기준중위소득 100%인 월 ${won(h.income)}`;
+  return h.gain > 0
+    ? <>{where}까지 오르면 지금보다 한 달에 <b className="good">{won(h.gain)}</b> 더 쓸 수 있습니다.</>
+    : <>{where}까지 올라도 지금보다 쓸 수 있는 돈이 늘지 않습니다 (<b>{won(h.gain)}</b>). 절벽이 겹쳐 있는 구간입니다.</>;
+}
+
+function NextCliff({ income, cliffs, info, onGuide }) {
   const next = cliffs.find((c) => c.income > income);
   if (!next) {
     return (
@@ -127,24 +135,145 @@ function NextCliff({ income, cliffs }) {
       <h3>월 소득이 {won(next.income)}이 되면 {won(next.drop)} 손해</h3>
       <p>지금보다 <b>{man(next.income - income)}원</b> 더 벌면, 아래 혜택이 끊겨 근로소득과 혜택을 더한 금액이 오히려 줄어듭니다.</p>
       <div>{(next.lost.length ? next.lost : ["혜택 금액 감소"]).map((n) => <span key={n} className="chip">{n}</span>)}</div>
+      {info && (
+        <div className="recover">
+          <p>{info.recover != null
+            ? <>월 {won(info.cliff.income)}부터 {won(info.recover)}까지 <b>{man(info.lossSpan)}원 구간은 준비가 필요한 구간</b>입니다. 일을 더 해도 절벽 직전보다 쓸 수 있는 돈이 적습니다.</>
+            : <>기준중위소득 100%까지 벌어도 절벽 직전 수준을 되찾지 못합니다.</>}</p>
+          {info.recover != null && <p>{horizonText(info.horizon)}</p>}
+          <button type="button" className="link-btn" onClick={onGuide}>준비 구간을 넘는 방법 보기 →</button>
+        </div>
+      )}
     </div></div>
   );
 }
 
-function BenefitTable({ benefits }) {
+function statusClass(status) {
+  if (status.startsWith("추정")) return "est";
+  if (status.includes("추정")) return "part";
+  return "ok";
+}
+
+function Evidence({ id, data }) {
+  const src = data.benefit_sources?.[id];
+  if (!src) return <p className="hint">근거 정보가 없습니다.</p>;
+  const rule = data.rule_table.find((r) => r.service === src.rule);
+  return (
+    <div className="evidence">
+      {rule && <p><b>선정기준</b> {rule.condition} · <b>금액</b> {rule.amount}</p>}
+      {src.verification.map((k) => {
+        const v = data.verification[k];
+        return (
+          <div key={k} className="ev-item">
+            <span className={`status ${statusClass(v.status)}`}>{v.status}</span>
+            <span className="ev-value">{v.value}</span>
+            <div className="ev-basis">{v.basis}</div>
+          </div>
+        );
+      })}
+      {!src.verification.length && <p className="hint">지자체 공고 원문의 기준을 그대로 반영했습니다 ({rule?.status}).</p>}
+    </div>
+  );
+}
+
+const EV_LABEL = { ok: "확인", part: "일부 추정", est: "추정" };
+
+function BenefitTable({ benefits, data }) {
+  const [open, setOpen] = useState(null);
   if (!benefits.length) return <p className="empty">이 소득에서 받을 수 있는 혜택이 없습니다.</p>;
+  const level = (id) => {
+    const keys = data.benefit_sources?.[id]?.verification || [];
+    const st = keys.map((k) => statusClass(data.verification[k].status));
+    return st.includes("est") ? "est" : st.includes("part") ? "part" : "ok";
+  };
   return (
     <div className="table-wrap"><table>
       <thead><tr><th>혜택</th><th>종류</th><th style={{ textAlign: "right" }}>월 환산액</th><th>근거</th></tr></thead>
       <tbody>{benefits.map((b) => (
-        <tr key={b.id}>
-          <td><b>{b.name}</b> <span className={`tag ${b.level === "중앙" ? "central" : "local"}`}>{b.level}</span></td>
-          <td>{KIND_LABEL[b.kind]}</td>
-          <td className="num">{b.kind === "access" ? "자격" : won(b.monthly)}</td>
-          <td className="note">{b.note}</td>
-        </tr>
+        <Fragment key={b.id}>
+          <tr>
+            <td><b>{b.name}</b> <span className={`tag ${b.level === "중앙" ? "central" : "local"}`}>{b.level}</span></td>
+            <td>{KIND_LABEL[b.kind]}</td>
+            <td className="num">{b.kind === "access" ? "자격" : won(b.monthly)}</td>
+            <td className="note">
+              {b.note}
+              <button type="button" className={`ev-btn ${level(b.id)}`} aria-expanded={open === b.id} onClick={() => setOpen(open === b.id ? null : b.id)}>
+                {EV_LABEL[level(b.id)]} · 출처 {open === b.id ? "닫기" : "보기"}
+              </button>
+            </td>
+          </tr>
+          {open === b.id && <tr className="ev-row"><td colSpan={4}><Evidence id={b.id} data={data} /></td></tr>}
+        </Fragment>
       ))}</tbody>
     </table></div>
+  );
+}
+
+function PathGuide({ info, programs, inc }) {
+  return (
+    <div className="guide">
+      <p>오름의 목적은 소득을 줄이는 것이 아니라, <b>절벽을 손해 없이 넘어가는 경로</b>를 함께 설계하는 것입니다.</p>
+      {info ? (
+        <>
+          <div className="guide-steps">
+            <div className="g-step"><div className="g-label">다음 절벽까지</div><div className="g-value">{man(info.gap)}<small>원 더</small></div><div className="g-sub">월 {won(info.cliff.income)}에서</div></div>
+            <div className="g-step bad"><div className="g-label">넘는 순간 손해</div><div className="g-value">−{man(info.cliff.drop)}<small>원/월</small></div><div className="g-sub">{info.lost.join(", ") || "혜택 감소"}</div></div>
+            <div className="g-step good"><div className="g-label">준비 구간이 끝나는 소득</div><div className="g-value">{info.recover != null ? <>{man(info.recover)}<small>원</small></> : "없음"}</div><div className="g-sub">{info.recover != null ? `절벽보다 ${man(info.lossSpan)}원 더` : "중위소득 100% 안에서"}</div></div>
+          </div>
+          {info.recover != null && <p className="horizon">📈 {horizonText(info.horizon)}</p>}
+          <div className="guide-sets">
+            {info.kept.length > 0 && <div><b>절벽을 넘어도 계속 받는 혜택</b><div>{info.kept.map((n) => <span key={n} className="chip keep">{n}</span>)}</div></div>}
+            {info.gained.length > 0 && <div><b>절벽을 넘으면 새로 생기는 혜택</b><div>{info.gained.map((n) => <span key={n} className="chip gain">{n}</span>)}</div></div>}
+          </div>
+          <p className="hint">절벽에서 준비 구간이 끝나는 소득({info.recover != null ? won(info.recover) : "-"})까지가 <b>준비가 필요한 구간</b>입니다. 이 구간을 한 번에 넘을 수 있는 일자리인지 확인하고, 아래 제도로 그 사이를 메우는 계획을 세우세요.</p>
+        </>
+      ) : (
+        <div className="alert ok"><div className="icon">✅</div><div><h3>월 {won(inc)} 이후로는 절벽이 없습니다</h3><p>소득이 늘수록 쓸 수 있는 돈도 늘어납니다.</p></div></div>
+      )}
+      <h3 className="guide-title">이 가구에 맞는 자립 지원 제도</h3>
+      {programs.length ? (
+        <div className="programs">
+          {programs.map((p) => (
+            <div key={p.key} className="program">
+              <h4>{p.title}</h4>
+              <p className="why">{p.why}</p>
+              <p>{p.what}</p>
+              <div className="where">📍 {p.where}</div>
+            </div>
+          ))}
+        </div>
+      ) : <p className="empty">지금 소득에서 해당되는 자립 지원 제도가 없습니다.</p>}
+      <p className="hint">세부 조건과 금액은 해마다 바뀝니다. 신청 전에 복지로와 행정복지센터·자활센터에서 확인하세요.</p>
+    </div>
+  );
+}
+
+function Intro({ example }) {
+  return (
+    <section className="hero"><div className="wrap hero-grid">
+      <div>
+        <h1>월급이 오르면, <em>생활비도</em> 오를까요?</h1>
+        <p>소득이 기준선을 넘는 순간 여러 복지 혜택이 한꺼번에 끊겨 오히려 손해를 보는 구간이 있습니다.
+          이것을 <b>복지 절벽</b>이라고 합니다. <b>오름</b>은 절벽이 어디에 있는지 보여 주고, 손해 없이 넘어가는 길을 찾도록 돕습니다.</p>
+        <ol className="how">
+          <li><b>1</b>예시 가구를 고르거나 가구 정보를 넣고</li>
+          <li><b>2</b>월 소득을 움직여 보면</li>
+          <li><b>3</b>절벽 위치와 넘는 방법이 보입니다</li>
+        </ol>
+      </div>
+      {example && (
+        <div className="hero-example" aria-label="복지 절벽 예시">
+          <div className="ex-title">예) 경산시 한부모 + 초·중학생 자녀 2명</div>
+          <div className="ex-row">
+            <div><div className="ex-label">월 {man(example.from)}원 벌 때</div><div className="ex-value">{man(example.before)}원</div></div>
+            <div className="ex-arrow" aria-hidden="true">→</div>
+            <div><div className="ex-label">월 {man(example.to)}원 벌 때</div><div className="ex-value down">{man(example.after)}원</div></div>
+          </div>
+          <div className="ex-caption">근로소득 + 혜택 (한 달에 쓸 수 있는 돈)</div>
+          <div className="ex-note">1만 원 더 벌었더니 쓸 수 있는 돈이 한 달에 <b>{won(example.drop)}</b> 줄어듭니다. ({example.lost.join(", ")} 종료)</div>
+        </div>
+      )}
+    </div></section>
   );
 }
 
@@ -192,13 +321,25 @@ export default function Simulator() {
       return { region: r, sim: engine.simulate(h2, maxIncome, STEP, includeInkind), benefits: bs,
         total: bs.filter((b) => engine.counted(b, includeInkind)).reduce((s, b) => s + b.monthly, 0) };
     });
-    return { d, m, maxIncome, inc, sim, cliffs, benefits, total, regions };
+    const info = analyzeNextCliff(sim, cliffs, inc);
+    const programs = recommendPrograms(hh, benefits, data.params, inc);
+    return { d, m, maxIncome, inc, sim, cliffs, benefits, total, regions, info, programs };
   }, [engine, data, hh, income, includeInkind]);
+
+  const example = useMemo(() => {
+    if (!engine) return null;
+    const exHh = { ...DEFAULT_HH, ...PRESETS[0].hh };
+    const mx = Math.round(engine.medianIncome(engine.derive(exHh).size) / STEP) * STEP;
+    const sim = engine.simulate(exHh, mx, STEP, true);
+    const top = engine.findCliffs(sim).sort((a, b) => b.drop - a.drop)[0];
+    if (!top) return null;
+    return { from: sim.incomes[top.index - 1], to: top.income, before: sim.disposable[top.index - 1], after: sim.disposable[top.index], drop: top.drop, lost: top.lost };
+  }, [engine]);
 
   if (error) return <main className="wrap"><div className="alert cliff"><h3>데이터를 불러오지 못했습니다</h3><p>{String(error.message)}</p></div></main>;
   if (!calc) return <main className="wrap"><p className="empty">불러오는 중…</p></main>;
 
-  const { d, m, maxIncome, inc, sim, cliffs, benefits, total, regions } = calc;
+  const { d, m, maxIncome, inc, sim, cliffs, benefits, total, regions, info, programs } = calc;
   cliffLines.current = { cliffs: cliffs.map((c) => c.index), current: Math.round(inc / STEP) };
   regionLines.current = { current: Math.round(inc / STEP) };
 
@@ -221,11 +362,7 @@ export default function Simulator() {
 
   return (
     <>
-      <section className="hero"><div className="wrap">
-        <h1>월급이 오르면, <em>생활비도</em> 오를까요?</h1>
-        <p>소득이 기준선을 넘는 순간 여러 복지 혜택이 한꺼번에 끊겨 오히려 손해를 보는 구간이 있습니다.
-          <b> 오름</b>은 그 <b>복지 절벽</b>이 어디에 있는지 보여주고, 손해 없이 넘어가는 길을 찾도록 돕습니다.</p>
-      </div></section>
+      <Intro example={example} />
 
       <main className="wrap layout">
         <aside className="panel" aria-label="가구 정보">
@@ -260,7 +397,7 @@ export default function Simulator() {
             <div className="stat"><div className="label">기준중위소득 대비 ({d.size}인)</div><div className="value">{Math.round((inc / m) * 100)}<small>%</small></div></div>
           </div>
 
-          <NextCliff income={inc} cliffs={cliffs} />
+          <NextCliff income={inc} cliffs={cliffs} info={info} onGuide={() => { setTab("path"); document.getElementById("detail-tabs")?.scrollIntoView({ behavior: "smooth", block: "start" }); }} />
 
           <div className="card">
             <div className="card-head">
@@ -274,12 +411,12 @@ export default function Simulator() {
           </div>
 
           <div className="card">
-            <div className="tabs" role="tablist">
-              {[["benefits", "받는 혜택"], ["cliffs", "절벽 목록"], ["region", "지역 비교"], ["path", "자립 경로"]].map(([k, label]) => (
+            <div className="tabs" role="tablist" id="detail-tabs">
+              {[["benefits", "받는 혜택"], ["path", "자립 경로"], ["cliffs", "절벽 목록"], ["region", "지역 비교"]].map(([k, label]) => (
                 <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)}>{label}</button>
               ))}
             </div>
-            {tab === "benefits" && <BenefitTable benefits={benefits} />}
+            {tab === "benefits" && <BenefitTable benefits={benefits} data={data} />}
             {tab === "cliffs" && <CliffTable cliffs={cliffs} m={m} />}
             {tab === "region" && (
               <>
@@ -302,18 +439,7 @@ export default function Simulator() {
                 )}
               </>
             )}
-            {tab === "path" && (
-              <>
-                <p>오름의 목적은 소득을 줄이는 것이 아니라, <b>절벽을 손해 없이 넘어가는 경로</b>를 함께 설계하는 것입니다.</p>
-                <ul className="path-list">
-                  <li><b>자산형성 지원</b> — 희망저축계좌·청년내일저축계좌 등은 근로소득 일부를 적립하면 정부 지원금을 더해 줍니다.</li>
-                  <li><b>근로소득공제</b> — 수급자의 근로소득 일부는 소득인정액에서 빠집니다 (청년 60만 원, 노인·장애인 20만 원 추가 공제).</li>
-                  <li><b>자활사업</b> — 자활근로 참여 기간에는 별도 기준이 적용될 수 있습니다.</li>
-                  <li><b>이행 급여·유예 제도</b> — 탈수급 후 일정 기간 일부 급여가 유지되는 제도가 있는지 확인하세요.</li>
-                </ul>
-                <p className="hint">세부 조건은 제도별로 다르므로 행정복지센터·자활센터와 상담하세요.</p>
-              </>
-            )}
+            {tab === "path" && <PathGuide info={info} programs={programs} inc={inc} />}
           </div>
 
           <div className="card">

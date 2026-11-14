@@ -1,0 +1,39 @@
+﻿서비스,정답 조건,AI 조건,결과
+생계급여(맞춤형 급여),income_recognized_pct_median <= 32,income_recognized_pct_median <= 32,정답
+생계급여(맞춤형 급여),,income_recognized_won <= 820556,정답에 없는 조건
+생계급여(맞춤형 급여),,income_recognized_won <= 1343773,정답에 없는 조건
+생계급여(맞춤형 급여),,income_recognized_won <= 1714892,정답에 없는 조건
+생계급여(맞춤형 급여),,income_recognized_won <= 2078316,정답에 없는 조건
+생계급여(맞춤형 급여),,income_recognized_won <= 2418150,정답에 없는 조건
+생계급여(맞춤형 급여),,income_recognized_won <= 2737905,정답에 없는 조건
+주거급여(맞춤형 급여),income_recognized_pct_median <= 48,income_recognized_pct_median <= 48,정답
+의료급여(본인부담 보상금),recipient_status in 의료,recipient_status == 의료,정답
+교육급여(맞춤형 급여),income_recognized_pct_median <= 50,income_recognized_pct_median <= 50,정답
+교육급여(맞춤형 급여),school_enrolled == true,school_enrolled == true,정답
+기초연금,age >= 65,age >= 65,정답
+기초연금,income_recognized_won <= 2470000,income_recognized_won <= 2470000,정답
+에너지바우처,"recipient_status in 생계,의료,주거,교육","recipient_status in 생계,의료,주거,교육",정답
+에너지바우처,senior_in_household/age == true,,누락
+에너지바우처,child_age <= 7,,누락
+에너지바우처,disabled == true,disabled == true,정답
+에너지바우처,single_parent == true,single_parent == true,정답
+에너지바우처,child_count >= 2,,누락
+근로·자녀장려금,total_income_annual < 22000000,total_income_annual < 22000000,정답
+근로·자녀장려금,assets < 240000000,assets < 240000000,정답
+이동통신요금감면,"recipient_status in 생계,의료,주거,교육,차상위","recipient_status in 생계,의료,주거,교육",정답
+이동통신요금감면,basic_pension_recipient == true,basic_pension_recipient == true,정답
+이동통신요금감면,disabled == true,disabled == true,정답
+건강보험료지원,nhis_premium <= 최저보험료,nhis_premium <= 최저보험료,정답
+건강보험료지원,senior_in_household == true,senior_in_household == true,정답
+건강보험료지원,disabled == true,,누락
+건강보험료지원,single_parent == true,single_parent == true,정답
+저소득주민생활안정자금지원,residence_region == 경산시,residence_region == 경산시,정답
+저소득주민생활안정자금지원,"recipient_status in 생계,의료,주거",recipient_status == 생계 | recipient_status == 의료 | recipient_status == 주거,정답
+65세 이상 어르신 진료비 감면 사업,residence_region == 경산시,residence_region == 경산시,정답
+65세 이상 어르신 진료비 감면 사업,age >= 65,age >= 65,정답
+출산축하금 및 장려금 지원,residence_region == 경산시,residence_region == 경산시,정답
+출산축하금 및 장려금 지원,newborn == true,,누락
+출산축하금 및 장려금 지원,,newborn == ,정답에 없는 조건
+경산시 다자녀가정 지원사업,child_birth_order >= 3,child_birth_order >= 3,정답
+경산시 다자녀가정 지원사업,"child_age between 7,18","child_age between 7,18",정답
+경산시 다자녀가정 지원사업,residence_months >= 36,residence_months >= 36,정답

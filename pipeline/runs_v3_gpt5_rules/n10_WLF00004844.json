@@ -1,0 +1,58 @@
+{
+  "service_name": "신혼부부 결혼장려금 지원사업",
+  "judgeable": false,
+  "not_judgeable_reason": "핵심 요건이 ‘혼인신고 후 n년 이내의 신혼부부’이며, 혼인신고일로부터 30일 이내 전입 및 계속 거주, 부부 모두 해당 등 결혼·거주 지속 요건은 제공 필드에 없어 입력만으로 판정이 불가합니다(또한 2년/7년 기준 불일치).",
+  "conditions": [
+    {
+      "field": "age",
+      "op": "<=",
+      "value": "49",
+      "group": "",
+      "evidence": "만 49세 이하 남녀"
+    },
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "영천시",
+      "group": "",
+      "evidence": "부부 모두가 시에 주민등록을 둔 세대"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "혼인신고 후 2년이 경과하지 않은",
+      "group": "",
+      "evidence": "혼인신고 후 2년이 경과하지 않은"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "혼인신고 후 7년이 경과하지 않은",
+      "group": "",
+      "evidence": "혼인신고 후 7년이 경과하지 않은"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "부부 모두가 혼인신고일로부터 30일 이내 시에 주소를 두고 계속해서 거주하는",
+      "group": "",
+      "evidence": "부부 모두가 혼인신고일로부터 30일 이내 시에 주소를 두고 계속해서 거주하는"
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_text": "결혼장려금 300만원 3년간 3회 분할지급 - 6개월 경과 후: 100만원 - 최초지급 1년 경과 후: 100만원 - 최초지급 2년 경과 후: 100만원",
+    "monthly_amount_won": 0,
+    "evidence": "결혼장려금 300만원 3년간 3회 분할지급"
+  },
+  "_meta": {
+    "source_file": "n10_WLF00004844.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-14T00:56:33+00:00",
+    "seconds": 238.2,
+    "input_tokens": 2590,
+    "output_tokens": 4288,
+    "request_id": "chatcmpl-EjwINzEm75FZPoZI8PvPQcZMcNn9Q"
+  }
+}

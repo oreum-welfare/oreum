@@ -458,5 +458,110 @@
       "status": "확인(공식) + 일부 추정",
       "basis": "인천광역시 장애인연금 안내(2026): 선정기준액 단독 1,400,000원·부부 2,240,000원, 기초급여 최대 349,700원, 부가급여 소득계층별 3만~9만 원. 추정: 근로소득 공제(기초연금과 같은 0.7×(근로소득−116만 원)), 계층별 부가급여(수급자 9만·차상위 7만·초과 3만), 기초급여를 생계급여 소득인정액에 포함"
     }
+  },
+  "benefit_sources": {
+    "saeng": {
+      "rule": "생계급여",
+      "verification": [
+        "earned_deduction_rate",
+        "youth_deduction",
+        "senior_disabled_deduction"
+      ]
+    },
+    "medical": {
+      "rule": "의료급여",
+      "verification": [
+        "medical_value_per_person"
+      ]
+    },
+    "jugeo": {
+      "rule": "주거급여",
+      "verification": [
+        "rent",
+        "jugeo_self_share"
+      ]
+    },
+    "edu": {
+      "rule": "교육급여",
+      "verification": [
+        "edu_annual"
+      ]
+    },
+    "basic_pension": {
+      "rule": "기초연금",
+      "verification": [
+        "basic_pension_amount",
+        "basic_pension_couple_cut"
+      ]
+    },
+    "dis_pension": {
+      "rule": "장애인연금",
+      "verification": [
+        "dis_pension"
+      ]
+    },
+    "sp_child": {
+      "rule": "한부모가족 아동양육비",
+      "verification": [
+        "sp_child"
+      ]
+    },
+    "energy": {
+      "rule": "에너지바우처",
+      "verification": [
+        "energy_annual"
+      ]
+    },
+    "munhwa": {
+      "rule": "문화누리카드",
+      "verification": [
+        "munhwa"
+      ]
+    },
+    "telecom": {
+      "rule": "이동통신요금 감면",
+      "verification": [
+        "telecom_monthly"
+      ]
+    },
+    "eitc": {
+      "rule": "근로장려금",
+      "verification": [
+        "eitc"
+      ]
+    },
+    "ctc": {
+      "rule": "자녀장려금",
+      "verification": [
+        "ctc"
+      ]
+    },
+    "gs_clinic": {
+      "rule": "65세 이상 진료비 감면",
+      "verification": [
+        "gs_clinic_value"
+      ]
+    },
+    "gs_birth": {
+      "rule": "출산축하금·장려금",
+      "verification": []
+    },
+    "gs_loan": {
+      "rule": "저소득주민생활안정자금",
+      "verification": []
+    },
+    "gs_multichild": {
+      "rule": "다자녀가정 지원",
+      "verification": [
+        "gs_multichild_annual"
+      ]
+    },
+    "bk_nhis": {
+      "rule": "건강보험료지원",
+      "verification": [
+        "bukgu_min_premium",
+        "bukgu_nhis_value"
+      ]
+    }
   }
 }

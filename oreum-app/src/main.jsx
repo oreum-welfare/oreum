@@ -7,6 +7,7 @@ import Layout from "./components/Layout.jsx";
 import Simulator from "./pages/Simulator.jsx";
 import Analysis from "./pages/Analysis.jsx";
 import Review from "./pages/Review.jsx";
+import AiResults from "./pages/AiResults.jsx";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
@@ -15,6 +16,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Route element={<Layout />}>
           <Route index element={<Simulator />} />
           <Route path="analysis" element={<Analysis />} />
+          <Route path="ai" element={<AiResults />} />
           <Route path="review" element={<Review />} />
           <Route path="*" element={<Simulator />} />
         </Route>

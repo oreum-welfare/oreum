@@ -3,6 +3,7 @@ import { Bar, Line, Scatter } from "react-chartjs-2";
 import { createEngine } from "../lib/engine.js";
 import { man, pct, won } from "../lib/format.js";
 import { useJson } from "../lib/useJson.js";
+import { taperSimulation } from "../lib/policy.js";
 
 const STEP = 10000;
 const EXTRA = 100000;
@@ -53,13 +54,81 @@ function Findings({ all }) {
     return { r, cnt: cases.filter((c) => c.region === r).reduce((s, c) => s + c.cliffs.length, 0),
       avg: cs.length ? cs.reduce((s, c) => s + c.maxCliff.drop, 0) / cs.length : 0 };
   });
+  const policy = cases.reduce((acc, c) => {
+    const r = taperSimulation(c.sim, c.m, 10);
+    return { after: acc.after + r.cliffs.length, max: Math.max(acc.max, ...r.cliffs.map((x) => x.drop)) };
+  }, { after: 0, max: 0 });
   return (
     <ol className="findings">
       {top && <li><b>가장 큰 절벽은 {top.type.label}({top.region})</b>입니다. 월 소득이 {won(top.maxCliff.income)}(중위소득 {pct(top.maxCliff.pct)})이 되는 순간 <span className="big">{won(top.maxCliff.drop)}</span>을 잃습니다. 사라지는 혜택: {top.maxCliff.lost.join(", ") || "금액 감소"}.</li>}
       {ends.length > 0 && <li>혜택이 끊기는 지점 {ends.length}개 중 <b>{Math.round((win.count / ends.length) * 100)}%({win.count}개)가 근로소득 기준 중위소득 {win.from}~{win.from + 10}% 구간</b>에 몰려 있습니다. (근로소득공제 때문에 소득인정액 기준으로는 그보다 낮은 구간입니다.)</li>}
       <li>12가지 경우 중 <b>{cases.filter((c) => c.lossZones > 0).length}가지</b>에서 '10만 원을 더 벌어도 오히려 손해'인 소득 구간이 있습니다.</li>
+      <li><b>제도 개선 효과:</b> 수급 자격에 묶인 혜택을 기준선에서 한 번에 끊지 않고 중위소득 10%p 구간에서 서서히 줄이면, 절벽이 {cases.reduce((s, c) => s + c.cliffs.length, 0)}개에서 <b>{policy.after}개</b>로, 가장 큰 손해가 {won(top?.maxCliff.drop ?? 0)}에서 <b>{won(policy.max)}</b>으로 줄어듭니다 (분석 ⑤).</li>
       <li>지역별 비교: {byRegion.map((x, i) => <span key={x.r}>{i > 0 && " · "}<b>{x.r}</b> 절벽 {x.cnt}개, 가장 큰 절벽 평균 {won(x.avg)}</span>)}.</li>
     </ol>
+  );
+}
+
+const WIDTHS = [5, 10, 15];
+
+function PolicySection({ all, data }) {
+  const [width, setWidth] = useState(10);
+  const [pType, setPType] = useState("single_parent");
+  const [pRegion, setPRegion] = useState("경상북도 경산시");
+  const rows = useMemo(() => all.cases.map((c) => ({ c, r: taperSimulation(c.sim, c.m, width) })), [all, width]);
+  const before = rows.reduce((s, x) => s + x.c.cliffs.length, 0);
+  const after = rows.reduce((s, x) => s + x.r.cliffs.length, 0);
+  const maxBefore = Math.max(...rows.map((x) => x.c.maxCliff?.drop ?? 0));
+  const maxAfter = Math.max(0, ...rows.flatMap((x) => x.r.cliffs.map((c) => c.drop)));
+  const sel = rows.find((x) => x.c.type.key === pType && x.c.region === pRegion);
+  const labels = sel.c.sim.incomes;
+  return (
+    <section className="card">
+      <div className="card-head">
+        <h2 className="card-title">분석 ⑤ 제도 개선 시뮬레이션: 혜택을 한 번에 끊지 않고 서서히 줄이면</h2>
+        <div className="controls">
+          <label className="field-inline small">점감 폭 <select value={width} onChange={(e) => setWidth(Number(e.target.value))}>
+            {WIDTHS.map((w) => <option key={w} value={w}>중위소득 {w}%p</option>)}</select></label>
+        </div>
+      </div>
+      <p className="hint">가상 시나리오: 혜택이 끊기는 기준선 위로 소득인정액 기준 중위소득 {width}%p 구간을 두고, 그 안에서 혜택을 0원까지 직선으로 줄입니다. 실제 제도가 아니라 제도 개선 효과를 보여 주기 위한 계산입니다.</p>
+      <div className="stats compact">
+        <div className="stat"><div className="label">절벽 수 (12가지 경우 합계)</div><div className="value">{before} → <span style={{ color: after < before ? "var(--ok)" : "var(--cliff)" }}>{after}</span><small>개</small></div></div>
+        <div className="stat"><div className="label">가장 큰 손해</div><div className="value">{man(maxBefore)} → <span style={{ color: "var(--ok)" }}>{man(maxAfter)}</span><small>원</small></div></div>
+        <div className="stat"><div className="label">점감 구간 폭 (근로소득)</div><div className="value">{man(sel.r.widthEarned)}<small>원</small></div><div className="stat-sub">{sel.c.type.label} 기준</div></div>
+        <div className="stat"><div className="label">점감 구간 추가 지원 (평균)</div><div className="value">{man(sel.r.extraAvg)}<small>원/월</small></div><div className="stat-sub">그 구간에 있는 가구만</div></div>
+      </div>
+      <div className="card-head" style={{ marginTop: 16 }}>
+        <h3 className="card-title" style={{ margin: 0 }}>현행 vs 점감</h3>
+        <div className="controls">
+          <label className="field-inline small">가구 <select value={pType} onChange={(e) => setPType(e.target.value)}>{data.analysis_households.map((t) => <option key={t.key} value={t.key}>{t.label}</option>)}</select></label>
+          <label className="field-inline small">지역 <select value={pRegion} onChange={(e) => setPRegion(e.target.value)}>{all.regions.map((r) => <option key={r}>{r}</option>)}</select></label>
+        </div>
+      </div>
+      <div className="chart-box short"><Line data={{ labels, datasets: [
+        { label: "현행: 근로소득 + 혜택", data: sel.c.sim.disposable, borderColor: "#e03131", borderWidth: 2, pointRadius: 0 },
+        { label: `점감 ${width}%p: 근로소득 + 혜택`, data: sel.r.disposable, borderColor: "#2b8a3e", borderWidth: 2, pointRadius: 0 },
+      ] }} options={{ responsive: true, maintainAspectRatio: false, animation: false, interaction: { mode: "index", intersect: false },
+        scales: { x: { grid: { display: false }, ticks: { autoSkip: false, maxRotation: 0, callback: (_v, i) => (labels[i] % 500000 === 0 ? man(labels[i]) : null) } }, y: { ticks: { callback: (v) => man(v) } } },
+        plugins: { legend: { position: "bottom" }, tooltip: { callbacks: { title: (its) => `월 근로소득 ${won(labels[its[0].dataIndex])}`, label: (it) => ` ${it.dataset.label}: ${won(it.raw)}` } } } }} /></div>
+      <div className="table-wrap"><table>
+        <thead><tr><th>가구 유형</th><th>지역</th><th style={{ textAlign: "right" }}>절벽 수</th><th style={{ textAlign: "right" }}>가장 큰 손해</th><th style={{ textAlign: "right" }}>점감 구간 추가 지원 (평균)</th></tr></thead>
+        <tbody>{rows.map(({ c, r }, i) => {
+          const start = i === 0 || rows[i - 1].c.type.key !== c.type.key;
+          const ma = Math.max(0, ...r.cliffs.map((x) => x.drop));
+          return (
+            <tr key={c.type.key + c.region} className={start ? "group-start" : ""}>
+              <td>{start && <b>{c.type.label}</b>}</td><td>{c.region}</td>
+              <td className="num">{c.cliffs.length} → {r.cliffs.length}</td>
+              <td className="num">{c.maxCliff ? won(c.maxCliff.drop) : "-"} → {r.cliffs.length ? won(ma) : "없음"}</td>
+              <td className="num">{won(r.extraAvg)}</td>
+            </tr>
+          );
+        })}</tbody>
+      </table></div>
+      <p className="stat-inline"><b>정책 제안:</b> 수급 자격에 묶인 정액·감면 혜택(교육급여, 에너지바우처, 통신비, 문화누리카드, 의료급여, 아동양육비 등)을 기준선에서 한 번에 끊지 않고 일정 구간에서 서서히 줄이면,
+        큰 절벽은 대부분 사라지고 몇천 원 수준의 작은 감소만 남습니다. 남는 감소는 여러 혜택이 같은 구간에서 함께 줄어들기 때문이며, 점감 폭이 너무 좁으면({WIDTHS[0]}%p) 오히려 작은 절벽이 늘어납니다.</p>
+    </section>
   );
 }
 
@@ -179,6 +248,7 @@ export default function Analysis() {
             ? <>가장 나쁜 구간은 월 <b>{won(eLabels[worstIdx])}</b>에서 10만 원을 더 벌 때로, 오히려 <b style={{ color: "var(--cliff)" }}>{won(-ec.worst)}</b>이 줄어듭니다.</>
             : <>이 가구에는 손해 구간이 없습니다.</>}</p>
         </section>
+        <PolicySection all={all} data={data} />
         <section className="card">
           <h2 className="card-title">분석 방법과 한계</h2>
           <div className="method-grid">

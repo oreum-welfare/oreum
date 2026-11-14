@@ -1,0 +1,23 @@
+﻿서비스,정답 조건,AI 조건,결과
+장애인활동지원사업(구비추가),disabled == true,disabled == true,정답
+다둥이 차량렌탈 지원사업,residence_region == *,residence_region == 대구광역시 북구,정답
+다둥이 차량렌탈 지원사업,child_count >= 2,child_count >= 2,정답
+다둥이 차량렌탈 지원사업,child_age < 10,child_age < 10,정답
+영천시 청년근로자 월세 지원,residence_region == *,residence_region == 영천시,정답
+영천시 청년근로자 월세 지원,"age between 19,45","age between 19,45",정답
+영천시 청년근로자 월세 지원,income_recognized_pct_median/total_income_annual <= 120,income_recognized_pct_median <= 120,정답
+영천시 청년근로자 월세 지원,assets <= 122000000,assets <= 122000000,정답
+신혼부부 전세자금 대출이자 지원사업,residence_region == *,residence_region == 영천시,정답
+신혼부부 전세자금 대출이자 지원사업,age <= 49,age <= 49,정답
+신혼부부 전세자금 대출이자 지원사업,income_recognized_pct_median/total_income_annual <= 180,income_recognized_pct_median <= 180,정답
+신혼부부 결혼장려금 지원사업,residence_region == *,residence_region == 영천시,정답
+신혼부부 결혼장려금 지원사업,age <= 49,age <= 49,정답
+난청 어르신 보청기 지원 사업,age >= 70,age >= 70,정답
+난청 어르신 보청기 지원 사업,residence_months >= 12,residence_months >= 12,정답
+영천시 여성청소년 생리용품 지원 사업,residence_region == *,residence_region == 영천시,정답
+영천시 여성청소년 생리용품 지원 사업,"age between 16,18",,누락
+영천시 여성청소년 생리용품 지원 사업,,age >= 16,정답에 없는 조건
+영천시 여성청소년 생리용품 지원 사업,,age <= 18,정답에 없는 조건
+중고등학교 신입생 교복구입비 지원,residence_region == *,residence_region == 영천시,정답
+영천시 출산양육장려금 지원,residence_region == *,residence_region == 영천시,정답
+영천시 출산양육장려금 지원,newborn == true,newborn == true,정답

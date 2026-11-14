@@ -1,0 +1,58 @@
+{
+  "service_name": "영천시 여성청소년 생리용품 지원 사업",
+  "judgeable": false,
+  "not_judgeable_reason": "대상은 ‘여성청소년’으로 한정되나, 제공된 입력 항목에는 성별을 확인할 필드가 없어 필수 조건을 입력만으로 1차 판정할 수 없습니다.",
+  "conditions": [
+    {
+      "field": "residence_region",
+      "op": "==",
+      "value": "영천시",
+      "group": "",
+      "evidence": "영천시에 주소가 되어있는 만16세~만18세 여성청소년에게 생리용품을 구입할 수 있는 바우처를 지원합니다."
+    },
+    {
+      "field": "age",
+      "op": ">=",
+      "value": "16",
+      "group": "",
+      "evidence": "영천시에 주민등록을 두고 거주하는 만 16세 이상 18세 이하 여성청소년에게 지원합니다."
+    },
+    {
+      "field": "age",
+      "op": "<=",
+      "value": "18",
+      "group": "",
+      "evidence": "영천시에 주민등록을 두고 거주하는 만 16세 이상 18세 이하 여성청소년에게 지원합니다."
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "여성청소년",
+      "group": "",
+      "evidence": "만16세~만18세 여성청소년"
+    },
+    {
+      "field": "other",
+      "op": "==",
+      "value": "여성가족부 바우처와 중복 지원 불가",
+      "group": "",
+      "evidence": "여성가족부에서 운영중인 바우처(여성청소년 생리용품 지원사업)과는 중복 지원하지 않습니다."
+    }
+  ],
+  "benefit": {
+    "type": "inkind",
+    "amount_text": "월 14,000원 전자바우처로 지원",
+    "monthly_amount_won": 14000,
+    "evidence": "-지원내용: 월 14,000원 전자바우처로 지원"
+  },
+  "_meta": {
+    "source_file": "n12_WLF00006173.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-14T00:59:35+00:00",
+    "seconds": 157.5,
+    "input_tokens": 2796,
+    "output_tokens": 3269,
+    "request_id": "chatcmpl-EjwMcxW0ic0bemOvWannVo5Apfnii"
+  }
+}

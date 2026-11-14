@@ -1,0 +1,72 @@
+{
+  "service_name": "생계급여(맞춤형 급여)",
+  "judgeable": true,
+  "not_judgeable_reason": "",
+  "conditions": [
+    {
+      "field": "income_recognized_pct_median",
+      "op": "<=",
+      "value": "32",
+      "group": "소득인정액 기준",
+      "evidence": "생계급여 기준 중위소득 32% 이하"
+    },
+    {
+      "field": "income_recognized_won",
+      "op": "<=",
+      "value": "820556",
+      "group": "소득인정액 기준",
+      "evidence": "1인가구: 820,556원"
+    },
+    {
+      "field": "income_recognized_won",
+      "op": "<=",
+      "value": "1343773",
+      "group": "소득인정액 기준",
+      "evidence": "2인가구: 1,343,773원"
+    },
+    {
+      "field": "income_recognized_won",
+      "op": "<=",
+      "value": "1714892",
+      "group": "소득인정액 기준",
+      "evidence": "3인가구: 1,714,892원"
+    },
+    {
+      "field": "income_recognized_won",
+      "op": "<=",
+      "value": "2078316",
+      "group": "소득인정액 기준",
+      "evidence": "4인가구: 2,078,316원"
+    },
+    {
+      "field": "income_recognized_won",
+      "op": "<=",
+      "value": "2418150",
+      "group": "소득인정액 기준",
+      "evidence": "5인가구: 2,418,150원"
+    },
+    {
+      "field": "income_recognized_won",
+      "op": "<=",
+      "value": "2737905",
+      "group": "소득인정액 기준",
+      "evidence": "6인 가구: 2,737,905원"
+    }
+  ],
+  "benefit": {
+    "type": "cash",
+    "amount_text": "생계급여액은 생계급여 선정기준(급여기준)에서 가구의 소득인정액을 차감한 금액입니다. 소득인정액은 소득평가액과 재산의 소득환산액(재산의 종류별가액-기본재산액-부채 후 환산율 적용)의 합으로 산정합니다.",
+    "monthly_amount_won": 0,
+    "evidence": "생계급여액은 생계급여 선정기준(급여기준)에서 가구의 소득인정액을 차감한 금액"
+  },
+  "_meta": {
+    "source_file": "c01_saeng.txt",
+    "model": "gpt-5-2025-08-07",
+    "effort": "-",
+    "converted_at": "2026-11-14T00:00:49+00:00",
+    "seconds": 136.8,
+    "input_tokens": 2926,
+    "output_tokens": 6124,
+    "request_id": "chatcmpl-EjvS6UZ173wzsmAKB4yqBeM9hF9Wn"
+  }
+}
