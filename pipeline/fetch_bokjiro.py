@@ -14,7 +14,9 @@ API마다 공공데이터포털에서 따로 활용신청해야 한다 (같은 �
 
 검증: 2026-11-14 지자체 API로 경산시 18건 수집. 복지로 상세 페이지에서 모은 원문과 14건 중 13건 동일,
    1건은 API 쪽이 더 완전함(소제목 포함).
-   중앙부처 API도 실제 호출로 확인 (생계급여 원문이 복지로 화면 원문과 같음, 줄바꿈만 없음).
+   중앙부처 API도 실제 호출로 확인: 앱이 쓰는 중앙 제도 8종 수집. 복지로 화면에서 옮겨 적은 원문의 97~100%가 API 원문 안에 있고,
+   API에는 서비스 내용 등 화면 원문에 없던 부분이 더 있음.
+   서버가 가끔 느려서 3번까지 다시 시도하고, 끝내 실패하면 건너뛰고 다시 실행할 검색어를 알려 줌.
 주의: API 원문에는 줄바꿈이 없음 (복지로 화면의 줄바꿈이 빠진 채 제공됨).
 """
 from __future__ import annotations
@@ -72,9 +74,21 @@ def format_body(detail: dict) -> list:
     return body
 
 
+class ApiTimeout(Exception):
+    pass
+
+
 def call(base: str, op: str, key: str, **params) -> ET.Element:
     params["serviceKey"] = key
-    r = requests.get(f"{base}/{op}", params=params, timeout=30)
+    for attempt in range(3):  # 공공데이터포털 서버가 가끔 느려서 3번까지 다시 시도
+        try:
+            r = requests.get(f"{base}/{op}", params=params, timeout=40)
+            break
+        except (requests.Timeout, requests.ConnectionError):
+            if attempt == 2:
+                raise ApiTimeout(f"{op} 응답 없음 (3번 시도)")
+            print(f"    응답이 늦어 다시 시도합니다 ({attempt + 2}/3)")
+            time.sleep(3 * (attempt + 1))
     r.raise_for_status()
     root = ET.fromstring(r.content)
     # 인증 오류 등은 OpenAPI_ServiceResponse 형식으로 온다
@@ -133,8 +147,15 @@ def main() -> None:
         sys.exit("DATA_GO_KR_KEY 환경변수에 공공데이터포털 인증키를 넣어 주세요.")
     base, list_op, detail_op = ENDPOINTS["local" if args.local else "central"]
 
+    failed = []
     for word in (args.search or [None]):
-        fetch(args, key, base, list_op, detail_op, word)
+        try:
+            fetch(args, key, base, list_op, detail_op, word)
+        except ApiTimeout as e:
+            print(f"[{word or '목록'}] 건너뜀: {e}")
+            failed.append(word or "목록")
+    if failed:
+        print("다시 실행할 검색어:", " ".join(failed))
 
 
 def fetch(args, key: str, base: str, list_op: str, detail_op: str, word: str | None) -> None:
@@ -159,7 +180,11 @@ def fetch(args, key: str, base: str, list_op: str, detail_op: str, word: str | N
         sid = it.get("servId")
         if not sid:
             continue
-        detail = parse_detail(call(base, detail_op, key, servId=sid, **({} if args.local else {"callTp": "D"})))
+        try:
+            detail = parse_detail(call(base, detail_op, key, servId=sid, **({} if args.local else {"callTp": "D"})))
+        except ApiTimeout as e:
+            print(f"  건너뜀: {it.get('servNm', sid)} ({e})")
+            continue
         name = detail.get("servNm") or it.get("servNm", sid)
         if args.local:
             region = " ".join(x for x in [it.get("ctpvNm"), it.get("sggNm")] if x) or "지자체"
