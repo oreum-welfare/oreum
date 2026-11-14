@@ -90,7 +90,7 @@ python pipeline/convert.py --provider openai --prefix api --out pipeline/runs_ap
   ```bash
   python pipeline/fetch_bokjiro.py --central --search 생계급여 --limit 5
   ```
-  응답 항목 이름(`tgtrDtlCn` 지원대상, `wlfareInfoOutlCn` 요약, 신청방법·근거법령·문의처 목록)은 공공데이터포털 명세로 확인했고, 실제 호출 결과는 아직 확인 전입니다.
+  실제 호출로 확인했습니다 (2026-11-14, 생계급여 원문이 복지로 화면 원문과 같음). 여러 서비스는 `--search 생계급여 주거급여 교육급여`처럼 띄어 쓰면 한 번에 받습니다.
 - 정답이 없는 서비스는 정확도 계산에서 빠지고, 규칙만 생성됩니다.
 
 ## 한계

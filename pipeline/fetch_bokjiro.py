@@ -4,6 +4,7 @@
   $env:DATA_GO_KR_KEY = "발급받은_일반인증키(Decoding)"
   python pipeline/fetch_bokjiro.py --local --sido 경상북도 --sigungu 경산시 --limit 30
   python pipeline/fetch_bokjiro.py --central --search 생계급여 --limit 5
+  python pipeline/fetch_bokjiro.py --central --limit 3 --search 생계급여 주거급여 교육급여   # 여러 개
   python pipeline/fetch_bokjiro.py --central --limit 20          # 검색어 없이 목록 앞쪽부터
 
 결과: pipeline/raw/api_<서비스ID>.txt  (convert.py가 그대로 읽는 형식)
@@ -13,7 +14,7 @@ API마다 공공데이터포털에서 따로 활용신청해야 한다 (같은 �
 
 검증: 2026-11-14 지자체 API로 경산시 18건 수집. 복지로 상세 페이지에서 모은 원문과 14건 중 13건 동일,
    1건은 API 쪽이 더 완전함(소제목 포함).
-   중앙부처 API는 주소·응답 항목 이름을 공공데이터포털 명세(Swagger)로 확인함. 요청 변수(callTp, srchKeyCode, searchWrd)는 실제 호출로 확인 필요.
+   중앙부처 API도 실제 호출로 확인 (생계급여 원문이 복지로 화면 원문과 같음, 줄바꿈만 없음).
 주의: API 원문에는 줄바꿈이 없음 (복지로 화면의 줄바꿈이 빠진 채 제공됨).
 """
 from __future__ import annotations
@@ -97,7 +98,7 @@ def parse_detail(root: ET.Element) -> dict[str, str]:
             nested_nodes.update(node.iter())
             name = (node.findtext("servSeDetailNm") or "").strip()
             link = (node.findtext("servSeDetailLink") or "").strip()
-            if name:
+            if name and not name.endswith("목록"):  # '신청기관연락처목록' 같은 분류 이름은 원문이 아님
                 lines.append(f"- {name}" + (f" ({link})" if link and tag == "inqplCtadrList" else ""))
         if lines:
             detail[tag] = ["\n".join(lines)]
@@ -122,7 +123,7 @@ def main() -> None:
     kind.add_argument("--central", action="store_true", help="중앙부처 복지서비스")
     ap.add_argument("--sido", help="시도명 (지자체)")
     ap.add_argument("--sigungu", help="시군구명 (지자체)")
-    ap.add_argument("--search", help="검색어 (서비스명 기준)")
+    ap.add_argument("--search", nargs="*", help="검색어 (서비스명 기준). 여러 개를 띄어 쓰면 하나씩 검색")
     ap.add_argument("--limit", type=int, default=20)
     args = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8")
@@ -132,6 +133,11 @@ def main() -> None:
         sys.exit("DATA_GO_KR_KEY 환경변수에 공공데이터포털 인증키를 넣어 주세요.")
     base, list_op, detail_op = ENDPOINTS["local" if args.local else "central"]
 
+    for word in (args.search or [None]):
+        fetch(args, key, base, list_op, detail_op, word)
+
+
+def fetch(args, key: str, base: str, list_op: str, detail_op: str, word: str | None) -> None:
     params = {"pageNo": 1, "numOfRows": args.limit}
     if args.local:
         if args.sido:
@@ -141,13 +147,13 @@ def main() -> None:
     else:
         params["callTp"] = "L"
         params["srchKeyCode"] = "001"  # 001 = 서비스명으로 검색
-    if args.search:
-        params["searchWrd"] = args.search
+    if word:
+        params["searchWrd"] = word
 
     root = call(base, list_op, key, **params)
     total = root.findtext(".//totalCount")
     items = [leaves(it) for it in root.iter("servList")]
-    print(f"목록 {len(items)}건" + (f" (전체 {total}건)" if total else ""))
+    print((f"[{word}] " if word else "") + f"목록 {len(items)}건" + (f" (전체 {total}건)" if total else ""))
     RAW_DIR.mkdir(exist_ok=True)
     for it in items:
         sid = it.get("servId")
