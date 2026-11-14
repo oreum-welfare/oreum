@@ -52,6 +52,7 @@ BUKGU_NHIS_RATE = _P["bukgu_nhis_rate"]
 BUKGU_MIN_PREMIUM = _P["bukgu_min_premium"]
 BUKGU_NHIS_VALUE = _P["bukgu_nhis_value"]
 REGIONS = DATA["regions"]
+ASSETS = _P.get("assets")
 
 
 def median_income(size: int) -> int:
@@ -86,6 +87,9 @@ class Household:
     single_parent: bool = False
     third_child_7to18: bool = False
     residence_months: int = 60
+    housing_asset: float = 0  # 주택·전세보증금 (원)
+    financial_asset: float = 0  # 예금·적금 등 (원)
+    debt: float = 0  # 부채 (원)
 
     @property
     def children(self) -> int:
@@ -150,6 +154,28 @@ def _ctc(annual: float, typ: str, kids: int) -> float:
     return CTC_MAX_PER_CHILD * kids * ratio
 
 
+def _asset_incomes(hh: Household, region: dict) -> tuple[float, float, float]:
+    """재산의 소득환산액 (월): (기초생활보장·한부모 방식, 기초연금·장애인연금 방식, 장려금 재산 요건 배율)"""
+    if not ASSETS:
+        return 0.0, 0.0, 1.0
+    a_basic, a_pen, a_eitc = ASSETS["basic"], ASSETS["pension"], ASSETS["eitc"]
+    H, F, D = hh.housing_asset, hh.financial_asset, hh.debt
+    hin = min(H, region["housing_limit"])
+    hover = H - hin
+    fin = max(0, F - a_basic["financial_living_allowance"])
+    ded = region["asset_base"] + D  # 기본재산액·부채: 주거용(한도 내) → 한도 초과분 → 금융재산 순으로 공제
+    t = min(hin, ded); hin -= t; ded -= t
+    t = min(hover, ded); hover -= t; ded -= t
+    t = min(fin, ded); fin -= t
+    basic = hin * a_basic["rate_housing"] + hover * a_basic["rate_general"] + fin * a_basic["rate_financial"]
+    general = max(0, H - region["pension_asset_deduction"])
+    pfin = max(0, F - a_pen["financial_deduction"])
+    pension = (max(0, general + pfin - D) * a_pen["annual_rate"]) / 12
+    total = H + F
+    factor = 0.0 if total >= a_eitc["limit"] else 0.5 if total > a_eitc["half_over"] else 1.0
+    return basic, pension, factor
+
+
 # ---------------------------------------------------------------------------
 # 판정
 # ---------------------------------------------------------------------------
@@ -159,13 +185,14 @@ def evaluate(hh: Household, earned: float) -> list[Benefit]:
     m = median_income(size)
     region = REGIONS[hh.region]
     out: list[Benefit] = []
+    asset_basic, asset_pension, eitc_factor = _asset_incomes(hh, region)
 
     # 기초연금 (소득인정액 계산에 들어가므로 먼저)
     bp = 0.0
     if hh.age >= 65:
         couple = hh.spouse
         line = BASIC_PENSION_LINE["couple" if couple else "single"]
-        eval_income = 0.7 * max(0.0, earned - BASIC_PENSION_EARNED_DEDUCTION)
+        eval_income = 0.7 * max(0.0, earned - BASIC_PENSION_EARNED_DEDUCTION) + asset_pension
         if eval_income <= line:
             if couple and hh.spouse_65:
                 bp = 2 * BASIC_PENSION_AMOUNT * (1 - BASIC_PENSION_COUPLE_CUT)
@@ -178,10 +205,10 @@ def evaluate(hh: Household, earned: float) -> list[Benefit]:
     dp_basic = 0.0
     if DIS_PENSION and hh.severe_disabled and DIS_PENSION["age_min"] <= hh.age <= DIS_PENSION["age_max"]:
         line = DIS_PENSION["line_couple"] if hh.spouse else DIS_PENSION["line_single"]
-        if 0.7 * max(0.0, earned - DIS_PENSION["earned_deduction"]) <= line:
+        if 0.7 * max(0.0, earned - DIS_PENSION["earned_deduction"]) + asset_pension <= line:
             dp_basic = DIS_PENSION["basic"]
 
-    # 기초생활보장 소득인정액 (재산 0 가정, 기초연금은 소득으로 반영)
+    # 기초생활보장 소득인정액 = 소득평가액 + 재산의 소득환산액 + 기초연금·장애인연금 기초급여
     # 근로소득공제 (2026 사업안내): 청년(34세 이하) 60만 원, 노인(65세+)·장애인 20만 원을 먼저 뺀 뒤 30%
     flat = 0
     if YOUTH_DEDUCTION and hh.age <= YOUTH_DEDUCTION["age_max"]:
@@ -189,7 +216,7 @@ def evaluate(hh: Household, earned: float) -> list[Benefit]:
     elif SENIOR_DISABLED_DEDUCTION and (hh.age >= SENIOR_DISABLED_DEDUCTION["age_min"] or hh.is_disabled):
         flat = SENIOR_DISABLED_DEDUCTION["flat"]
     eval_earned = max(0.0, earned - flat)
-    ri = eval_earned * (1 - EARNED_DEDUCTION_RATE) + bp + dp_basic
+    ri = eval_earned * (1 - EARNED_DEDUCTION_RATE) + asset_basic + bp + dp_basic
 
     saeng_line = SAENG_LINE[size]
     saeng = max(0.0, saeng_line - ri)
@@ -251,17 +278,17 @@ def evaluate(hh: Household, earned: float) -> list[Benefit]:
 
     typ = _eitc_type(hh)
     annual = earned * 12
-    e = _eitc(annual, typ)
+    e = _eitc(annual, typ) * eitc_factor
     if e > 0:
         out.append(Benefit("eitc", "근로장려금", "중앙", "cash", e / 12,
                            "연 지급액을 월로 환산 (전년도 소득 기준 지급)"))
-    c = _ctc(annual, typ, hh.children)
+    c = _ctc(annual, typ, hh.children) * eitc_factor
     if c > 0:
         out.append(Benefit("ctc", "자녀장려금", "중앙", "cash", c / 12, "연 지급액을 월로 환산"))
 
     # 한부모가족 아동양육비: 소득인정액(근로소득 30% 공제) ≤ 중위 65%, 18세 미만 자녀 1인당 월 23만 원
     if SP_CHILD and hh.single_parent and hh.children > 0:
-        ri_sp = earned * (1 - EARNED_DEDUCTION_RATE)
+        ri_sp = earned * (1 - EARNED_DEDUCTION_RATE) + asset_basic
         if ri_sp <= SP_CHILD["pct_median"] / 100 * m:
             out.append(Benefit("sp_child", "한부모 아동양육비", "중앙", "cash", SP_CHILD["monthly_per_child"] * hh.children,
                                f"한부모 + 소득인정액 ≤ 중위 {SP_CHILD['pct_median']}%, 자녀 {hh.children}명 × 월 {SP_CHILD['monthly_per_child']:,}원"))

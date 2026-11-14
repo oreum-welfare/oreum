@@ -10,7 +10,7 @@ const { createEngine } = await import(pathToFileURL(join(root, "oreum-app/src/li
 const eng = createEngine(JSON.parse(readFileSync(join(root, "data/rules.json"), "utf8")));
 const cases = JSON.parse(readFileSync(join(root, "tests/cases.json"), "utf8"));
 const py = JSON.parse(readFileSync(join(root, "tests/py_out.json"), "utf8"));
-const map = { spouse_65: "spouse65", dual_earner: "dualEarner", birth_order: "birthOrder", single_parent: "singleParent", third_child_7to18: "thirdChild7to18", residence_months: "residenceMonths", severe_disabled: "severeDisabled" };
+const map = { spouse_65: "spouse65", dual_earner: "dualEarner", birth_order: "birthOrder", single_parent: "singleParent", third_child_7to18: "thirdChild7to18", residence_months: "residenceMonths", severe_disabled: "severeDisabled", housing_asset: "housingAsset", financial_asset: "financialAsset" };
 
 let bad = 0;
 cases.forEach((c, i) => {

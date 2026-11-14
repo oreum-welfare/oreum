@@ -355,3 +355,11 @@ tr.ev-row td { background: #f8f9fc; }
 @media (max-width: 560px) {
   .chart-legend { font-size: 11px; gap: 2px 10px; }
 }
+
+/* ---------- 재산 입력 ---------- */
+.assets { border: 0; padding: 0; margin: 0 0 12px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.assets legend { font-size: 13px; color: var(--sub); margin-bottom: 4px; padding: 0; }
+.assets .optional { color: var(--muted); font-size: 12px; }
+.assets label { display: flex; flex-direction: column; gap: 2px; font-size: 12px; color: var(--muted); }
+.assets .field-note { grid-column: 1 / -1; }
+@media (max-width: 960px) and (min-width: 561px) { .assets { grid-template-columns: repeat(3, 1fr); } }

@@ -147,20 +147,46 @@
         "near_poor": 70000,
         "above": 30000
       }
+    },
+    "assets": {
+      "basic": {
+        "rate_housing": 0.0104,
+        "rate_general": 0.0417,
+        "rate_financial": 0.0626,
+        "financial_living_allowance": 5000000
+      },
+      "pension": {
+        "financial_deduction": 20000000,
+        "annual_rate": 0.04
+      },
+      "eitc": {
+        "limit": 240000000,
+        "half_over": 170000000
+      }
     }
   },
   "provisional": [
     "gs_clinic_value",
-    "dis_pension(근로소득공제·부가급여 계층별 금액)"
+    "dis_pension(근로소득공제·부가급여 계층별 금액)",
+    "asset_basic(그 외 지역 주거용재산 한도, 한부모 적용)",
+    "asset_pension(장애인연금 적용)"
   ],
   "regions": {
     "대구광역시 북구": {
       "rent_grade": "3급지(광역시·세종)",
-      "sido": "대구광역시"
+      "sido": "대구광역시",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_asset_deduction": 135000000
     },
     "경상북도 경산시": {
       "rent_grade": "4급지(그 외 지역)",
-      "sido": "경상북도"
+      "sido": "경상북도",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_asset_deduction": 85000000
     }
   },
   "analysis_households": [
@@ -343,7 +369,8 @@
     }
   ],
   "assumptions": [
-    "재산은 0원으로 가정합니다 (소득인정액 = 근로소득 × (1 − 근로소득공제율) + 기초연금).",
+    "재산은 사용자가 넣은 주택·전세보증금(주거용재산), 예금·적금(금융재산), 부채만 반영합니다. 토지·자동차·기타 재산은 반영하지 않습니다 (입력하지 않으면 재산 0원).",
+    "재산의 소득환산: 기초생활보장·한부모는 (재산 − 기본재산액 − 부채) × 재산 종류별 월 환산율, 기초연금·장애인연금은 (재산 − 기본재산 공제 − 부채 + 금융재산 − 2,000만 원) × 연 4% ÷ 12. 근로·자녀장려금은 재산 합계 2억4천만 원 이상이면 제외, 1억7천만 원 초과면 50%.",
     "근로소득공제(2026 사업안내): 일반 30%, 만 34세 이하는 월 60만 원을 먼저 뺀 뒤 30%, 65세 이상·장애인은 월 20만 원을 먼저 뺀 뒤 30%. 가구 소득 전체에 본인 나이·장애 여부 기준으로 적용한 근사입니다.",
     "한부모 아동양육비는 근로소득 30% 공제만 적용한 소득인정액으로 판정하고(청년·노인 추가공제 제외), 생계급여 소득인정액에는 넣지 않습니다(중복 수령 가능).",
     "장애인연금은 '심한 장애'를 체크한 18~64세 본인 기준으로 계산하며, 기초급여는 기초연금처럼 생계급여 소득인정액에 포함합니다(추정).",
@@ -457,6 +484,21 @@
       "value": "18~64세 중증장애인, 선정기준 단독 140만·부부 224만 원, 기초급여 349,700원 + 부가급여 3만~9만 원",
       "status": "확인(공식) + 일부 추정",
       "basis": "인천광역시 장애인연금 안내(2026): 선정기준액 단독 1,400,000원·부부 2,240,000원, 기초급여 최대 349,700원, 부가급여 소득계층별 3만~9만 원. 추정: 근로소득 공제(기초연금과 같은 0.7×(근로소득−116만 원)), 계층별 부가급여(수급자 9만·차상위 7만·초과 3만), 기초급여를 생계급여 소득인정액에 포함"
+    },
+    "asset_basic": {
+      "value": "기본재산액 광역시 7,700만·그 외 5,300만 원 / 주거용재산 한도 광역시 1억4,600만·그 외 1억1,200만 원 / 환산율 주거용 월 1.04%·일반 4.17%·금융 6.26% / 금융재산 생활준비금 500만 원",
+      "status": "확인(공식) + 일부 추정",
+      "basis": "찾기쉬운 생활법령(보건복지부 『2026년 국민기초생활보장사업안내』 165쪽 인용): 광역·세종 주거용재산 한도 1억4,600만 원, 기본재산액 7,700만 원, 주거용 월 1.04%·일반 4.17%. 그 외 지역 기본재산액 5,300만 원과 금융 6.26%·생활준비금 500만 원은 여러 지자체 안내 일치. 그 외 지역 주거용재산 한도(1억1,200만 원)는 자료마다 달라 추정. 공제 순서(주거용 → 초과분 → 금융)는 사업안내 예시 기준 근사. 한부모 아동양육비에도 같은 방식을 적용(추정)"
+    },
+    "asset_pension": {
+      "value": "기본재산 공제 대도시 1억3,500만·중소도시 8,500만 원, 금융재산 2,000만 원 공제, 연 4% 환산",
+      "status": "확인(2차 자료) + 장애인연금은 추정",
+      "basis": "2026 기초연금 재산 기준(복수 안내 자료 일치). 대구 북구는 대도시, 경산시는 중소도시. 장애인연금도 같은 방식이라고 가정(추정)"
+    },
+    "asset_eitc": {
+      "value": "가구 재산 합계 2억4천만 원 미만, 1억7천만 원 초과 시 50% 지급 (부채 차감 없음)",
+      "status": "확인(2차 자료)",
+      "basis": "국세청 근로·자녀장려금 재산 요건 (2026년 신청분), 복수 안내 자료 일치"
     }
   },
   "benefit_sources": {
@@ -465,45 +507,52 @@
       "verification": [
         "earned_deduction_rate",
         "youth_deduction",
-        "senior_disabled_deduction"
+        "senior_disabled_deduction",
+        "asset_basic"
       ]
     },
     "medical": {
       "rule": "의료급여",
       "verification": [
-        "medical_value_per_person"
+        "medical_value_per_person",
+        "asset_basic"
       ]
     },
     "jugeo": {
       "rule": "주거급여",
       "verification": [
         "rent",
-        "jugeo_self_share"
+        "jugeo_self_share",
+        "asset_basic"
       ]
     },
     "edu": {
       "rule": "교육급여",
       "verification": [
-        "edu_annual"
+        "edu_annual",
+        "asset_basic"
       ]
     },
     "basic_pension": {
       "rule": "기초연금",
       "verification": [
         "basic_pension_amount",
-        "basic_pension_couple_cut"
+        "basic_pension_couple_cut",
+        "asset_pension"
       ]
     },
     "dis_pension": {
       "rule": "장애인연금",
       "verification": [
-        "dis_pension"
+        "dis_pension",
+        "asset_pension"
       ]
     },
     "sp_child": {
       "rule": "한부모가족 아동양육비",
       "verification": [
-        "sp_child"
+        "sp_child",
+        "asset_basic"
       ]
     },
     "energy": {
@@ -527,13 +576,15 @@
     "eitc": {
       "rule": "근로장려금",
       "verification": [
-        "eitc"
+        "eitc",
+        "asset_eitc"
       ]
     },
     "ctc": {
       "rule": "자녀장려금",
       "verification": [
-        "ctc"
+        "ctc",
+        "asset_eitc"
       ]
     },
     "gs_clinic": {
