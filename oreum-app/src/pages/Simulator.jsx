@@ -13,10 +13,10 @@ import { Drawer, Icon, MoreButton, Segmented, Stepper } from "../components/ui.j
 const STEP = 10000;
 // 혜택 색: 현금(남색 계열) · 감면·현물(청록 계열) · 지자체(주황 계열)
 export const COLORS = {
-  saeng: "#364FC7", jugeo: "#4C6EF5", edu: "#748FFC", basic_pension: "#3B5BDB", dis_pension: "#5C7CFA", sp_child: "#91A7FF",
-  eitc: "#A5B4FC", ctc: "#BAC8FF",
-  medical: "#0C8599", energy: "#15AABF", telecom: "#3BC9DB", munhwa: "#66D9E8",
-  gs_birth: "#E8590C", gs_clinic: "#FD7E14", gs_multichild: "#FFA94D", bk_nhis: "#FFC078",
+  saeng: "#24402F", jugeo: "#315B46", edu: "#527B62", basic_pension: "#315B46", dis_pension: "#41694B", sp_child: "#6E9278",
+  eitc: "#8CAA94", ctc: "#AFC4B4",
+  medical: "#3F6E6E", energy: "#5A8A87", telecom: "#7FA6A1", munhwa: "#A7C4BF",
+  gs_birth: "#A8742F", gs_clinic: "#C48A3C", gs_multichild: "#D9A861", bk_nhis: "#E8C58E",
 };
 export const NAMES = {
   saeng: "생계급여", medical: "의료급여", jugeo: "주거급여", edu: "교육급여", energy: "에너지바우처",
@@ -53,13 +53,13 @@ export function chartOptions(incomes, linesRef, { stacked = false, legend = true
     scales: {
       x: { stacked, grid: { display: false }, border: { display: false },
         ticks: { autoSkip: false, maxRotation: 0, callback: (_v, i) => (incomes[i] % 1000000 === 0 ? man(incomes[i]) : null) } },
-      y: { stacked, beginAtZero: true, grid: { color: "#F1F3F5" }, border: { display: false }, ticks: { callback: (v) => man(v), maxTicksLimit: 5 } },
+      y: { stacked, beginAtZero: true, grid: { color: "#EFECE4" }, border: { display: false }, ticks: { callback: (v) => man(v), maxTicksLimit: 5 } },
     },
     plugins: {
       [pluginId]: { ref: linesRef },
       legend: { display: legend, position: "bottom", labels: { boxWidth: 10, boxHeight: 10, usePointStyle: true } },
       tooltip: {
-        backgroundColor: "#1F2430", padding: 10, cornerRadius: 10,
+        backgroundColor: "#29332D", padding: 10, cornerRadius: 10,
         filter: (item) => item.raw > 0,
         callbacks: {
           title: (items) => `월 근로소득 ${won(incomes[items[0].dataIndex])}`,
@@ -265,7 +265,7 @@ function BenefitList({ benefits, data, lostSet, hasAssets }) {
         return (
           <li key={b.id}>
             <button type="button" className="benefit-row" aria-expanded={open === b.id} onClick={() => setOpen(open === b.id ? null : b.id)}>
-              <i className="swatch" style={{ background: COLORS[b.id] || "#ADB5BD" }} />
+              <i className="swatch" style={{ background: COLORS[b.id] || "#A1A69F" }} />
               <span className="b-name">{b.name}<small>{b.level} · {KIND_LABEL[b.kind]}</small></span>
               {lostSet?.has(b.name) && <span className="pill bad">곧 끊김</span>}
               <span className={`pill ${lv}`}>{EV_LABEL[lv]}</span>
@@ -300,7 +300,7 @@ function CliffTable({ cliffs, m }) {
 function ChartLegend({ ids, current }) {
   return (
     <div className="chart-legend">
-      <span className="lg"><i style={{ background: "#DEE2E6" }} />근로소득</span>
+      <span className="lg"><i style={{ background: "#E2DDD2" }} />근로소득</span>
       {ids.map((id) => (
         <span key={id} className={`lg ${current.has(id) ? "" : "off"}`}><i style={{ background: COLORS[id] }} />{NAMES[id]}</span>
       ))}
@@ -438,20 +438,20 @@ export default function Simulator() {
 
   const mainData = {
     labels: sim.incomes,
-    datasets: [{ label: "한 달에 쓸 수 있는 돈", data: sim.disposable, borderColor: "#3B5BDB", borderWidth: 2.5, fill: true,
-      backgroundColor: "rgba(59, 91, 219, 0.07)", stepped: false }],
+    datasets: [{ label: "한 달에 쓸 수 있는 돈", data: sim.disposable, borderColor: "#315B46", borderWidth: 2.5, fill: true,
+      backgroundColor: "rgba(49, 91, 70, 0.07)", stepped: false }],
   };
   const stackData = {
     labels: sim.incomes,
     datasets: [
       { label: "근로소득", data: sim.incomes, stack: "s", fill: true, backgroundColor: "rgba(222,226,230,0.7)", borderWidth: 0, order: 3 },
       ...ids.map((id) => ({ label: NAMES[id], data: sim.series[id], stack: "s", fill: true, backgroundColor: COLORS[id] + "d9", borderColor: COLORS[id], borderWidth: 0, order: 2 })),
-      { label: "근로소득 + 혜택", data: sim.disposable, stack: "total", fill: false, borderColor: "#1F2430", borderWidth: 2, order: 1 },
+      { label: "근로소득 + 혜택", data: sim.disposable, stack: "total", fill: false, borderColor: "#29332D", borderWidth: 2, order: 1 },
     ],
   };
   const regionData = {
     labels: sim.incomes,
-    datasets: regions.map((r, i) => ({ label: short(r.region), data: r.sim.disposable, borderColor: ["#3B5BDB", "#FD7E14"][i], backgroundColor: ["#3B5BDB", "#FD7E14"][i], borderWidth: 2.5, fill: false })),
+    datasets: regions.map((r, i) => ({ label: short(r.region), data: r.sim.disposable, borderColor: ["#315B46", "#C48A3C"][i], backgroundColor: ["#315B46", "#C48A3C"][i], borderWidth: 2.5, fill: false })),
   };
 
   const summary = <>월 <em>{man(inc)} 원</em>을 벌면, 복지 혜택으로 매달 <em>{man(total)} 원</em>을 받아요.</>;

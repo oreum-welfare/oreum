@@ -8,7 +8,7 @@ import { PageHead } from "../components/ui.jsx";
 
 const STEP = 10000;
 const EXTRA = 100000;
-const TYPE_COLORS = ["#3b5bdb", "#748ffc", "#15aabf", "#fa5252", "#fd7e14", "#2b8a3e"];
+const TYPE_COLORS = ["#315B46", "#527B62", "#5A8A87", "#C45D50", "#C48A3C", "#477B59"];
 const SNAKE = { spouse_65: "spouse65", dual_earner: "dualEarner", birth_order: "birthOrder", single_parent: "singleParent", third_child_7to18: "thirdChild7to18", residence_months: "residenceMonths", severe_disabled: "severeDisabled" };
 const BASE = { age: 40, spouse: false, spouse65: false, dualEarner: false, infants: 0, elem: 0, middle: 0, high: 0, newborn: false, birthOrder: 1, disabled: false, severeDisabled: false, singleParent: false, thirdChild7to18: false, residenceMonths: 60 };
 
@@ -119,8 +119,8 @@ function PolicySection({ all, data }) {
         </div>
       </div>
       <div className="chart-box short"><Line data={{ labels, datasets: [
-        { label: "현행: 근로소득 + 혜택", data: sel.c.sim.disposable, borderColor: "#e03131", borderWidth: 2, pointRadius: 0 },
-        { label: `점감 ${width}%p: 근로소득 + 혜택`, data: sel.r.disposable, borderColor: "#2b8a3e", borderWidth: 2, pointRadius: 0 },
+        { label: "현행: 근로소득 + 혜택", data: sel.c.sim.disposable, borderColor: "#B65E4B", borderWidth: 2, pointRadius: 0 },
+        { label: `점감 ${width}%p: 근로소득 + 혜택`, data: sel.r.disposable, borderColor: "#477B59", borderWidth: 2, pointRadius: 0 },
       ] }} options={{ responsive: true, maintainAspectRatio: false, animation: false, interaction: { mode: "index", intersect: false },
         scales: { x: { grid: { display: false }, ticks: { autoSkip: false, maxRotation: 0, callback: (_v, i) => (labels[i] % 500000 === 0 ? man(labels[i]) : null) } }, y: { ticks: { callback: (v) => man(v) } } },
         plugins: { legend: { position: "bottom" }, tooltip: { callbacks: { title: (its) => `월 근로소득 ${won(labels[its[0].dataIndex])}`, label: (it) => ` ${it.dataset.label}: ${won(it.raw)}` } } } }} /></div>
@@ -229,7 +229,7 @@ export default function Analysis() {
           <h2 className="card-title">③ 혜택이 끊기는 소득 구간 분포</h2>
           <p className="hint">12가지 경우에서 각 혜택의 자격이 사라지는 지점을 모아 기준중위소득 대비 5% 구간별로 세었습니다.</p>
           <div className="chart-box short"><Bar data={{ labels: buckets.map((b) => `${b.from}~${b.to}%`), datasets: [{ label: "혜택이 끊기는 횟수", data: buckets.map((b) => b.count), borderRadius: 4,
-            backgroundColor: buckets.map((b) => (b.count === maxB ? "#fa5252" : b.count >= maxB * 0.5 ? "#ffa8a8" : "#c5cef5")), borderRadius: 6 }] }}
+            backgroundColor: buckets.map((b) => (b.count === maxB ? "#C45D50" : b.count >= maxB * 0.5 ? "#E3B1A6" : "#C9D9CC")), borderRadius: 6 }] }}
             options={{ responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { display: false } },
               scales: { x: { title: { display: true, text: "월 근로소득 (기준중위소득 대비)" }, ticks: { maxRotation: 0 } }, y: { beginAtZero: true, ticks: { precision: 0 } } } }} /></div>
           <div className="table-wrap"><table><thead><tr><th>구간</th><th style={{ textAlign: "right" }}>횟수</th><th>끊기는 혜택 (횟수)</th></tr></thead>
@@ -248,10 +248,10 @@ export default function Analysis() {
           </div>
           <p className="hint">10만 원보다 적으면 일부를 잃는 것이고, <b style={{ color: "var(--cliff)" }}>0원 아래면 오히려 손해</b>입니다.</p>
           <div className="chart-box short"><Line data={{ labels: eLabels, datasets: [
-            { label: "10만 원 더 벌 때 늘어나는 금액", data: ec.retained, borderWidth: 2, pointRadius: 0, borderColor: "#3b5bdb",
-              segment: { borderColor: (ctx) => (ctx.p0.parsed.y < 0 || ctx.p1.parsed.y < 0 ? "#e03131" : "#3b5bdb") } },
-            { label: "기준선: 10만 원 그대로", data: eLabels.map(() => EXTRA), borderColor: "#adb5bd", borderDash: [5, 4], borderWidth: 1, pointRadius: 0 },
-            { label: "0원", data: eLabels.map(() => 0), borderColor: "#ffc9c9", borderWidth: 1, pointRadius: 0 },
+            { label: "10만 원 더 벌 때 늘어나는 금액", data: ec.retained, borderWidth: 2, pointRadius: 0, borderColor: "#315B46",
+              segment: { borderColor: (ctx) => (ctx.p0.parsed.y < 0 || ctx.p1.parsed.y < 0 ? "#B65E4B" : "#315B46") } },
+            { label: "기준선: 10만 원 그대로", data: eLabels.map(() => EXTRA), borderColor: "#A1A69F", borderDash: [5, 4], borderWidth: 1, pointRadius: 0 },
+            { label: "0원", data: eLabels.map(() => 0), borderColor: "#EFD3CC", borderWidth: 1, pointRadius: 0 },
           ] }} options={{ responsive: true, maintainAspectRatio: false, animation: false, interaction: { mode: "index", intersect: false },
             scales: { x: { grid: { display: false }, ticks: { autoSkip: false, maxRotation: 0, callback: (_v, i) => (eLabels[i] % 500000 === 0 ? man(eLabels[i]) : null) } }, y: { ticks: { callback: (v) => man(v) } } },
             plugins: { legend: { position: "bottom" }, tooltip: { filter: (it) => it.datasetIndex === 0, callbacks: { title: (its) => `월 근로소득 ${won(eLabels[its[0].dataIndex])} → +10만 원`, label: (it) => ` 늘어나는 금액: ${won(it.raw)}` } } } }} /></div>

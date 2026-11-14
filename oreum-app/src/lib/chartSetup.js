@@ -2,7 +2,7 @@ import { Chart, registerables } from "chart.js";
 
 Chart.register(...registerables);
 Chart.defaults.font.family = "Pretendard, -apple-system, 'Malgun Gothic', sans-serif";
-Chart.defaults.color = "#868E96";
+Chart.defaults.color = "#8B948C";
 
 // 절벽(빨간 점선)·현재 소득(진한 실선) 세로선. 선 위치는 ref 객체(opts.ref.current)에서 읽는다.
 export const vlinePlugin = {
@@ -18,8 +18,8 @@ export const vlinePlugin = {
       ctx.beginPath(); ctx.moveTo(x, chartArea.top); ctx.lineTo(x, chartArea.bottom); ctx.stroke();
       ctx.restore();
     };
-    (lines.cliffs || []).forEach((i) => draw(i, "#FA5252", [5, 4], 1.5));
-    if (lines.current != null) draw(lines.current, "#1F2430", [], 2);
+    (lines.cliffs || []).forEach((i) => draw(i, "#C45D50", [5, 4], 1.5));
+    if (lines.current != null) draw(lines.current, "#29332D", [], 2);
   },
 };
 
@@ -36,8 +36,8 @@ export const markerPlugin = {
       ctx.fillRect(a, chartArea.top, Math.max(2, b - a), chartArea.bottom - chartArea.top);
     };
     ctx.save();
-    if (m.compare != null && m.compare !== m.current) fill(m.current, m.compare, "rgba(59, 91, 219, 0.07)"); // 내 소득 ↔ 비교 소득
-    if (m.band) fill(m.band[0], m.band[1], "rgba(250, 82, 82, 0.08)"); // 손해 구간
+    if (m.compare != null && m.compare !== m.current) fill(m.current, m.compare, "rgba(49, 91, 70, 0.07)"); // 내 소득 ↔ 비교 소득
+    if (m.band) fill(m.band[0], m.band[1], "rgba(196, 93, 80, 0.08)"); // 손해 구간
     ctx.restore();
   },
   afterDatasetsDraw(chart, _args, opts) {
@@ -48,12 +48,12 @@ export const markerPlugin = {
     const yAt = (i) => scales.y.getPixelForValue(data[i] ?? 0);
     ctx.save();
     (m.others || []).forEach((i) => {
-      ctx.strokeStyle = "rgba(250, 82, 82, 0.35)"; ctx.lineWidth = 1; ctx.setLineDash([3, 4]);
+      ctx.strokeStyle = "rgba(196, 93, 80, 0.35)"; ctx.lineWidth = 1; ctx.setLineDash([3, 4]);
       ctx.beginPath(); ctx.moveTo(xAt(i), chartArea.top); ctx.lineTo(xAt(i), chartArea.bottom); ctx.stroke();
     });
     ctx.setLineDash([]);
     // 번호 원은 그래프 위쪽에 두고, 가까우면 아래로 엇갈려 겹치지 않게 한다
-    const pins = [[m.current, "#1F2430", "1"], [m.cliff, "#FA5252", "2"], [m.recover, "#2B8A3E", "3"]]
+    const pins = [[m.current, "#29332D", "1"], [m.cliff, "#C45D50", "2"], [m.recover, "#477B59", "3"]]
       .filter(([i]) => i != null && i >= 0 && i < data.length)
       .map(([i, color, label]) => ({ i, color, label, x: xAt(i) }))
       .sort((p, q) => p.x - q.x);
@@ -73,10 +73,10 @@ export const markerPlugin = {
     // 비교 소득: 파란 마름모 + 점선 (슬라이더를 따라 움직임)
     if (m.compare != null && m.compare !== m.current && m.compare < data.length) {
       const x = xAt(m.compare), y = yAt(m.compare);
-      ctx.strokeStyle = "#3B5BDB"; ctx.lineWidth = 1.5; ctx.setLineDash([4, 3]);
+      ctx.strokeStyle = "#315B46"; ctx.lineWidth = 1.5; ctx.setLineDash([4, 3]);
       ctx.beginPath(); ctx.moveTo(x, chartArea.top); ctx.lineTo(x, chartArea.bottom); ctx.stroke();
       ctx.setLineDash([]);
-      ctx.fillStyle = "#3B5BDB"; ctx.strokeStyle = "#fff"; ctx.lineWidth = 2;
+      ctx.fillStyle = "#315B46"; ctx.strokeStyle = "#fff"; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.moveTo(x, y - 8); ctx.lineTo(x + 8, y); ctx.lineTo(x, y + 8); ctx.lineTo(x - 8, y); ctx.closePath(); ctx.fill(); ctx.stroke();
     }
     for (const p of pins) {
