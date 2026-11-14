@@ -86,7 +86,11 @@ python pipeline/convert.py --provider openai --prefix api --out pipeline/runs_ap
 - 결과: `raw/api_<서비스ID>.txt` (서비스 요약, 지원대상, 선정기준, 서비스 내용, 신청방법 + 담당부서·첨부파일 등 참고 정보)
 - 검증 (2026-11-14): 경산시 18건 수집. 복지로 상세 페이지에서 모은 원문과 14건 중 13건 동일, 1건은 API에 소제목이 더 있음
 - API 원문에는 줄바꿈이 없습니다.
-- 중앙부처 API(`--central`)는 아직 실제 호출로 확인하지 않았습니다.
+- 중앙부처 API (한국사회보장정보원_중앙부처복지서비스, 따로 활용신청):
+  ```bash
+  python pipeline/fetch_bokjiro.py --central --search 생계급여 --limit 5
+  ```
+  응답 항목 이름(`tgtrDtlCn` 지원대상, `wlfareInfoOutlCn` 요약, 신청방법·근거법령·문의처 목록)은 공공데이터포털 명세로 확인했고, 실제 호출 결과는 아직 확인 전입니다.
 - 정답이 없는 서비스는 정확도 계산에서 빠지고, 규칙만 생성됩니다.
 
 ## 한계
