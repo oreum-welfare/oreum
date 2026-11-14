@@ -65,14 +65,14 @@ docs: 데이터 분석 문서 링크 추가
 - `oreum-app/public/data/`는 빌드할 때 자동으로 덮어써지므로 직접 고치지 않습니다.
 
 ### 계산 엔진
-- **세 곳을 항상 똑같이 고칩니다:** `web/js/engine.js`, `oreum-app/src/lib/engine.js`(같은 파일 복사본), `rules.py`
+- **두 곳을 항상 똑같이 고칩니다:** `oreum-app/src/lib/engine.js`(JS), `rules.py`(파이썬)
 - 고친 뒤 일치 검사를 실행합니다. PR을 올리면 CI가 같은 검사를 다시 합니다.
   ```bash
   python tests/parity_py.py
   node tests/parity.mjs
   ```
 
-### 데이터 (`web/data/rules.json`)
+### 데이터 (`data/rules.json`)
 - 금액·기준을 바꾸면 같은 항목의 `verification`(값, 확인 상태, 근거)도 같이 고칩니다.
 - 근거 없이 바꾸지 않습니다. 추정값이면 `provisional` 목록에 넣습니다.
 

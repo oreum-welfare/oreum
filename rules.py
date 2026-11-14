@@ -1,8 +1,8 @@
 """오름 - 복지 절벽 판정 규칙 엔진 (파이썬, 데이터 분석용)
 
-규칙과 금액은 web/data/rules.json 한 곳에서 읽는다 (웹 JS 엔진과 같은 파일).
+규칙과 금액은 data/rules.json 한 곳에서 읽는다 (React 앱의 JS 엔진과 같은 파일).
 금액을 바꿀 때는 rules.json만 고치면 웹과 분석에 함께 반영된다.
-계산 로직을 바꾸면 web/js/engine.js도 똑같이 바꿔야 한다.
+계산 로직을 바꾸면 oreum-app/src/lib/engine.js도 똑같이 바꿔야 한다.
 """
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pandas as pd
 
-DATA = json.loads((Path(__file__).parent / "web" / "data" / "rules.json").read_text(encoding="utf-8"))
+DATA = json.loads((Path(__file__).parent / "data" / "rules.json").read_text(encoding="utf-8"))
 _P = DATA["params"]
 
 

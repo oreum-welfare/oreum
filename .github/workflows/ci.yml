@@ -26,7 +26,7 @@ jobs:
       - name: 파이썬 패키지 설치
         run: pip install "pandas>=2.2"
 
-      - name: 세 엔진 일치 검사 (rules.py · web · oreum-app)
+      - name: 엔진 일치 검사 (rules.py · oreum-app)
         run: |
           python tests/parity_py.py
           node tests/parity.mjs

@@ -1,4 +1,4 @@
-"""세 엔진 일치 검사 1단계: 파이썬 엔진(rules.py)으로 테스트 가구를 계산해 JSON으로 저장한다.
+"""엔진 일치 검사 1단계: 파이썬 엔진(rules.py)으로 테스트 가구를 계산해 JSON으로 저장한다.
 
 실행: python tests/parity_py.py  →  tests/py_out.json
 다음 단계: node tests/parity.mjs (JS 엔진과 비교)

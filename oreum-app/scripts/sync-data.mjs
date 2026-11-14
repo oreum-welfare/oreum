@@ -1,4 +1,4 @@
-// 규칙 데이터(web/data/rules.json)와 AI 검수 데이터(pipeline/review_export.json)를 React 앱으로 복사한다.
+// 규칙 데이터(data/rules.json)와 AI 검수 데이터(pipeline/review_export.json)를 React 앱으로 복사한다.
 // 원본은 저장소의 다른 폴더에 있으므로, 원본이 없는 환경(예: Vercel 빌드)에서는 이미 복사된 파일을 그대로 쓴다.
 import { copyFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const pairs = [
-  ["../../web/data/rules.json", "../public/data/rules.json"],
+  ["../../data/rules.json", "../public/data/rules.json"],
   ["../../pipeline/review_export.json", "../public/data/review.json"],
 ];
 mkdirSync(resolve(here, "../public/data"), { recursive: true });

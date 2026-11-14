@@ -2,7 +2,7 @@
 
 가구 유형(rules.json의 analysis_households) × 지역을 모두 시뮬레이션해서
 절벽 요약표와 '혜택이 끊기는 구간' 분포를 CSV로 저장한다.
-웹의 데이터 분석 페이지(web/analysis.html)와 같은 계산이다.
+React 앱의 데이터 분석 페이지(/analysis)와 같은 계산이다.
 
 실행:  python analysis/cliff_analysis.py
 결과:  analysis/output/cliff_summary.csv, analysis/output/benefit_endings.csv
