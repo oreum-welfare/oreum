@@ -20,7 +20,7 @@ export default function Layout() {
     <div className="shell">
       <aside className="sidebar" aria-label="메뉴">
         <NavLink className="brand" to="/" aria-label="오름 홈">
-          <img src="/oreum-logo.png" alt="오름" className="brand-logo" />
+          <img src="/oreum-logo.svg" alt="오름" className="brand-logo" />
         </NavLink>
 
         <div className="sidebar-caption">복지 서비스</div>
@@ -45,7 +45,7 @@ export default function Layout() {
       </aside>
       <div className="main">
         <header className="mobile-top">
-          <NavLink className="brand" to="/" aria-label="오름 홈"><img src="/oreum-logo.png" alt="오름" className="brand-logo" /></NavLink>
+          <NavLink className="brand" to="/" aria-label="오름 홈"><img src="/oreum-logo.svg" alt="오름" className="brand-logo" /></NavLink>
           <span>복지 절벽 시뮬레이터</span>
         </header>
         <Outlet />

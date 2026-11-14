@@ -49,7 +49,7 @@ input, select, textarea { font: inherit; color: var(--ink); }
 .brand { display: flex; align-items: center; text-decoration: none; color: var(--ink); padding: 0 8px; }
 /* 팀원 원본과 같은 크기: 205px 폭 이미지 안의 로고 = 약 149×38px, 왼쪽 여백 27px */
 .sidebar .brand { margin-bottom: 52px; min-height: 90px; padding: 0 8px 0 35px; }
-.brand-logo { display: block; height: 38px; width: auto; max-width: 100%; object-fit: contain; object-position: left center; }
+.brand-logo { display: block; height: 40px; width: auto; max-width: 100%; object-fit: contain; object-position: left center; }
 .sidebar-caption { padding: 0 12px; margin-bottom: 12px; color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: 0.08em; }
 .nav { display: flex; flex-direction: column; gap: 5px; }
 .nav a { display: flex; align-items: center; gap: 10px; min-height: 46px; padding: 0 13px; border-radius: 9px; text-decoration: none; color: var(--sub); font-weight: 600; font-size: 14px; transition: background 0.15s ease, color 0.15s ease; }
