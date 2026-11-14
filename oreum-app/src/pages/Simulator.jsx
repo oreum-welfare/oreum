@@ -168,7 +168,27 @@ function NextCliff({ income, cliffs, info, onGuide }) {
     );
   }
   return (
-    <div className="alert cliff"><div className="icon">🧗</div><div>
+    <div className="alert cliff">
+  <div className="icon">
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M12 3v18" />
+      <path d="M5 8h14" />
+      <path d="M5 16h14" />
+      <path d="m8 5-3 3 3 3" />
+      <path d="m16 13 3 3-3 3" />
+    </svg>
+  </div>
+  <div>
       <h3>월 소득이 {won(next.income)}이 되면 {won(next.drop)} 손해</h3>
       <p>지금보다 <b>{man(next.income - income)}원</b> 더 벌면, 아래 혜택이 끊겨 근로소득과 혜택을 더한 금액이 오히려 줄어듭니다.</p>
       <div>{(next.lost.length ? next.lost : ["혜택 금액 감소"]).map((n) => <span key={n} className="chip">{n}</span>)}</div>
