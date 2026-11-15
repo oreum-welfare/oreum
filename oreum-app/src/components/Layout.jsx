@@ -19,8 +19,7 @@ export default function Layout() {
     <div className="shell">
       <aside className="sidebar" aria-label="메뉴">
         <NavLink className="brand" to="/" aria-label="오름 홈">
-          <img src="/logo-icon.svg" alt="" width="36" height="36" />
-          <span className="brand-text"><b>오름</b><small>복지 절벽 시뮬레이터</small></span>
+          <img src="/oreum-logo.svg" alt="오름" className="brand-logo" />
         </NavLink>
         <nav className="nav">
           {NAV.map(([to, label, icon, end]) => (
@@ -31,7 +30,7 @@ export default function Layout() {
       </aside>
       <div className="main">
         <header className="mobile-top">
-          <NavLink className="brand" to="/"><img src="/logo-icon.svg" alt="" width="30" height="30" /><span className="brand-text"><b>오름</b></span></NavLink>
+          <NavLink className="brand" to="/" aria-label="오름 홈"><img src="/oreum-logo.svg" alt="오름" className="brand-logo" /></NavLink>
           <span>복지 절벽 시뮬레이터</span>
         </header>
         <Outlet />
