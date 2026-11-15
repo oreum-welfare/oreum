@@ -9,7 +9,10 @@ import { man, won } from "../lib/format.js";
 import { useJson } from "../lib/useJson.js";
 import { analyzeNextCliff, recommendPrograms } from "../lib/guide.js";
 import { Drawer, Icon, MoreButton, Segmented, Stepper } from "../components/ui.jsx";
-import { summarizeCliffs } from "../lib/analytics.js";
+import {
+  summarizeCliffs,
+  summarizeSimulationBenefitEndings,
+} from "../lib/analytics.js";
 
 const STEP = 10000;
 // 혜택 색: 현금(남색 계열) · 감면·현물(청록 계열) · 지자체(주황 계열)
@@ -422,6 +425,7 @@ export default function Simulator() {
   const lostSet = new Set(info?.lost || []);
   const maxDrop = cliffs.reduce((a, c) => Math.max(a, c.drop), 0);
   const cliffStats = summarizeCliffs(cliffs);
+  const benefitLossCounts = summarizeSimulationBenefitEndings(sim);
   // 손해 구간: 절벽부터 절벽 직전 수준을 되찾는 소득까지 (슬라이더 위에 표시)
   const zones = cliffs.map((c) => {
     const before = sim.disposable[c.index - 1];
@@ -681,9 +685,9 @@ export default function Simulator() {
 
           <h3 className="sub-title">혜택별 상실 빈도 분석</h3>
 
-          {cliffStats.benefitLossCounts.length > 0 ? (
+          {benefitLossCounts.length > 0 ? (
             <div className="analysis-loss-list">
-              {cliffStats.benefitLossCounts.map((item) => (
+              {benefitLossCounts.map((item) => (
                 <div className="analysis-loss" key={item.name}>
                   <span>{item.name}</span>
                   <div className="analysis-bar">
@@ -691,8 +695,7 @@ export default function Simulator() {
                       className="analysis-bar-fill"
                       style={{
                         width: `${
-                          (item.frequency /
-                            cliffStats.benefitLossCounts[0].frequency) * 100
+                          (item.frequency / benefitLossCounts[0].frequency) * 100
                         }%`,
                       }}
                     />

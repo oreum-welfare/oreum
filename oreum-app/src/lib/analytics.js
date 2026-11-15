@@ -218,3 +218,59 @@ export function summarizeCoLosses(cases) {
     combinations,
   };
 }
+
+/**
+ * 전체 소득 구간의 복지 혜택 자격 상실 빈도 분석
+ * 복지 절벽 발생 여부와 관계없이 endings 데이터를 집계한다.
+ */
+export function summarizeBenefitEndings(cases) {
+  const counts = new Map();
+
+  for (const scenario of cases) {
+    for (const ending of scenario.endings || []) {
+      const current = counts.get(ending.name) || {
+        name: ending.name,
+        frequency: 0,
+        households: new Set(),
+        regions: new Set(),
+      };
+
+      current.frequency += 1;
+      current.households.add(scenario.type.label);
+      current.regions.add(scenario.region);
+
+      counts.set(ending.name, current);
+    }
+  }
+
+  return [...counts.values()]
+    .map((item) => ({
+      name: item.name,
+      frequency: item.frequency,
+      householdCount: item.households.size,
+      regionCount: item.regions.size,
+    }))
+    .sort((a, b) => b.frequency - a.frequency);
+}
+
+/**
+ * 현재 가구의 전체 소득 구간별 복지 혜택 자격 상실 빈도
+ * 절벽 발생 여부와 관계없이 자격 상실을 모두 집계한다.
+ */
+export function summarizeSimulationBenefitEndings(sim) {
+  const counts = new Map();
+
+  for (let i = 1; i < sim.elig.length; i++) {
+    const lost = [...sim.elig[i - 1]].filter(
+      (name) => !sim.elig[i].has(name)
+    );
+
+    for (const name of lost) {
+      counts.set(name, (counts.get(name) || 0) + 1);
+    }
+  }
+
+  return [...counts.entries()]
+    .map(([name, frequency]) => ({ name, frequency }))
+    .sort((a, b) => b.frequency - a.frequency);
+}

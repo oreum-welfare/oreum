@@ -9,6 +9,7 @@ import {
   analyzeCliffCause,
   summarizeCliffCauses,
   summarizeCoLosses,
+  summarizeBenefitEndings,
 } from "../lib/analytics.js";
 
 
@@ -1324,6 +1325,7 @@ function BlindSpotRiskSection({ all }) {
 
 function CauseSection({ cases }) {
   const result = summarizeCliffCauses(cases);
+  const endingResults = summarizeBenefitEndings(cases);
 
   return (
     <section className="card">
@@ -1420,12 +1422,48 @@ function CauseSection({ cases }) {
         <p className="empty">분석할 혜택 감소 데이터가 없습니다.</p>
       )}
 
-      <p className="hint" style={{ marginTop: 16 }}>
-        분석 기준: 절벽 발생 직전과 직후의 제도별 월 지원액 차이.
-        자격 상실만 발생하고 금액 감소가 확인되지 않은 제도는
-        금액 기여도에 포함하지 않습니다. 누적 감소액은 절벽 발생
-        사례들의 합계이며, 모집단 전체의 손실액을 뜻하지 않습니다.
-      </p>
+<div style={{ marginTop: 28 }}>
+        <h3 className="card-title">전체 소득 구간별 혜택 자격 상실 빈도</h3>
+
+        <p className="hint">
+          대구광역시 북구와 경상북도 경산시의 대표 가구 6종을 대상으로,
+          복지 절벽 발생 여부와 관계없이 전체 소득 구간에서
+          각 복지제도의 자격이 사라진 횟수를 집계합니다.
+        </p>
+
+        {endingResults.length > 0 ? (
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>복지제도</th>
+                  <th style={{ textAlign: "right" }}>자격 상실 횟수</th>
+                  <th style={{ textAlign: "right" }}>영향 가구 유형 수</th>
+                  <th style={{ textAlign: "right" }}>영향 지역 수</th>
+                </tr>
+              </thead>
+              <tbody>
+                {endingResults.map((item) => (
+                  <tr key={item.name}>
+                    <td><b>{item.name}</b></td>
+                    <td className="num">{item.frequency}회</td>
+                    <td className="num">{item.householdCount}개</td>
+                    <td className="num">{item.regionCount}개</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="empty">분석할 자격 상실 데이터가 없습니다.</p>
+        )}
+      </div>
+
+      <p className="hint">
+  대구광역시 북구와 경상북도 경산시의 대표 가구 6종을 대상으로,
+  복지 절벽 발생 여부와 관계없이 전체 소득 구간에서
+  각 복지제도의 자격이 사라진 횟수를 집계합니다.
+</p>
     </section>
   );
 }
