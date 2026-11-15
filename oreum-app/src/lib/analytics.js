@@ -4,50 +4,6 @@
  */
 
 /**
- * 기존 절벽 요약
- */
-export function summarizeCliffs(cliffs) {
-  const count = cliffs.length;
-
-  if (count === 0) {
-    return {
-      count: 0,
-      totalDrop: 0,
-      avgDrop: 0,
-      maxCliff: null,
-      benefitLossCounts: [],
-    };
-  }
-
-  const totalDrop = cliffs.reduce((sum, cliff) => sum + cliff.drop, 0);
-
-  const maxCliff = cliffs.reduce(
-    (best, cliff) => cliff.drop > best.drop ? cliff : best,
-    cliffs[0]
-  );
-
-  const benefitCounts = {};
-
-  cliffs.forEach((cliff) => {
-    (cliff.lost || []).forEach((name) => {
-      benefitCounts[name] = (benefitCounts[name] || 0) + 1;
-    });
-  });
-
-  const benefitLossCounts = Object.entries(benefitCounts)
-    .map(([name, frequency]) => ({ name, frequency }))
-    .sort((a, b) => b.frequency - a.frequency);
-
-  return {
-    count,
-    totalDrop,
-    avgDrop: Math.round(totalDrop / count),
-    maxCliff,
-    benefitLossCounts,
-  };
-}
-
-/**
  * 특정 절벽 발생 지점에서 제도별 지원액 감소를 분해한다.
  *
  * contributionPct는 전체 혜택 감소액 중 해당 제도의 비율이다.
@@ -250,27 +206,5 @@ export function summarizeBenefitEndings(cases) {
       householdCount: item.households.size,
       regionCount: item.regions.size,
     }))
-    .sort((a, b) => b.frequency - a.frequency);
-}
-
-/**
- * 현재 가구의 전체 소득 구간별 복지 혜택 자격 상실 빈도
- * 절벽 발생 여부와 관계없이 자격 상실을 모두 집계한다.
- */
-export function summarizeSimulationBenefitEndings(sim) {
-  const counts = new Map();
-
-  for (let i = 1; i < sim.elig.length; i++) {
-    const lost = [...sim.elig[i - 1]].filter(
-      (name) => !sim.elig[i].has(name)
-    );
-
-    for (const name of lost) {
-      counts.set(name, (counts.get(name) || 0) + 1);
-    }
-  }
-
-  return [...counts.entries()]
-    .map(([name, frequency]) => ({ name, frequency }))
     .sort((a, b) => b.frequency - a.frequency);
 }
