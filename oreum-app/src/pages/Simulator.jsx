@@ -9,6 +9,7 @@ import { man, won } from "../lib/format.js";
 import { useJson } from "../lib/useJson.js";
 import { analyzeNextCliff, recommendPrograms } from "../lib/guide.js";
 import { Drawer, Icon, MoreButton, Segmented, Stepper } from "../components/ui.jsx";
+import { summarizeCliffs } from "../lib/analytics.js";
 
 const STEP = 10000;
 // 혜택 색: 현금(남색 계열) · 감면·현물(청록 계열) · 지자체(주황 계열)
@@ -420,6 +421,7 @@ export default function Simulator() {
   const currentIds = new Set(benefits.filter((b) => b.monthly > 0).map((b) => b.id));
   const lostSet = new Set(info?.lost || []);
   const maxDrop = cliffs.reduce((a, c) => Math.max(a, c.drop), 0);
+  const cliffStats = summarizeCliffs(cliffs);
   // 손해 구간: 절벽부터 절벽 직전 수준을 되찾는 소득까지 (슬라이더 위에 표시)
   const zones = cliffs.map((c) => {
     const before = sim.disposable[c.index - 1];
@@ -628,6 +630,88 @@ export default function Simulator() {
         </section>
 
         <div className="next">
+        <section className="card analysis-card">
+          <div className="card-head">
+            <div>
+              <h2>복지 절벽 데이터 분석</h2>
+              <p className="hint">
+                현재 입력한 가구의 소득 구간별 복지 혜택 손실 분석
+              </p>
+            </div>
+            <span className="pill">분석 결과</span>
+          </div>
+
+          <div className="analysis-grid">
+            <div className="analysis-stat">
+              <span>절벽 발생 횟수</span>
+              <strong>{cliffStats.count}회</strong>
+            </div>
+
+            <div className="analysis-stat">
+              <span>최대 손실 금액</span>
+              <strong className="bad">
+                {man(cliffStats.maxCliff?.drop || 0)}원
+              </strong>
+            </div>
+
+            <div className="analysis-stat">
+              <span>평균 손실 금액</span>
+              <strong>{man(cliffStats.avgDrop)}원</strong>
+            </div>
+
+            <div className="analysis-stat">
+              <span>절벽 손실액 합계</span>
+              <strong>{man(cliffStats.totalDrop)}원</strong>
+            </div>
+          </div>
+
+          {cliffStats.maxCliff && (
+            <div className="analysis-highlight">
+              <b>가장 큰 손실이 발생하는 소득 구간</b>
+              <p>
+                월 소득 <strong>{man(cliffStats.maxCliff.income)}원</strong>에서
+                한 달에 쓸 수 있는 돈이{" "}
+                <strong className="bad">
+                  {man(cliffStats.maxCliff.drop)}원 감소
+                </strong>
+                해요.
+              </p>
+            </div>
+          )}
+
+          <h3 className="sub-title">혜택별 상실 빈도 분석</h3>
+
+          {cliffStats.benefitLossCounts.length > 0 ? (
+            <div className="analysis-loss-list">
+              {cliffStats.benefitLossCounts.map((item) => (
+                <div className="analysis-loss" key={item.name}>
+                  <span>{item.name}</span>
+                  <div className="analysis-bar">
+                    <div
+                      className="analysis-bar-fill"
+                      style={{
+                        width: `${
+                          (item.frequency /
+                            cliffStats.benefitLossCounts[0].frequency) * 100
+                        }%`,
+                      }}
+                    />
+                  </div>
+                  <b>{item.frequency}회</b>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="empty">분석할 복지 혜택 손실이 없어요.</p>
+          )}
+
+          <p className="hint analysis-note">
+            분석 범위: 현재 가구 조건과 등록된 복지 규칙을 기반으로 한 시뮬레이션.
+            절벽 손실액 합계는 각 절벽에서 탐지된 손실액의 합이며,
+            실제 월별·연간 누적 손실액을 의미하지 않아요.
+            혜택별 상실 빈도는 동일 혜택이 여러 구간에서 끊기는 경우 중복 집계돼요.
+          </p>
+        </section>
           <section className="card path-card">
             <MoreButton label="넘는 방법" onClick={() => setDrawer("path")} />
             <h2><Icon name="route" />절벽을 손해 없이 넘는 방법</h2>

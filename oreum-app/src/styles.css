@@ -537,3 +537,103 @@ mark.ev.active { background: var(--yellow); box-shadow: 0 0 0 2px #d9a43a; }
 .dia { width: 10px; height: 10px; background: var(--brand); transform: rotate(45deg); display: inline-block; border-radius: 1px; margin: 0 2px; }
 .base-income { padding: 12px 14px; background: var(--brand-soft); border-radius: 12px; margin-bottom: 8px; }
 .base-income b { color: var(--brand); margin-right: 4px; }
+
+/* 복지 절벽 데이터 분석 */
+.analysis-card {
+  margin-bottom: 20px;
+}
+
+.analysis-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.analysis-stat {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface, #f8faf9);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.analysis-stat span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.analysis-stat strong {
+  font-size: 23px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.analysis-highlight {
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--cliff-soft, #fff5f5);
+}
+
+.analysis-highlight > b {
+  font-size: 13px;
+}
+
+.analysis-highlight p {
+  margin: 8px 0 0;
+  font-size: 14px;
+}
+
+.analysis-loss-list {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.analysis-loss {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr) 45px;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.analysis-loss > b {
+  text-align: right;
+}
+
+.analysis-bar {
+  height: 10px;
+  overflow: hidden;
+  border-radius: 20px;
+  background: var(--line);
+}
+
+.analysis-bar-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--brand);
+  transition: width 0.3s ease;
+}
+
+.analysis-note {
+  margin-top: 18px;
+  line-height: 1.7;
+}
+
+@media (max-width: 700px) {
+  .analysis-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .analysis-stat strong {
+    font-size: 20px;
+  }
+
+  .analysis-loss {
+    grid-template-columns: 105px minmax(0, 1fr) 35px;
+    gap: 8px;
+  }
+}
