@@ -80,47 +80,31 @@ function buildSensitivity(data, engine) {
       const baseSize = engine.derive(base).size;
       const baseMedian = engine.medianIncome(baseSize);
 
+      // 가구 구성(나이·배우자·자녀 수)을 바꾸는 변경은 가구원 수가 달라져 지원이 늘어나는 게 당연하므로 제외하고,
+      // 같은 가구에서 실제로 달라질 수 있는 조건만 하나씩 바꿔 본다.
       const variants = [
-        {
-          key: "age",
-          label: "연령",
-          description: "40세 ↔ 70세",
-          patch: { age: base.age >= 65 ? 40 : 70 },
-        },
-        {
-          key: "spouse",
-          label: "배우자 여부",
-          description: "배우자 유무 변경",
-          patch: {
-            spouse: !base.spouse,
-            spouse65: !base.spouse && base.age >= 65,
-          },
-        },
-        {
-          key: "children",
-          label: "자녀 수",
-          description: "학령기 자녀 1명 추가",
-          patch: { elem: base.elem + 1 },
-        },
-        {
-          key: "dualEarner",
-          label: "맞벌이 여부",
-          description: "맞벌이 여부 변경",
-          patch: { dualEarner: !base.dualEarner },
-        },
         {
           key: "disabled",
           label: "장애 여부",
-          description: "장애 조건 추가 또는 해제",
+          description: base.disabled ? "장애 조건 해제" : "장애 가구원 있음",
           patch: { disabled: !base.disabled },
         },
       ];
+
+      if (base.spouse) {
+        variants.push({
+          key: "dualEarner",
+          label: "맞벌이 여부",
+          description: base.dualEarner ? "외벌이로" : "맞벌이로",
+          patch: { dualEarner: !base.dualEarner },
+        });
+      }
 
       if (base.singleParent || (!base.spouse && engine.derive(base).children > 0)) {
         variants.push({
           key: "singleParent",
           label: "한부모 여부",
-          description: "한부모 조건 변경",
+          description: base.singleParent ? "한부모 해제" : "한부모 가구",
           patch: { singleParent: !base.singleParent },
         });
       }
@@ -130,7 +114,7 @@ function buildSensitivity(data, engine) {
           {
             key: "thirdChild7to18",
             label: "다자녀 조건",
-            description: "셋째 이상 조건 변경",
+            description: base.thirdChild7to18 ? "셋째 조건 해제" : "셋째 이상 자녀",
             patch: { thirdChild7to18: !base.thirdChild7to18 },
           },
           {
@@ -575,9 +559,9 @@ function PolicySection({ all, data }) {
         />
       </div>
 
-      <h3 className="card-title" style={{ marginTop: 24 }}>
-        가구별 정책 효과 및 추가 지원 규모
-      </h3>
+      <details className="more-table">
+        <summary>가구별 · 지역별 상세 결과</summary>
+      <h3 className="card-title" style={{ marginTop: 8 }}>가구별 정책 효과 및 추가 지원 규모</h3>
 
       <div className="table-wrap">
         <table>
@@ -684,6 +668,7 @@ function PolicySection({ all, data }) {
           </tbody>
         </table>
       </div>
+      </details>
 
       <p className="stat-inline">
         <b>정책 평가:</b> 선택한 점감 폭 {width}%p를 적용하면
@@ -716,7 +701,7 @@ function SensitivitySection({ rows }) {
 
   return (
     <section className="card">
-      <h2 className="card-title">⑦ 가구 조건 민감도 분석</h2>
+      <h2 className="card-title">⑧ 가구 조건 민감도 분석</h2>
 
       <p className="hint">
         대표 가구의 조건을 한 번에 하나씩 변경하여
@@ -744,7 +729,7 @@ function SensitivitySection({ rows }) {
         </div>
       </div>
 
-      <h3 className="card-title">영향력이 큰 조건 TOP 10</h3>
+      <h3 className="card-title">지원액이 크게 달라지는 조건</h3>
 
       {top.map((item, index) => (
         <div key={`${item.householdKey}-${item.region}-${item.factor}`}
@@ -756,7 +741,7 @@ function SensitivitySection({ rows }) {
             fontSize: 13,
             marginBottom: 5,
           }}>
-            <b>{index + 1}. {item.factor}</b>
+            <b>{index + 1}. {item.factor} <small style={{ fontWeight: 400, color: "var(--muted)" }}>({item.description})</small></b>
             <b style={{
               color: item.supportDelta < 0
                 ? "var(--cliff)"
@@ -791,10 +776,8 @@ function SensitivitySection({ rows }) {
         </div>
       ))}
 
-      <h3 className="card-title" style={{ marginTop: 24 }}>
-        조건별 상세 비교
-      </h3>
-
+      <details className="more-table">
+      <summary>조건별 상세 비교 ({rows.length}건)</summary>
       <div className="table-wrap">
         <table>
           <thead>
@@ -828,6 +811,7 @@ function SensitivitySection({ rows }) {
           </tbody>
         </table>
       </div>
+      </details>
 
       <p className="hint" style={{ marginTop: 16 }}>
         분석 기준: 기준 가구의 기준중위소득 30%에 해당하는 동일한
@@ -835,497 +819,6 @@ function SensitivitySection({ rows }) {
         중위소득을 기준으로 최대 소득 범위를 설정해 계산합니다.
         조건별 비교는 가상 시나리오이며 실제 정책의 인과효과나
         전체 인구의 평균 효과를 의미하지 않습니다.
-      </p>
-    </section>
-  );
-}
-
-function RegionalSafetyNetSection({ all }) {
-  const rows = useMemo(() => {
-    // 각 대표 가구의 기준중위소득 30%에서 지원액 계산
-    const cases = all.cases.map((c) => {
-      const referenceIncome =
-        Math.round((c.m * 0.3) / STEP) * STEP;
-
-      const index = c.sim.incomes.reduce(
-        (best, income, i) =>
-          Math.abs(income - referenceIncome) <
-          Math.abs(c.sim.incomes[best] - referenceIncome)
-            ? i
-            : best,
-        0
-      );
-
-      const support = Object.values(c.sim.series).reduce(
-        (sum, values) => sum + (values[index] || 0),
-        0
-      );
-
-      const eligibleSteps = c.sim.elig.filter(
-        (benefits) => benefits.size > 0
-      ).length;
-
-      const continuity =
-        c.sim.elig.length
-          ? (eligibleSteps / c.sim.elig.length) * 100
-          : 0;
-
-      const cliffFree = c.cliffs.length === 0 ? 100 : 0;
-
-      const noLoss =
-        c.retained.length
-          ? (1 - c.lossZones / c.retained.length) * 100
-          : 100;
-
-      return {
-        region: c.region,
-        household: c.type.label,
-        support,
-        continuity,
-        stability: (cliffFree + noLoss) / 2,
-      };
-    });
-
-    // 지원 수준은 12개 대표 사례 중 최대 지원액을 100점으로 환산
-    const maxSupport = Math.max(
-      1,
-      ...cases.map((c) => c.support)
-    );
-
-    return all.regions.map((region) => {
-      const selected = cases.filter(
-        (c) => c.region === region
-      );
-
-      const avg = (key) =>
-        selected.length
-          ? selected.reduce((sum, c) => sum + c[key], 0) /
-            selected.length
-          : 0;
-
-      const supportScore =
-        avg("support") / maxSupport * 100;
-      const continuityScore = avg("continuity");
-      const stabilityScore = avg("stability");
-
-      const total =
-        supportScore * 0.4 +
-        continuityScore * 0.3 +
-        stabilityScore * 0.3;
-
-      return {
-        region,
-        count: selected.length,
-        supportScore,
-        continuityScore,
-        stabilityScore,
-        total,
-      };
-    });
-  }, [all]);
-
-  const best = [...rows].sort(
-    (a, b) => b.total - a.total
-  )[0];
-
-  return (
-    <section className="card">
-      <h2 className="card-title">
-        ⑧ 지역별 안전망 종합 지수
-      </h2>
-
-      <p className="hint">
-        대표 가구의 복지 지원 수준, 지원 지속성,
-        소득 안정성을 종합하여 지역별 안전망을 비교합니다.
-        점수가 높을수록 이 시뮬레이션의 평가 기준에서
-        상대적으로 양호한 결과입니다.
-      </p>
-
-      <div className="stats compact">
-      <div
-  className="stat"
-  style={{
-    background: "#EAF0EC",
-    color: "#254C3D",
-    border: "1px solid #C8D7CE",
-  }}
->
-<div className="label" style={{ color: "#59666D" }}>
-  종합 지수 1위
-</div>
-<div className="value" style={{ color: "#254C3D" }}>
-  {best?.total.toFixed(1)}
-  <small>점</small>
-</div>
-<div className="stat-sub" style={{ color: "#59666D" }}>
-  {best?.region}
-</div>
-</div>
-
-        <div className="stat">
-          <div className="label">평가 지역</div>
-          <div className="value">
-            {rows.length}<small>곳</small>
-          </div>
-        </div>
-
-        <div className="stat">
-          <div className="label">분석 대표 사례</div>
-          <div className="value">
-            {all.cases.length}<small>건</small>
-          </div>
-        </div>
-      </div>
-
-      <h3 className="card-title">지역별 지수 비교</h3>
-
-      <div className="chart-box">
-        <Bar
-          data={{
-            labels: rows.map((r) => r.region),
-            datasets: [
-              {
-                label: "종합 지수",
-                data: rows.map((r) => r.total),
-                backgroundColor: "#254C3D",
-              },
-              {
-                label: "지원 수준",
-                data: rows.map((r) => r.supportScore),
-                backgroundColor: "#536B7D",
-              },
-              {
-                label: "지원 지속성",
-                data: rows.map((r) => r.continuityScore),
-                backgroundColor: "#8B9EAD",
-              },
-              {
-                label: "소득 안정성",
-                data: rows.map((r) => r.stabilityScore),
-                backgroundColor: "#71889A",
-              },
-            ],
-
-          }}
-          options={{
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: false,
-            scales: {
-              y: {
-                min: 0,
-                max: 100,
-                ticks: {
-                  callback: (value) => `${value}점`,
-                },
-              },
-              x: {
-                grid: { display: false },
-              },
-            },
-            plugins: {
-              legend: { position: "bottom" },
-              tooltip: {
-                callbacks: {
-                  label: (item) =>
-                    `${item.dataset.label}: ${item.raw.toFixed(1)}점`,
-                },
-              },
-            },
-          }}
-        />
-      </div>
-
-      <h3 className="card-title">종합 지수 산출 결과</h3>
-
-      <div className="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>지역</th>
-              <th>지원 수준</th>
-              <th>지원 지속성</th>
-              <th>소득 안정성</th>
-              <th>종합 점수</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr key={r.region}>
-                <td>{r.region}</td>
-                <td className="num">
-                  {r.supportScore.toFixed(1)}
-                </td>
-                <td className="num">
-                  {r.continuityScore.toFixed(1)}
-                </td>
-                <td className="num">
-                  {r.stabilityScore.toFixed(1)}
-                </td>
-                <td className="num">
-                  <b>{r.total.toFixed(1)}점</b>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <p className="hint" style={{ marginTop: 16 }}>
-        <b>산출 방법</b><br />
-        종합 지수 = 지원 수준 × 40% + 지원 지속성 × 30%
-        + 소득 안정성 × 30%. 지원 수준은 12개 사례 중
-        최대 지원액 대비 비율이며, 지원 지속성은 소득
-        시뮬레이션 구간 중 하나 이상의 혜택 자격이 유지된
-        비율입니다. 소득 안정성은 절벽이 없는 사례 비율과
-        추가 근로소득 역효과가 없는 구간 비율을 각각
-        50%씩 반영합니다.
-        <br /><br />
-        <b>분석 한계</b><br />
-        이 지수는 대구광역시 북구와 경상북도 경산시의
-        대표 가구 6개씩, 총 12개 시뮬레이션 사례를
-        비교한 내부 분석 지표입니다. 공식 지역 복지 수준이나
-        전체 주민의 복지 체감도를 의미하지 않으며,
-        가중치에 따라 결과가 달라질 수 있습니다.
-      </p>
-    </section>
-  );
-}
-
-function BlindSpotRiskSection({ all }) {
-  const rows = useMemo(() => {
-    return all.cases.map((c) => {
-      // 기준중위소득 30%에 가장 가까운 소득 구간
-      const referenceIncome = c.m * 0.3;
-
-      const index = c.sim.incomes.reduce(
-        (best, income, i) =>
-          Math.abs(income - referenceIncome) <
-          Math.abs(c.sim.incomes[best] - referenceIncome)
-            ? i
-            : best,
-        0
-      );
-
-      // 해당 구간의 현금·현물 지원 합계
-      const support = Object.values(c.sim.series).reduce(
-        (sum, values) => sum + (values[index] || 0),
-        0
-      );
-
-      // ① 지원 공백: 지원액이 0원이면 25점
-      const gapScore = support === 0 ? 25 : 0;
-
-      // ② 지원 부족: 지원액이 중위소득의 20%보다 낮을수록 위험
-      // 지원 공백은 ①에서 이미 반영하므로 중복 계산하지 않음
-      const adequacyScore =
-        support === 0
-          ? 0
-          : Math.max(
-              0,
-              1 - support / (c.m * 0.2)
-            ) * 25;
-
-      // ③ 복지 절벽: 절벽 횟수와 최대 감소액 반영
-      const maxDrop = Math.max(
-        0,
-        ...c.cliffs.map((cliff) => cliff.drop)
-      );
-
-      const cliffCountScore =
-        Math.min(c.cliffs.length / 3, 1) * 12.5;
-
-      const cliffAmountScore =
-        Math.min(maxDrop / (c.m * 0.1), 1) * 12.5;
-
-      const cliffScore =
-        cliffCountScore + cliffAmountScore;
-
-      // ④ 근로 역효과: 10만 원 추가 소득 시 손해인 구간 비율
-      const workScore =
-        c.retained.length > 0
-          ? (c.lossZones / c.retained.length) * 25
-          : 0;
-
-      const total =
-        gapScore +
-        adequacyScore +
-        cliffScore +
-        workScore;
-
-      return {
-        household: c.type.label,
-        region: c.region,
-        support,
-        gapScore,
-        adequacyScore,
-        cliffScore,
-        workScore,
-        total,
-        cliffs: c.cliffs.length,
-        lossZones: c.lossZones,
-      };
-    }).sort((a, b) => b.total - a.total);
-  }, [all]);
-
-  const average =
-    rows.reduce((sum, r) => sum + r.total, 0) /
-    Math.max(rows.length, 1);
-
-  const highRisk = rows.filter(
-    (r) => r.total >= 70
-  ).length;
-
-  const top = rows[0];
-
-  const riskLabel = (score) => {
-    if (score >= 70) return "높음";
-    if (score >= 40) return "주의";
-    return "낮음";
-  };
-
-  return (
-    <section className="card">
-      <h2 className="card-title">
-        ⑨ 복지 사각지대 위험도 분석
-      </h2>
-
-      <p className="hint">
-        대표 가구별 복지 지원 공백, 지원 부족, 복지 절벽,
-        근로소득 역효과를 종합하여 위험 신호를 점수화합니다.
-        점수가 높을수록 시뮬레이션에서 불리한 조건이
-        많이 관찰된 사례입니다.
-      </p>
-
-      <div className="stats compact">
-        <div className="stat">
-          <div className="label">평균 위험 점수</div>
-          <div className="value">
-            {average.toFixed(1)}<small>점</small>
-          </div>
-        </div>
-
-        <div className="stat">
-          <div className="label">위험 신호 높은 사례</div>
-          <div className="value">
-            {highRisk}<small>건</small>
-          </div>
-          <div className="stat-sub">70점 이상</div>
-        </div>
-
-        <div className="stat">
-          <div className="label">가장 높은 위험 사례</div>
-          <div className="value">
-            {top?.total.toFixed(1)}<small>점</small>
-          </div>
-          <div className="stat-sub">
-            {top?.household} · {top?.region}
-          </div>
-        </div>
-      </div>
-
-      <h3 className="card-title">대표 가구별 위험도 순위</h3>
-
-      <div className="chart-box">
-        <Bar
-          data={{
-            labels: rows.map(
-              (r) => `${r.household} · ${r.region}`
-            ),
-            datasets: [
-              {
-                label: "위험 점수",
-                data: rows.map((r) => r.total),
-                backgroundColor: rows.map((r) =>
-                  r.total >= 70
-                    ? "#B36A63"
-                    : r.total >= 40
-                      ? "#B49A62"
-                      : "#47745C"
-                ),
-              },
-            ],
-          }}
-          options={{
-            indexAxis: "y",
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: false,
-            scales: {
-              x: {
-                min: 0,
-                max: 100,
-                ticks: {
-                  callback: (value) => `${value}점`,
-                },
-              },
-              y: {
-                grid: { display: false },
-              },
-            },
-            plugins: {
-              legend: { display: false },
-              tooltip: {
-                callbacks: {
-                  label: (item) =>
-                    ` 위험 점수: ${item.raw.toFixed(1)}점`,
-                },
-              },
-            },
-          }}
-        />
-      </div>
-
-      <h3 className="card-title">위험 요인별 상세 점수</h3>
-
-      <div className="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>가구</th>
-              <th>지역</th>
-              <th>지원 공백</th>
-              <th>지원 부족</th>
-              <th>복지 절벽</th>
-              <th>근로 역효과</th>
-              <th>종합 위험도</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r, i) => (
-              <tr key={`${r.household}-${r.region}-${i}`}>
-                <td>{r.household}</td>
-                <td>{r.region}</td>
-                <td className="num">{r.gapScore.toFixed(1)}</td>
-                <td className="num">{r.adequacyScore.toFixed(1)}</td>
-                <td className="num">{r.cliffScore.toFixed(1)}</td>
-                <td className="num">{r.workScore.toFixed(1)}</td>
-                <td className="num">
-                  <b>{r.total.toFixed(1)}점</b>
-                  <small> ({riskLabel(r.total)})</small>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <p className="hint" style={{ marginTop: 16 }}>
-        <b>점수 산출 기준</b><br />
-        지원 공백 25점: 기준중위소득 30%에서 현금·현물
-        지원액이 0원이면 25점.
-        지원 부족 25점: 지원액이 기준중위소득의 20%보다
-        낮을수록 높은 점수.
-        복지 절벽 25점: 절벽 횟수와 최대 감소액을 각각
-        12.5점으로 반영.
-        근로 역효과 25점: 10만 원 추가 소득에도 가처분소득이
-        감소하는 구간의 비율로 계산합니다.
-        <br /><br />
-        <b>위험도 구분</b><br />
-        70점 이상 높음 · 40~69점 주의 · 40점 미만 낮음.
-        지원 부족의 기준인 중위소득 20%는 이 프로젝트에서
-        설정한 분석 기준이며 공식 복지 판정 기준이 아닙니다.
-        본 점수는 실제 복지 사각지대 여부를 판정하지 않습니다.
       </p>
     </section>
   );
@@ -1430,8 +923,8 @@ function CauseSection({ cases }) {
         <p className="empty">분석할 혜택 감소 데이터가 없습니다.</p>
       )}
 
-<div style={{ marginTop: 28 }}>
-        <h3 className="card-title">전체 소득 구간별 혜택 자격 상실 빈도</h3>
+<details className="more-table" style={{ marginTop: 28 }}>
+        <summary>전체 소득 구간별 혜택 자격 상실 빈도</summary>
 
         <p className="hint">
           대구광역시 북구와 경상북도 경산시의 대표 가구 6종을 대상으로,
@@ -1465,13 +958,7 @@ function CauseSection({ cases }) {
         ) : (
           <p className="empty">분석할 자격 상실 데이터가 없습니다.</p>
         )}
-      </div>
-
-      <p className="hint">
-  대구광역시 북구와 경상북도 경산시의 대표 가구 6종을 대상으로,
-  복지 절벽 발생 여부와 관계없이 전체 소득 구간에서
-  각 복지제도의 자격이 사라진 횟수를 집계합니다.
-</p>
+      </details>
     </section>
   );
 }
@@ -1481,7 +968,7 @@ function CoLossSection({ cases }) {
 
   return (
     <section className="card">
-      <h2>동시 탈락 혜택 조합 분석</h2>
+      <h2 className="card-title">⑦ 함께 끊기는 혜택 조합</h2>
       <p>
         복지 절벽 발생 시 함께 자격을 잃는 혜택 조합을 분석합니다.
       </p>
@@ -1572,9 +1059,11 @@ function Summary({ cases }) {
 export default function Analysis() {
   const { data, error } = useJson("/data/rules.json");
   const all = useMemo(() => (data ? runAll(data, createEngine(data)) : null), [data]);
+  const [moreOpen, setMoreOpen] = useState(false);
+  // 민감도 분석은 계산량이 많아 '추가 분석'을 펼칠 때만 계산
   const sensitivityRows = useMemo(
-    () => data ? buildSensitivity(data, createEngine(data)) : [],
-    [data]
+    () => (data && moreOpen ? buildSensitivity(data, createEngine(data)) : []),
+    [data, moreOpen]
   );
   const [curveRegion, setCurveRegion] = useState("경상북도 경산시");
   const [emtrType, setEmtrType] = useState("single_parent");
@@ -1745,22 +1234,22 @@ export default function Analysis() {
             : <>이 가구에는 손해 구간이 없습니다.</>}</p>
         </section>
         {/* ⑤ 정책 개입 효과 */}
-<PolicySection all={all} data={data} />
+        <PolicySection all={all} data={data} />
 
-{/* ⑥ 복지 절벽 원인 기여도 */}
-<CauseSection cases={all.cases} />
+        {/* ⑥ 복지 절벽 원인 기여도 */}
+        <CauseSection cases={all.cases} />
 
-{/* ⑥-1 동시 탈락 혜택 조합 */}
-<CoLossSection cases={all.cases} />
+        {/* ⑦·⑧ 추가 분석: 펼쳤을 때만 */}
+        <button type="button" className="more-analysis" aria-expanded={moreOpen} onClick={() => setMoreOpen(!moreOpen)}>
+          <span><b>{moreOpen ? "추가 분석 접기" : "추가 분석 더 보기"}</b>
+            <small>⑦ 함께 끊기는 혜택 조합 · ⑧ 가구 조건 민감도</small></span>
+          <span className={`more-chevron ${moreOpen ? "open" : ""}`} aria-hidden="true">⌄</span>
+        </button>
+        {moreOpen && <>
+          <CoLossSection cases={all.cases} />
+          <SensitivitySection rows={sensitivityRows} />
+        </>}
 
-{/* ⑦ 가구 조건 민감도 */}
-<SensitivitySection rows={sensitivityRows} />
-
-{/* ⑧ 지역별 안전망 종합 지수 */}
-<RegionalSafetyNetSection all={all} />
-
-{/* ⑨ 복지 사각지대 위험도 */}
-<BlindSpotRiskSection all={all} />
         <section className="card">
           <h2 className="card-title">분석 방법과 한계</h2>
           <div className="method-grid">

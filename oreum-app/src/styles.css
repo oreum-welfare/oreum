@@ -37,6 +37,9 @@
   --bg: #F4F6F7;
   --card: #FFFFFF;
   --soft: #EEF2F0;
+  /* 분석 화면에서 쓰는 별칭 (정의가 빠져 색이 안 보이던 문제) */
+  --cliff: var(--red-ink);
+  --ok: var(--green);
 
   /* 모서리 둥글기 */
   --radius: 18px;
@@ -409,6 +412,7 @@ mark.ev.active { background: var(--yellow); box-shadow: 0 0 0 2px var(--yellow);
   .nav-short { display: inline; }
   .nav { flex-direction: row; width: 100%; justify-content: space-around; }
   .nav a { flex-direction: column; justify-content: center; gap: 2px; min-height: 0; font-size: 11px; padding: 6px 4px; flex: 1; text-align: center; }
+  .nav-short { white-space: nowrap; letter-spacing: -0.02em; }
   .main { padding-bottom: 72px; }
   .mobile-top { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 0; font-size: 12px; color: var(--muted); }
   .mobile-top .brand { padding: 0; }
@@ -510,6 +514,10 @@ mark.ev.active { background: var(--yellow); box-shadow: 0 0 0 2px var(--yellow);
   .progress button { font-size: 0; gap: 0; }
   .progress button span { font-size: 10px; }
   .progress button.on { font-size: 12px; gap: 5px; }
+  /* 아주 좁은 화면: 현재 단계 이름이 한 글자씩 끊기지 않게 칸을 넓힘 */
+  .progress { display: flex; }
+  .progress button { flex: 1 1 0; min-width: 0; white-space: nowrap; }
+  .progress button.on { flex: 2.4 1 0; }
   .profile-actions { width: 100%; }
   .profile-actions .btn { flex: 1; }
   .income-big input { font-size: 32px; }
@@ -555,102 +563,19 @@ mark.ev.active { background: var(--yellow); box-shadow: 0 0 0 2px var(--yellow);
 .base-income { padding: 12px 14px; background: var(--brand-soft); border-radius: 12px; margin-bottom: 8px; }
 .base-income b { color: var(--brand); margin-right: 4px; }
 
-/* 복지 절벽 데이터 분석 */
-.analysis-card {
-  margin-bottom: 20px;
-}
+/* 다음 절벽: 혜택별 감소액 */
+.cause-list { display: flex; flex-direction: column; gap: 8px; margin: 6px 0 4px; }
+.cause-row { display: grid; grid-template-columns: minmax(0, 9em) minmax(0, 1fr) auto; align-items: center; gap: 10px; font-size: 13px; }
+.cause-row > span { color: var(--sub); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cause-bar { height: 8px; border-radius: 4px; background: var(--soft); overflow: hidden; }
+.cause-bar i { display: block; height: 100%; border-radius: 4px; background: var(--red); }
 
-.analysis-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.analysis-stat {
-  padding: 16px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--card);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.analysis-stat span {
-  color: var(--muted);
-  font-size: 13px;
-}
-
-.analysis-stat strong {
-  font-size: 23px;
-  font-weight: 800;
-  letter-spacing: -0.04em;
-}
-
-.analysis-highlight {
-  margin-top: 16px;
-  padding: 16px;
-  border-radius: 12px;
-  background: var(--red-soft);
-}
-
-.analysis-highlight > b {
-  font-size: 13px;
-}
-
-.analysis-highlight p {
-  margin: 8px 0 0;
-  font-size: 14px;
-}
-
-.analysis-loss-list {
-  display: flex;
-  flex-direction: column;
-  gap: 13px;
-}
-
-.analysis-loss {
-  display: grid;
-  grid-template-columns: 150px minmax(0, 1fr) 45px;
-  align-items: center;
-  gap: 12px;
-  font-size: 13px;
-}
-
-.analysis-loss > b {
-  text-align: right;
-}
-
-.analysis-bar {
-  height: 10px;
-  overflow: hidden;
-  border-radius: 20px;
-  background: var(--line);
-}
-
-.analysis-bar-fill {
-  height: 100%;
-  border-radius: inherit;
-  background: var(--brand);
-  transition: width 0.3s ease;
-}
-
-.analysis-note {
-  margin-top: 18px;
-  line-height: 1.7;
-}
-
-@media (max-width: 700px) {
-  .analysis-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .analysis-stat strong {
-    font-size: 20px;
-  }
-
-  .analysis-loss {
-    grid-template-columns: 105px minmax(0, 1fr) 35px;
-    gap: 8px;
-  }
-}
+/* 데이터 분석: 추가 분석 펼치기 */
+.more-analysis { display: flex; justify-content: space-between; align-items: center; gap: 12px; width: 100%; padding: 18px 24px; border: 1px dashed var(--line-2); border-radius: var(--radius); background: var(--card); cursor: pointer; text-align: left; font: inherit; color: var(--ink); }
+.more-analysis:hover { border-color: var(--brand); }
+.more-analysis > span:first-child { display: flex; flex-direction: column; gap: 2px; }
+.more-analysis small { color: var(--muted); font-size: 13px; }
+.more-chevron { font-size: 20px; color: var(--muted); transition: transform 0.15s; }
+.more-chevron.open { transform: rotate(180deg); }
+details.more-table { margin-top: 20px; }
+details.more-table > summary { cursor: pointer; font-weight: 700; font-size: 14px; color: var(--sub); margin-bottom: 10px; }
