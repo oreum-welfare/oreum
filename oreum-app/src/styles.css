@@ -1,27 +1,44 @@
 /* ===== 오름 디자인 시스템 ===== */
 :root {
-  /* 팀원 디자인(design/ui-redesign)의 초록·베이지 테마 */
-  --brand: #315b46;
-  --brand-2: #527b62;
-  --brand-soft: #edf3ed;
-  --brand-line: #c9d9cc;
-  --red: #c45d50;
-  --red-ink: #a84a3e;
-  --red-soft: #fbefec;
-  --green: #477b59;
-  --green-soft: #edf4ed;
-  --yellow: #e9b949;
-  --yellow-ink: #8a6413;
-  --yellow-soft: #fbf5e9;
-  --ink: #29332d;
-  --sub: #5a645c;
-  --muted: #8b948c;
-  --faint: #a1a69f;
-  --line: #e9e4da;
-  --line-2: #dedfd5;
-  --bg: #f8f5ef;
-  --card: #fffefa;
-  --soft: #f5f5ef;
+  /* 브랜드 색상: 딥 포레스트 그린 */
+  --brand: #254C3D;
+  --brand-2: #3B6655;
+  --brand-soft: #EAF0EC;
+  --brand-line: #C8D7CE;
+
+  /* 데이터 시각화 색상: 채도를 낮춘 슬레이트 블루 */
+  --data: #536B7D;
+  --data-2: #8B9EAD;
+  --data-soft: #E9EEF1;
+
+  /* 의미 전달 색상: 필요한 상황에만 절제해서 사용 */
+  --red: #B36A63;
+  --red-ink: #98544E;
+  --red-soft: #F7EEED;
+
+  --green: #47745C;
+  --green-soft: #EDF3EE;
+
+  --yellow: #B49A62;
+  --yellow-ink: #79653D;
+  --yellow-soft: #F4F0E6;
+
+  /* 기본 텍스트 색상 */
+  --ink: #26333C;
+  --sub: #59666D;
+  --muted: #7E8A90;
+  --faint: #9AA4A8;
+
+  /* 테두리 색상 */
+  --line: #E4E8E7;
+  --line-2: #D7DEDB;
+
+  /* 배경 및 카드 색상 */
+  --bg: #F4F6F7;
+  --card: #FFFFFF;
+  --soft: #EEF2F0;
+
+  /* 모서리 둥글기 */
   --radius: 18px;
   --radius-sm: 10px;
 }
@@ -57,7 +74,7 @@ input, select, textarea { font: inherit; color: var(--ink); }
 .nav a.active { background: var(--brand-soft); color: var(--brand); font-weight: 700; }
 .nav-short { display: none; }
 .sidebar-bottom { margin-top: auto; }
-.sidebar-message { padding: 16px 15px; border-radius: 10px; background: #f3f5ee; }
+.sidebar-message { padding: 16px 15px; border-radius: 10px; background: var(--brand-soft); }
 .message-title { color: var(--brand); font-size: 13px; font-weight: 700; }
 .sidebar-message p { margin: 7px 0 0; color: var(--sub); font-size: 12px; line-height: 1.65; }
 .sidebar-version { display: block; padding: 18px 8px 0; color: var(--faint); font-size: 10px; letter-spacing: 0.08em; }
@@ -99,16 +116,16 @@ a { color: var(--brand); }
 .btn.sm { font-size: 12px; padding: 5px 10px; border-radius: 8px; }
 .btn.ghost { background: transparent; }
 .btn.on { background: var(--brand-soft); border-color: var(--brand-line); color: var(--brand); }
-.btn.on.danger { background: var(--red-soft); border-color: #efd3cc; color: var(--red-ink); }
+.btn.on.danger { background: var(--red-soft); border-color: var(--red-soft); color: var(--red-ink); }
 .btn.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
 
 .pill { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; border-radius: 999px; padding: 2px 8px; white-space: nowrap; background: var(--soft); color: var(--sub); }
 .pill.ok, .pill.good, .pill.s-ok { background: var(--green-soft); color: var(--green); }
 .pill.part, .pill.warn, .pill.s-warn { background: var(--yellow-soft); color: var(--yellow-ink); }
-.pill.est { background: #f8ece0; color: #a8642a; }
+.pill.est { background: var(--yellow-soft); color: var(--yellow-ink); }
 .pill.bad, .pill.s-bad { background: var(--red-soft); color: var(--red-ink); }
 .pill.s-done, .pill.brand { background: var(--brand-soft); color: var(--brand); }
-.pill.s-group { background: #eef0f4; color: #4f5d78; }
+.pill.s-group { background: var(--data-soft); color: var(--data); }
 .pill.white { background: rgba(255,255,255,0.2); color: #fff; }
 .tag { display: inline-block; font-size: 11px; font-weight: 700; border-radius: 6px; padding: 1px 6px; }
 .tag.central { background: var(--brand-soft); color: var(--brand); }
@@ -117,8 +134,8 @@ a { color: var(--brand); }
 .chip { border: 1px solid var(--line-2); background: #fff; border-radius: 999px; padding: 6px 12px; font-size: 13px; color: var(--sub); cursor: pointer; line-height: 1.3; }
 button.chip:hover { border-color: var(--brand-line); }
 .chip.on { background: var(--brand-soft); border-color: var(--brand-line); color: var(--brand); font-weight: 600; }
-.chip.bad { background: var(--red-soft); border-color: #efd3cc; color: var(--red-ink); cursor: default; }
-.chip.good { background: var(--green-soft); border-color: #cfe0d2; color: var(--green); cursor: default; }
+.chip.bad { background: var(--red-soft); border-color: var(--red-soft); color: var(--red-ink); cursor: default; }
+.chip.good { background: var(--green-soft); border-color: var(--brand-line); color: var(--green); cursor: default; }
 
 .segmented { display: flex; background: var(--soft); border-radius: 12px; padding: 3px; gap: 3px; }
 .segmented button { flex: 1; border: 0; background: transparent; border-radius: 9px; padding: 7px 10px; font-size: 13px; color: var(--muted); cursor: pointer; white-space: nowrap; }
@@ -132,9 +149,9 @@ button.chip:hover { border-color: var(--brand-line); }
 
 .callout { border-radius: 12px; padding: 12px 14px; font-size: 14px; margin: 12px 0; background: var(--soft); }
 .callout.good { background: var(--green-soft); }
-.callout.warn { background: var(--yellow-soft); color: #7a5a1a; }
+.callout.warn { background: var(--yellow-soft); color: var(--yellow-ink); }
 .alert.bad h3 { color: var(--red-ink); margin: 0 0 4px; }
-.warn { margin-top: 12px; background: var(--yellow-soft); border-radius: 12px; padding: 12px 14px; font-size: 14px; color: #7a5a1a; }
+.warn { margin-top: 12px; background: var(--yellow-soft); border-radius: 12px; padding: 12px 14px; font-size: 14px; color: var(--yellow-ink); }
 .warn ul { margin: 6px 0 0; padding-left: 18px; }
 .notice { background: var(--yellow-soft); border-radius: 12px; padding: 10px 14px; font-size: 13px; color: var(--yellow-ink); }
 .notice:empty { display: none; }
@@ -160,7 +177,7 @@ code { font-family: ui-monospace, Consolas, monospace; font-size: 0.88em; backgr
 .legend-note { color: var(--muted); font-size: 12px; display: flex; align-items: center; gap: 6px; }
 .box { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-left: 8px; vertical-align: -1px; }
 .box.unseen { background: var(--brand); }
-.box.seen { background: #dcd8cc; }
+.box.seen { background: #D9E0E2; }
 
 /* 숫자 타일 (분석·AI 페이지 공용) */
 .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
@@ -347,16 +364,16 @@ code { font-family: ui-monospace, Consolas, monospace; font-size: 0.88em; backgr
 .review-main { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 .review-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
 .source-text { white-space: pre-wrap; word-break: keep-all; font-family: inherit; font-size: 14px; line-height: 1.75; margin: 8px 0 0; max-height: 70vh; overflow-y: auto; color: var(--sub); }
-mark.ev { background: #f8ecc9; border-radius: 3px; padding: 0 1px; color: var(--ink); }
-mark.ev.active { background: var(--yellow); box-shadow: 0 0 0 2px #d9a43a; }
+mark.ev { background: var(--yellow-soft); border-radius: 3px; padding: 0 1px; color: var(--ink); }
+mark.ev.active { background: var(--yellow); box-shadow: 0 0 0 2px var(--yellow); }
 .rv-judge { margin: 8px 0 10px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 14px; }
 .rv-judge .hint { width: 100%; margin: 0; }
 .rv-check { display: flex; align-items: center; gap: 8px; margin-top: 10px; padding: 10px 14px; border-radius: 12px; font-size: 14px; }
 .rv-check.ok { background: var(--green-soft); color: var(--green); }
-.rv-check.warn { background: var(--yellow-soft); color: #7a5a1a; }
+.rv-check.warn { background: var(--yellow-soft); color: var(--yellow-ink); }
 .cond-list { list-style: none; padding: 0; margin: 0 0 12px; display: flex; flex-direction: column; gap: 8px; }
 .cond { border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; transition: border-color 0.15s; }
-.cond:hover { border-color: #d9a43a; }
+.cond:hover { border-color: var(--yellow); }
 .cond.rejected { opacity: 0.45; text-decoration: line-through; }
 .cond-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .cond-field { font-weight: 700; font-size: 14px; margin-right: 2px; }
@@ -502,12 +519,12 @@ mark.ev.active { background: var(--yellow); box-shadow: 0 0 0 2px #d9a43a; }
 .range-wrap { position: relative; flex: 1; display: flex; align-items: center; height: 28px; }
 /* 직접 그린 슬라이더 길: 채움 · 손해 구간 · 절벽 눈금 · ②③ 표시 (손잡이 반지름 10px만큼 안쪽) */
 .track-area { position: absolute; left: 10px; right: 10px; top: 0; bottom: 0; pointer-events: none; }
-.track { position: absolute; left: 0; right: 0; top: 50%; height: 8px; margin-top: -4px; border-radius: 4px; background: #e8e4da; overflow: hidden; }
+.track { position: absolute; left: 0; right: 0; top: 50%; height: 8px; margin-top: -4px; border-radius: 4px; background: var(--line-2); overflow: hidden; }
 .track-fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--brand); border-radius: 4px; }
 .track-zone { position: absolute; top: 0; bottom: 0; background: rgba(196, 93, 80, 0.28); }
 .track-zone.next { background: rgba(196, 93, 80, 0.55); }
 .track-cliff { position: absolute; top: 50%; width: 2px; height: 14px; margin: -7px 0 0 -1px; background: var(--red); border-radius: 1px; }
-.track-pin { position: absolute; top: -14px; transform: translateX(-50%); width: 16px; height: 16px; border-radius: 50%; color: #fff; font-size: 10px; font-weight: 800; display: grid; place-items: center; box-shadow: 0 0 0 2px #f6f4ee; }
+.track-pin { position: absolute; top: -14px; transform: translateX(-50%); width: 16px; height: 16px; border-radius: 50%; color: #fff; font-size: 10px; font-weight: 800; display: grid; place-items: center; box-shadow: 0 0 0 2px var(--bg); }
 .track-pin.red { background: var(--red); }
 .track-pin.green { background: var(--green); }
 .track-pin.raised { top: -30px; }
@@ -553,7 +570,7 @@ mark.ev.active { background: var(--yellow); box-shadow: 0 0 0 2px #d9a43a; }
   padding: 16px;
   border: 1px solid var(--line);
   border-radius: 12px;
-  background: var(--surface, #f8faf9);
+  background: var(--card);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -574,7 +591,7 @@ mark.ev.active { background: var(--yellow); box-shadow: 0 0 0 2px #d9a43a; }
   margin-top: 16px;
   padding: 16px;
   border-radius: 12px;
-  background: var(--cliff-soft, #fff5f5);
+  background: var(--red-soft);
 }
 
 .analysis-highlight > b {

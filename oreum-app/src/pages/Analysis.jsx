@@ -14,7 +14,14 @@ import {
 
 const STEP = 10000;
 const EXTRA = 100000;
-const TYPE_COLORS = ["#315B46", "#527B62", "#5A8A87", "#C45D50", "#C48A3C", "#477B59"];
+const TYPE_COLORS = [
+  "#536B7D",
+  "#71889A",
+  "#8B9EAD",
+  "#A7B5BF",
+  "#657F91",
+  "#3F596C",
+];
 const SNAKE = { spouse_65: "spouse65", dual_earner: "dualEarner", birth_order: "birthOrder", single_parent: "singleParent", third_child_7to18: "thirdChild7to18", residence_months: "residenceMonths", severe_disabled: "severeDisabled" };
 const BASE = { age: 40, spouse: false, spouse65: false, dualEarner: false, infants: 0, elem: 0, middle: 0, high: 0, newborn: false, birthOrder: 1, disabled: false, severeDisabled: false, singleParent: false, thirdChild7to18: false, residenceMonths: 60 };
 
@@ -513,14 +520,14 @@ function PolicySection({ all, data }) {
               {
                 label: "현행: 근로소득 + 혜택",
                 data: sel.c.sim.disposable,
-                borderColor: "#B65E4B",
+                borderColor: "#9AA4A8",
                 borderWidth: 2,
                 pointRadius: 0,
               },
               {
                 label: `정책 적용: 점감 ${width}%p`,
                 data: sel.r.disposable,
-                borderColor: "#477B59",
+                borderColor: "#536B7D",
                 borderWidth: 2,
                 pointRadius: 0,
               },
@@ -622,13 +629,13 @@ function PolicySection({ all, data }) {
               {
                 label: "현행 절벽",
                 data: regionRows.map((x) => x.before),
-                backgroundColor: "#C45D50",
+                backgroundColor: "#B36A63",
                 borderRadius: 5,
               },
               {
                 label: "정책 적용 후",
                 data: regionRows.map((x) => x.after),
-                backgroundColor: "#527B62",
+                backgroundColor: "#536B7D",
                 borderRadius: 5,
               },
             ],
@@ -937,21 +944,21 @@ function RegionalSafetyNetSection({ all }) {
       <div
   className="stat"
   style={{
-    background: "#E8F0E9",
-    color: "#244735",
-    border: "1px solid #C8D9CC",
+    background: "#EAF0EC",
+    color: "#254C3D",
+    border: "1px solid #C8D7CE",
   }}
 >
-  <div className="label" style={{ color: "#526B5A" }}>
-    종합 지수 1위
-  </div>
-  <div className="value" style={{ color: "#244735" }}>
-    {best?.total.toFixed(1)}
-    <small>점</small>
-  </div>
-  <div className="stat-sub" style={{ color: "#526B5A" }}>
-    {best?.region}
-  </div>
+<div className="label" style={{ color: "#59666D" }}>
+  종합 지수 1위
+</div>
+<div className="value" style={{ color: "#254C3D" }}>
+  {best?.total.toFixed(1)}
+  <small>점</small>
+</div>
+<div className="stat-sub" style={{ color: "#59666D" }}>
+  {best?.region}
+</div>
 </div>
 
         <div className="stat">
@@ -979,24 +986,25 @@ function RegionalSafetyNetSection({ all }) {
               {
                 label: "종합 지수",
                 data: rows.map((r) => r.total),
-                backgroundColor: "#315B46",
+                backgroundColor: "#254C3D",
               },
               {
                 label: "지원 수준",
                 data: rows.map((r) => r.supportScore),
-                backgroundColor: "#5A8A87",
+                backgroundColor: "#536B7D",
               },
               {
                 label: "지원 지속성",
                 data: rows.map((r) => r.continuityScore),
-                backgroundColor: "#C48A3C",
+                backgroundColor: "#8B9EAD",
               },
               {
                 label: "소득 안정성",
                 data: rows.map((r) => r.stabilityScore),
-                backgroundColor: "#C45D50",
+                backgroundColor: "#71889A",
               },
             ],
+
           }}
           options={{
             responsive: true,
@@ -1229,10 +1237,10 @@ function BlindSpotRiskSection({ all }) {
                 data: rows.map((r) => r.total),
                 backgroundColor: rows.map((r) =>
                   r.total >= 70
-                    ? "#C45D50"
+                    ? "#B36A63"
                     : r.total >= 40
-                      ? "#C48A3C"
-                      : "#527B62"
+                      ? "#B49A62"
+                      : "#47745C"
                 ),
               },
             ],
@@ -1596,8 +1604,11 @@ export default function Analysis() {
           label: "혜택이 끊기는 횟수",
           data: buckets.map((b) => b.count),
           backgroundColor: buckets.map((b) =>
-            b.count === maxB ? "#C45D50" :
-            b.count >= maxB * 0.5 ? "#E3B1A6" : "#C9D9CC"
+            b.count === maxB
+              ? "#B36A63"
+              : b.count >= maxB * 0.5
+                ? "#B49A62"
+                : "#8B9EAD"
           ),
           borderRadius: 6
         }]
@@ -1660,10 +1671,34 @@ export default function Analysis() {
           </div>
           <p className="hint">10만 원보다 적으면 일부를 잃는 것이고, <b style={{ color: "var(--cliff)" }}>0원 아래면 오히려 손해</b>입니다.</p>
           <div className="chart-box short"><Line data={{ labels: eLabels, datasets: [
-            { label: "10만 원 더 벌 때 늘어나는 금액", data: ec.retained, borderWidth: 2, pointRadius: 0, borderColor: "#315B46",
-              segment: { borderColor: (ctx) => (ctx.p0.parsed.y < 0 || ctx.p1.parsed.y < 0 ? "#B65E4B" : "#315B46") } },
-            { label: "기준선: 10만 원 그대로", data: eLabels.map(() => EXTRA), borderColor: "#A1A69F", borderDash: [5, 4], borderWidth: 1, pointRadius: 0 },
-            { label: "0원", data: eLabels.map(() => 0), borderColor: "#EFD3CC", borderWidth: 1, pointRadius: 0 },
+            {
+              label: "10만 원 더 벌 때 늘어나는 금액",
+              data: ec.retained,
+              borderWidth: 2,
+              pointRadius: 0,
+              borderColor: "#254C3D",
+              segment: {
+                borderColor: (ctx) =>
+                  ctx.p0.parsed.y < 0 || ctx.p1.parsed.y < 0
+                    ? "#B36A63"
+                    : "#254C3D"
+              }
+            },
+            {
+              label: "기준선: 10만 원 그대로",
+              data: eLabels.map(() => EXTRA),
+              borderColor: "#9AA4A8",
+              borderDash: [5, 4],
+              borderWidth: 1,
+              pointRadius: 0
+            },
+            {
+              label: "0원",
+              data: eLabels.map(() => 0),
+              borderColor: "#D7DEDB",
+              borderWidth: 1,
+              pointRadius: 0
+            },
           ] }} options={{ responsive: true, maintainAspectRatio: false, animation: false, interaction: { mode: "index", intersect: false },
             scales: { x: { grid: { display: false }, ticks: { autoSkip: false, maxRotation: 0, callback: (_v, i) => (eLabels[i] % 500000 === 0 ? man(eLabels[i]) : null) } }, y: { ticks: { callback: (v) => man(v) } } },
             plugins: { legend: { position: "bottom" }, tooltip: { filter: (it) => it.datasetIndex === 0, callbacks: { title: (its) => `월 근로소득 ${won(eLabels[its[0].dataIndex])} → +10만 원`, label: (it) => ` 늘어나는 금액: ${won(it.raw)}` } } } }} /></div>

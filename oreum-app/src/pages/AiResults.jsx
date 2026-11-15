@@ -17,15 +17,32 @@ function AccuracyChart({ stages }) {
     datasets: [{
       label: "서비스 정확도",
       data: done.map((s) => Math.round(s.summary.service_accuracy * 100)),
-      backgroundColor: done.map((s) => (s.unseen ? "#315B46" : "#DCD8CC")),
+      backgroundColor: done.map((s) => (s.unseen ? "#254C3D" : "#D9E0E2")),
       borderRadius: 6, maxBarThickness: 64,
     }],
   };
   const options = {
     responsive: true, maintainAspectRatio: false, animation: false,
     scales: {
-      y: { min: 0, max: 100, ticks: { callback: (v) => `${v}%`, color: "#8B948C" }, grid: { color: "#EFECE4" } },
-      x: { grid: { display: false }, ticks: { color: "#50574F", font: { size: 11 }, maxRotation: 0, minRotation: 0, autoSkip: false } },
+      y: {
+        min: 0,
+        max: 100,
+        ticks: {
+          callback: (v) => `${v}%`,
+          color: "#7E8A90",
+        },
+        grid: { color: "#E4E8E7" },
+      },
+      x: {
+        grid: { display: false },
+        ticks: {
+          color: "#59666D",
+          font: { size: 11 },
+          maxRotation: 0,
+          minRotation: 0,
+          autoSkip: false,
+        },
+      },
     },
     plugins: {
       legend: { display: false },
@@ -38,7 +55,7 @@ function AccuracyChart({ stages }) {
       const { ctx } = chart;
       chart.getDatasetMeta(0).data.forEach((bar, i) => {
         ctx.save();
-        ctx.fillStyle = "#29332D"; ctx.font = "700 13px Pretendard, sans-serif"; ctx.textAlign = "center";
+        ctx.fillStyle = "#26333C"; ctx.font = "700 13px Pretendard, sans-serif"; ctx.textAlign = "center";
         ctx.fillText(`${chart.data.datasets[0].data[i]}%`, bar.x, bar.y - 6);
         ctx.restore();
       });
