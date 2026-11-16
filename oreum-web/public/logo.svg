@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-6 -6 228 118" width="456" height="236" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="11">
+  <title>오름</title>
+  <g stroke="#191f28">
+    <circle cx="50" cy="36" r="27"/>
+    <path d="M50 63V80M8 88H92"/>
+    <path d="M128 4H204V19H128V34H204"/>
+    <rect x="132" y="74" width="68" height="26"/>
+  </g>
+  <path d="M120 62H150V56H180V50H212" stroke="#4ba468"/>
+</svg>
