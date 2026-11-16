@@ -31,6 +31,11 @@ jobs:
           python tests/parity_py.py
           node tests/parity.mjs
 
+      - name: 엔진 기대값 · AI 채점기 검사
+        run: |
+          node tests/engine_checks.mjs
+          python tests/grader_checks.py
+
       - name: React 앱 빌드
         working-directory: oreum-app
         run: |

@@ -17,6 +17,8 @@ export default function StartScreen({ regions, short, defaults, presets, example
   const set = (k, v) => setHh((h) => {
     const n = { ...h, [k]: v };
     if (k === "spouse" && !v) { n.spouse65 = false; n.dualEarner = false; }
+    if (k === "spouse" && v) n.singleParent = false; // 배우자가 있으면 한부모 가구가 아님
+    if (k === "singleParent" && v) { n.spouse = false; n.spouse65 = false; n.dualEarner = false; }
     if (k === "newborn" && v && n.infants === 0) n.infants = 1;
     return n;
   });

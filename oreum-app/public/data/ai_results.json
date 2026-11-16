@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-14",
+ "updated": "2026-11-16",
  "model": "gpt-5-2025-08-07",
  "stages": [
   {
@@ -604,7 +604,7 @@
    "summary": {
     "services": 13,
     "service_accuracy": 0.6153846153846154,
-    "condition_recall": 0.8387096774193549,
+    "condition_recall": 0.8064516129032258,
     "condition_precision": 0.825,
     "judgeable_agreement": 0.8461538461538461,
     "evidence_grounding": 1.0,
@@ -617,9 +617,12 @@
      "name": "생계급여(맞춤형 급여)",
      "ok": false,
      "errors": [
+      "조건 누락·오류",
       "정답에 없는 조건"
      ],
-     "missing": [],
+     "missing": [
+      "income_recognized_pct_median <= 32"
+     ],
      "extras": [
       "income_recognized_won <= 820556",
       "income_recognized_won <= 1343773",

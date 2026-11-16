@@ -47,9 +47,12 @@ def to_set(v: str) -> set[str]:
 
 
 def value_matches(ai_val: str, gold_vals: list[str], op: str) -> bool:
+    empty = not norm_text(str(ai_val))
     for g in gold_vals:
         if g == "*":
             return True
+        if empty:  # 빈 값은 '*'(아무 값) 정답에만 맞는다. 빈 문자열은 모든 문자열에 포함되므로 따로 막는다
+            continue
         if op == "between" or ("," in g and to_number(g.split(",")[0]) is not None):
             a = [to_number(x) for x in str(ai_val).split(",")]
             b = [to_number(x) for x in g.split(",")]
@@ -69,7 +72,7 @@ def value_matches(ai_val: str, gold_vals: list[str], op: str) -> bool:
             if to_set(g) == to_set(ai_val):
                 return True
             continue
-        if norm_text(g) in norm_text(ai_val) or norm_text(ai_val) in norm_text(g):
+        if norm_text(g) and (norm_text(g) in norm_text(ai_val) or norm_text(ai_val) in norm_text(g)):
             return True
     return False
 
@@ -88,6 +91,12 @@ def cond_match(ai: dict, gc: dict) -> tuple[bool, bool]:
     return True, ai["op"] in [gc["op"], *gc.get("op_accept", [])]
 
 
+def ops_compatible(ai_op: str, gc: dict) -> bool:
+    """연산자가 같은 뜻인지. 정답 연산자·허용 연산자 외에, 목록 값에서는 '=='(하나)와 'in'(목록 중 하나)을 같은 뜻으로 본다."""
+    ops = [gc["op"], *gc.get("op_accept", [])]
+    return ai_op in ops or (ai_op in ("==", "in") and any(o in ("==", "in") for o in ops))
+
+
 def list_subset(ai: dict, gc: dict) -> bool:
     """AI 값이 정답 목록 값의 일부인지 (예: 정답 '생계,의료,주거,교육,차상위'에서 '차상위'만 따로 쓴 경우)"""
     if ai["field"] not in gold_fields(gc) or gc["op"] != "in":
@@ -103,10 +112,46 @@ def is_grounded(evidence: str, source: str) -> bool:
     return bool(parts) and all(norm_text(p) in src for p in parts)
 
 
+def group_mismatches(pairs: list[tuple[dict, dict]]) -> set[int]:
+    """정답 조건과 짝지어진 AI 조건의 AND/OR 구조가 다른 짝의 번호.
+    그룹이 빈 값이면 '반드시 충족'(AND), 같은 이름끼리는 '하나 이상 충족'(OR). 그룹 이름은 서로 달라도 되고 묶음 모양만 비교한다."""
+    bad: set[int] = set()
+    by_gold: dict[str, set[str]] = {}
+    by_ai: dict[str, set[str]] = {}
+    for k, (gc, ac) in enumerate(pairs):
+        g, a = gc.get("group", ""), ac.get("group", "")
+        if bool(g) != bool(a):  # 한쪽은 '반드시', 다른 쪽은 '하나 이상'
+            bad.add(k)
+        elif g:
+            by_gold.setdefault(g, set()).add(a)
+            by_ai.setdefault(a, set()).add(g)
+    for k, (gc, ac) in enumerate(pairs):
+        g, a = gc.get("group", ""), ac.get("group", "")
+        if g and a and (len(by_gold.get(g, ())) > 1 or len(by_ai.get(a, ())) > 1):  # 한 OR 묶음이 갈라졌거나 서로 다른 묶음이 합쳐짐
+            bad.add(k)
+    return bad
+
+
 def evaluate_service(gold: dict, ai: dict, source: str) -> dict:
     gold_req = [g for g in gold["conditions"] if not g.get("optional") and g["field"] != "other"]
     ai_conds = [c for c in ai["conditions"] if c["field"] != "other"]
     used, details = set(), []
+    # 조건이 하나뿐인 그룹은 '하나 이상 충족'이어도 결국 '반드시 충족'과 같으므로 빈 그룹으로 본다
+    # ('기타' 조건은 채점하지 않으므로 묶음 크기에서도 뺀다)
+    def solo_to_and(conds: list[dict]) -> dict[int, str]:
+        cnt: dict[str, int] = {}
+        for c in conds:
+            if c.get("group") and c["field"] != "other":
+                cnt[c["group"]] = cnt.get(c["group"], 0) + 1
+        return {id(c): (c.get("group", "") if cnt.get(c.get("group", ""), 0) > 1 else "") for c in conds}
+    eff = {**solo_to_and(gold["conditions"]), **solo_to_and(ai["conditions"])}
+
+    def alternatives_only(gc: dict, ac: dict) -> bool:
+        """AI의 OR 묶음이 정답 조건 하나의 대안 값들(예: 단독·부부 가구 기준)로만 이뤄졌는지 → 같은 뜻"""
+        members = [c for c in ai_conds if c.get("group") == ac.get("group")]
+        return len(members) > 1 and all(cond_match(c, gc)[1] for c in members)
+    pairs: list[tuple[dict, dict]] = []  # (정답 조건, 연산자까지 맞은 AI 조건) → AND/OR 구조 비교
+    op_wrong: set[int] = set()  # 항목·값은 맞지만 연산자가 다른 AI 조건
     for gc in gold_req:
         best = None
         for i, c in enumerate(ai_conds):
@@ -120,6 +165,10 @@ def evaluate_service(gold: dict, ai: dict, source: str) -> dict:
                 best = (i, False)
         if best:
             used.add(best[0])
+            if best[1]:
+                pairs.append((gc, ai_conds[best[0]]))
+            elif not ops_compatible(ai_conds[best[0]]["op"], gc):
+                op_wrong.add(best[0])
         elif gc["op"] == "in":
             # 목록 조건을 같은 그룹의 '==' 조건 여러 개(OR)로 나눠 쓴 경우: 그룹의 값 합집합이 정답 목록과 같으면 정답
             groups: dict[str, list[int]] = {}
@@ -140,6 +189,15 @@ def evaluate_service(gold: dict, ai: dict, source: str) -> dict:
         details.append({"gold": f"{'/'.join(gold_fields(gc))} {gc['op']} {gc['value']}",
                         "ai": (lambda c: f"{c['field']} {c['op']} {c['value']}")(ai_conds[best[0]]) if best else "",
                         "result": "정답" if best and best[1] else ("연산자 다름" if best else "누락")})
+    # AND/OR 구조가 다르면 정답에서 제외 (예: '하나만 충족'을 '모두 충족'으로 바꾼 경우)
+    bad_groups = group_mismatches([({**gc, "group": eff[id(gc)]},
+                                    {**ac, "group": "" if not eff[id(gc)] and alternatives_only(gc, ac) else eff[id(ac)]})
+                                   for gc, ac in pairs])
+    if bad_groups:
+        texts = {f"{'/'.join(gold_fields(gc))} {gc['op']} {gc['value']}" for k, (gc, _) in enumerate(pairs) if k in bad_groups}
+        for d in details:
+            if d["result"] == "정답" and d["gold"] in texts:
+                d["result"] = "AND/OR 다름"
     correct = sum(1 for d in details if d["result"] == "정답")
     # 정밀도: AI 조건 중 정답(필수 또는 선택)과 맞는 것
     extras = []
@@ -147,11 +205,11 @@ def evaluate_service(gold: dict, ai: dict, source: str) -> dict:
         if i in used:
             continue
         # 정답의 다른 허용값(예: 가구유형별 기준을 유형마다 따로 쓴 경우)이나 목록의 일부(예: 차상위만 따로 쓴 경우)도 정답으로 본다
-        if any(cond_match(c, gc)[0] or list_subset(c, gc) for gc in gold["conditions"]):
+        if any((cond_match(c, gc)[0] and ops_compatible(c["op"], gc)) or list_subset(c, gc) for gc in gold["conditions"]):
             used.add(i)
             continue
         extras.append(f"{c['field']} {c['op']} {c['value']}")
-    precision_hits = len(ai_conds) - len(extras)
+    precision_hits = len(ai_conds) - len(extras) - len(op_wrong)
     grounded = [c for c in ai["conditions"] if is_grounded(c["evidence"], source)]
     amt = ai["benefit"]["monthly_amount_won"]
     amount_ok = any(abs(amt - a) <= max(a * 0.01, 1) for a in gold["benefit"]["amount_accept"])

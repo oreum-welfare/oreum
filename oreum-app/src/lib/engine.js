@@ -16,7 +16,19 @@ export function createEngine(data) {
     return L.jugeo_48[s] ?? Math.round(medianIncome(s) * 0.48);
   };
 
+  // 입력값 정리: 자녀 수·나이는 0 이상의 정수(소수·음수·빈 값이면 NaN이 퍼짐), 배우자가 있으면 한부모 가구가 아님
+  function normalize(hh) {
+    const int = (v) => Math.max(0, Math.floor(Number(v) || 0));
+    return {
+      ...hh,
+      age: int(hh.age), infants: int(hh.infants), elem: int(hh.elem), middle: int(hh.middle), high: int(hh.high),
+      singleParent: Boolean(hh.singleParent && !hh.spouse),
+      spouse65: Boolean(hh.spouse && hh.spouse65), dualEarner: Boolean(hh.spouse && hh.dualEarner),
+    };
+  }
+
   function derive(hh) {
+    hh = normalize(hh);
     const children = hh.infants + hh.elem + hh.middle + hh.high;
     return {
       children,
@@ -68,11 +80,12 @@ export function createEngine(data) {
     const pfin = Math.max(0, F - A.pension.financial_deduction);
     const pension = (Math.max(0, general + pfin - D) * A.pension.annual_rate) / 12;
     const total = H + F;
-    const eitcFactor = total >= A.eitc.limit ? 0 : total > A.eitc.half_over ? 0.5 : 1;
+    const eitcFactor = total >= A.eitc.limit ? 0 : total >= A.eitc.half_from ? 0.5 : 1; // 1억7천만 원 이상 50%
     return { basic, pension, eitcFactor };
   }
 
   function evaluate(hh, earned) {
+    hh = normalize(hh);
     const d = derive(hh);
     const size = d.size;
     const m = medianIncome(size);
@@ -83,12 +96,12 @@ export function createEngine(data) {
 
     // 기초연금 (소득인정액 계산에 들어가므로 먼저)
     let bp = 0;
-    if (hh.age >= 65) {
+    if (d.seniors > 0) { // 본인 또는 배우자 중 65세 이상인 사람이 받는다 (부부가구는 부부 선정기준액)
       const couple = hh.spouse;
       const line = P.basic_pension_line[couple ? "couple" : "single"];
       const evalIncome = 0.7 * Math.max(0, earned - P.basic_pension_earned_deduction) + asset.pension;
       if (evalIncome <= line) {
-        bp = couple && hh.spouse65
+        bp = d.seniors === 2
           ? 2 * P.basic_pension_amount * (1 - P.basic_pension_couple_cut)
           : P.basic_pension_amount;
         add("basic_pension", "기초연금", "중앙", "cash", bp, "소득인정액이 선정기준액 이하");
@@ -234,5 +247,5 @@ export function createEngine(data) {
     return cliffs;
   }
 
-  return { medianIncome, derive, evaluate, simulate, findCliffs, counted };
+  return { medianIncome, normalize, derive, evaluate, simulate, findCliffs, counted };
 }
