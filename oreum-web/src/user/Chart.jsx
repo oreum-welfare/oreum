@@ -3,7 +3,7 @@ import { manwon } from "./data.js";
 
 // 소득별 '월급 + 혜택' 선 그래프 (SVG). 꺾이는 곳(절벽)만 강조하고 나머지는 회색으로.
 // 그림 폭을 실제 화면 폭에 맞춰서 휴대폰에서도 글자가 작아지지 않게 한다.
-const PLOT_H = 168, PAD = { l: 4, r: 4, b: 22 }; // 위쪽 여백은 번호 원 줄 수에 따라 정한다
+const PAD = { l: 4, r: 4, b: 22 }; // 위쪽 여백은 번호 원 줄 수에 따라 정한다
 
 function useWidth(fallback) {
   const ref = useRef(null);
@@ -23,6 +23,7 @@ const PIN = { now: "#191f28", cliff: "#e5503c", recover: "#3d9a5d" };
 
 export default function Chart({ sim, inc, cmp, cliffs, focus }) {
   const [ref, W] = useWidth(480);
+  const PLOT_H = W >= 560 ? 260 : 168; // PC의 넓은 그래프는 더 높게
   const xs = sim.incomes, ys = sim.disposable;
   const maxX = xs[xs.length - 1] || 1;
   const minY = Math.min(...ys), maxY = Math.max(...ys);

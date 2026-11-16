@@ -34,12 +34,18 @@ export default function Questions({ regions, initial, initialIncome, editing, st
   if (step === 0) {
     return (
       <div className="screen">
-        <div className="screen-body col">
+        <div className="screen-body col wide">
+          <div className="start-grid">
+          <div className="start-main">
           <section className="hero">
             <span className="badge">오름 · 복지 절벽 시뮬레이터</span>
             <h1>소득이 오르면,<br />받는 복지는 <em>어떻게 바뀔까요?</em></h1>
             <p>몇 가지만 알려 주시면 지금 받을 수 있는 복지와, 소득이 늘 때 혜택이 한꺼번에 끊기는 <b>복지 절벽</b>이 어디에 있는지 계산해 드려요.</p>
           </section>
+          <button type="button" className="btn primary desk-cta" onClick={() => setStep(1)}>내 상황 계산하기</button>
+          <p className="privacy">입력한 내용은 서버로 보내지 않고, 이 기기 안에서만 계산해요.</p>
+          </div>
+          <div className="start-side">
           {example && (
             <div className="example">
               <p className="label">예시 · {example.who}</p>
@@ -56,9 +62,10 @@ export default function Questions({ regions, initial, initialIncome, editing, st
               </button>
             ))}
           </div>
-          <p className="privacy">입력한 내용은 서버로 보내지 않고, 이 기기 안에서만 계산해요.</p>
+          </div>
+          </div>
         </div>
-        <div className="bottom"><div className="col"><button type="button" className="btn primary" onClick={() => setStep(1)}>내 상황 계산하기</button></div></div>
+        <div className="bottom mobile-bottom"><div className="col"><button type="button" className="btn primary" onClick={() => setStep(1)}>내 상황 계산하기</button></div></div>
       </div>
     );
   }

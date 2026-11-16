@@ -16,7 +16,10 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
 
   return (
     <div className="screen">
-      <div className="screen-body col">
+      <div className="screen-body col wide">
+        {/* 휴대폰: 한 줄로 (요약 → 그래프 → 자세히). PC: 왼쪽 그래프·비교, 오른쪽 요약·자세히 */}
+        <div className="r-grid">
+        <div className="r-main">
         {/* 1. 지금 받는 복지 */}
         <section className="result-head">
           <p className="label">{inc > 0 ? `지금 월 ${manwon(inc)} 원을 벌면` : "지금 근로소득이 없으면"}</p>
@@ -57,6 +60,13 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
           </div>
         )}
 
+        <div className="desk-actions">
+          <button type="button" className="btn primary" onClick={() => setSheet("path")}>넘는 방법 보기</button>
+          <button type="button" className="btn ghost" onClick={onEdit}>정보 수정</button>
+        </div>
+        </div>
+
+        <div className="r-chart">
         {/* 4. 그래프 */}
         <Chart sim={r.sim} inc={inc} cmp={cmp} cliffs={r.cliffs}
           focus={curLoss ? { income: curLoss.cliff.income, recover: curLoss.recover } : cliff ? { income: cliff.income, recover: cliff.recover } : null} />
@@ -78,7 +88,9 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
                 </div>
               </>}
         </section>
+        </div>
 
+        <div className="r-more">
         {/* 6. 자세히 */}
         <nav className="rows" aria-label="자세히 보기">
           <button type="button" className="row" onClick={() => setSheet("benefits")}><span>받는 혜택 {benefits.length}가지</span><span className="chev">월 {manwon(total)} 원</span></button>
@@ -90,6 +102,8 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
 
         {/* 6. 상담 연결: 결과 링크 복사 (입력값이 주소에 저장돼 있어 같은 화면이 열림) */}
         <ShareBox />
+        </div>
+        </div>
 
         <footer className="footer">
           <p style={{ margin: "0 0 8px" }}>{short(hh.region)} · {hh.age}세{hh.spouse ? " · 배우자" : ""}{hh.infants + hh.elem + hh.middle + hh.high ? ` · 자녀 ${hh.infants + hh.elem + hh.middle + hh.high}명` : ""}{hh.singleParent ? " · 한부모" : ""}</p>
@@ -100,7 +114,7 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
         </footer>
       </div>
 
-      <div className="bottom"><div className="col">
+      <div className="bottom mobile-bottom"><div className="col">
         <button type="button" className="btn ghost" onClick={onEdit}>정보 수정</button>
         <button type="button" className="btn primary" onClick={() => setSheet("path")}>넘는 방법 보기</button>
       </div></div>

@@ -241,3 +241,29 @@ a { color: inherit; }
   .user .hero h1 { font-size: 38px; }
   .user .big { font-size: 52px; }
 }
+
+/* 한글은 낱말 단위로만 줄바꿈 (예: "바뀔까 / 요?" 방지) */
+.user h1, .user h2, .user h3, .user p, .user .alert-title { word-break: keep-all; overflow-wrap: anywhere; }
+
+/* ===== PC (1024px 이상): 시작·결과 화면을 넓은 웹 레이아웃으로. 질문 화면은 가운데 한 칸 그대로 ===== */
+.user .desk-actions, .user .desk-cta { display: none; }
+@media (min-width: 1024px) {
+  .user .col.wide { max-width: 1200px; padding: 0 48px; }
+  .user .mobile-bottom { display: none; }
+  .user .footer { padding-bottom: 48px; }
+
+  .user .r-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); grid-template-areas: "chart main" "chart more"; column-gap: 64px; align-items: start; padding-top: 16px; }
+  .user .r-main { grid-area: main; }
+  .user .r-chart { grid-area: chart; position: sticky; top: 72px; background: var(--surface); border-radius: 24px; padding: 28px 28px 24px; }
+  .user .r-chart .chart { margin-top: 0 !important; }
+  .user .r-chart .compare { background: var(--bg); }
+  .user .r-more { grid-area: more; }
+  .user .desk-actions { display: flex; gap: 8px; margin-top: 24px; }
+  .user .desk-actions .btn { flex: 1; }
+
+  .user .start-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); column-gap: 80px; align-items: center; min-height: calc(100vh - 140px); }
+  .user .start-grid .hero { padding-top: 0; }
+  .user .start-grid .hero h1 { font-size: 52px; }
+  .user .start-grid .hero p { font-size: 19px; max-width: 520px; }
+  .user .desk-cta { display: block; width: 100%; max-width: 360px; margin-top: 32px; }
+}
