@@ -45,22 +45,31 @@ const STATUS_LABEL = {
   extra: ["정답에 없음", "s-bad"], other: ["기타 · 사람 확인", "s-warn"],
 };
 
+// 원문에서 근거 인용 위치를 칠한다. 여러 조건이 같은(또는 겹치는) 문장을 인용하면 한 칸으로 합치고,
+// 그 칸은 인용한 조건 중 어느 것에 마우스를 올려도 강조된다. 여러 구절을 ' / '·'…'로 이은 인용은 구절마다 찾는다.
 function Highlighted({ text, evidences, active }) {
-  const ranges = [];
+  const found = [];
   evidences.forEach((ev, i) => {
     if (!ev) return;
-    let at = text.indexOf(ev);
-    let len = ev.length;
-    if (at < 0) { const head = ev.slice(0, 18); at = text.indexOf(head); len = head.length; }
-    if (at >= 0) ranges.push({ s: at, e: at + len, i });
+    for (const part of ev.split(/\s\/\s|…|\.\.\./).map((x) => x.trim()).filter(Boolean)) {
+      let at = text.indexOf(part);
+      let len = part.length;
+      if (at < 0) { const head = part.slice(0, 18); at = text.indexOf(head); len = head.length; }
+      if (at >= 0) found.push({ s: at, e: at + len, is: new Set([i]) });
+    }
   });
-  ranges.sort((a, b) => a.s - b.s);
+  found.sort((a, b) => a.s - b.s || b.e - a.e);
+  const ranges = [];
+  for (const r of found) {
+    const last = ranges[ranges.length - 1];
+    if (last && r.s < last.e) { last.e = Math.max(last.e, r.e); r.is.forEach((x) => last.is.add(x)); } // 겹치면 합침
+    else ranges.push({ ...r, is: new Set(r.is) });
+  }
   const out = [];
   let pos = 0;
   for (const r of ranges) {
-    if (r.s < pos) continue;
     if (r.s > pos) out.push(text.slice(pos, r.s));
-    out.push(<mark key={r.s} className={r.i === active ? "ev active" : "ev"}>{text.slice(r.s, r.e)}</mark>);
+    out.push(<mark key={r.s} className={r.is.has(active) ? "ev active" : "ev"}>{text.slice(r.s, r.e)}</mark>);
     pos = r.e;
   }
   out.push(text.slice(pos));
@@ -202,8 +211,9 @@ export default function Review() {
                         </div>
                         {editing === i ? (
                           <div className="cond-edit">
-                            <input value={draft} onChange={(e) => setDraft(e.target.value)} />
-                            <button className="btn sm" onClick={() => { decide(i, { type: "edit", value: draft }); setEditing(null); }}>저장</button>
+                            <input value={draft} onChange={(e) => setDraft(e.target.value)} aria-label="고친 값" />
+                            <button className="btn sm" disabled={!draft.trim()} title={draft.trim() ? "" : "값을 입력해야 저장할 수 있어요"}
+                              onClick={() => { if (!draft.trim()) return; decide(i, { type: "edit", value: draft.trim() }); setEditing(null); }}>저장</button>
                             <button className="btn sm ghost" onClick={() => setEditing(null)}>취소</button>
                           </div>
                         ) : (

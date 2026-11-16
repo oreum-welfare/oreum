@@ -132,6 +132,14 @@ const check = (name, ok, detail) => {
   check("영유아 0명이면 출산장려금 없음", !birthNoKid);
 }
 
+// 14. 출생 순위는 자녀 수를 넘지 않음 (셋째로 골라도 자녀가 1명이면 첫째로 계산)
+{
+  const third1 = amount(hh({ infants: 1, newborn: true, birthOrder: 3 }), 0, "gs_birth");
+  const first1 = amount(hh({ infants: 1, newborn: true, birthOrder: 1 }), 0, "gs_birth");
+  const third3 = amount(hh({ infants: 1, elem: 2, newborn: true, birthOrder: 3 }), 0, "gs_birth");
+  check("출생 순위 > 자녀 수면 자녀 수에 맞춰 계산, 자녀 3명이면 셋째 금액", third1 === first1 && third3 > first1, `자녀1·셋째 ${third1}, 자녀3·셋째 ${third3}`);
+}
+
 if (bad) {
   console.error(`${bad}개 검사 실패`);
   process.exit(1);

@@ -227,7 +227,7 @@ function Findings({ all }) {
       {top && <li><b>가장 큰 절벽은 {top.type.label}({top.region})</b>입니다. 월 소득이 {won(top.maxCliff.income)}(중위소득 {pct(top.maxCliff.pct)})이 되는 순간 <span className="big">{won(top.maxCliff.drop)}</span>을 잃습니다. 사라지는 혜택: {top.maxCliff.lost.join(", ") || "금액 감소"}.</li>}
       {ends.length > 0 && <li>혜택이 끊기는 지점 {ends.length}개 중 <b>{Math.round((win.count / ends.length) * 100)}%({win.count}개)가 근로소득 기준 중위소득 {win.from}~{win.from + 10}% 구간</b>에 몰려 있습니다. (근로소득공제 때문에 소득인정액 기준으로는 그보다 낮은 구간입니다.)</li>}
       <li>12가지 경우 중 <b>{cases.filter((c) => c.lossZones > 0).length}가지</b>에서 '10만 원을 더 벌어도 오히려 손해'인 소득 구간이 있습니다.</li>
-      <li><b>제도 개선 효과:</b> 수급 자격에 묶인 혜택을 기준선에서 한 번에 끊지 않고 중위소득 10%p 구간에서 서서히 줄이면, 절벽이 {cases.reduce((s, c) => s + c.cliffs.length, 0)}개에서 <b>{policy.after}개</b>로, 가장 큰 손해가 {won(top?.maxCliff.drop ?? 0)}에서 <b>{won(policy.max)}</b>으로 줄어듭니다 (⑤).</li>
+      <li><b>제도 개선 효과:</b> 기준선에서 끊기는 혜택(수급 자격에 묶인 혜택·기초연금 등)을 기준선에서 한 번에 끊지 않고 중위소득 10%p 구간에서 서서히 줄이면, 절벽이 {cases.reduce((s, c) => s + c.cliffs.length, 0)}개에서 <b>{policy.after}개</b>로, 가장 큰 손해가 {won(top?.maxCliff.drop ?? 0)}에서 <b>{won(policy.max)}</b>으로 줄어듭니다 (⑤).</li>
       <li>지역별 비교: {byRegion.map((x, i) => <span key={x.r}>{i > 0 && " · "}<b>{x.r}</b> 절벽 {x.cnt}개, 가장 큰 절벽 평균 {won(x.avg)}</span>)}.</li>
     </ol>
     </section>
@@ -770,7 +770,7 @@ function SensitivitySection({ rows }) {
             <div style={{
               width: `${Math.abs(item.supportDelta) / maxEffect * 100}%`,
               height: "100%",
-              background: "var(--data)",
+              background: item.supportDelta < 0 ? "var(--red)" : "var(--green)", // 줄어들면 빨강, 늘어나면 초록
               borderRadius: 10,
             }} />
           </div>

@@ -20,6 +20,7 @@ export default function StartScreen({ regions, short, defaults, presets, example
     if (k === "spouse" && v) n.singleParent = false; // 배우자가 있으면 한부모 가구가 아님
     if (k === "singleParent" && v) { n.spouse = false; n.spouse65 = false; n.dualEarner = false; }
     if (k === "newborn" && v && n.infants === 0) n.infants = 1;
+    if (k === "infants" && v === 0) n.newborn = false; // 영유아가 없으면 올해 출산 아님
     return n;
   });
   const last = step === STEPS.length - 1;
@@ -93,6 +94,7 @@ export default function StartScreen({ regions, short, defaults, presets, example
             {hh.newborn && (
               <div className="row big"><span>몇째 아이인가요?</span>
                 <Segmented label="출생 순위" options={[[1, "첫째"], [2, "둘째"], [3, "셋째"], [4, "넷째+"]]} value={hh.birthOrder} onChange={(v) => set("birthOrder", v)} />
+                {hh.birthOrder > kids && <p className="field-note warn-note">자녀가 {kids}명으로 입력돼 있어요. {{ 1: "첫째", 2: "둘째", 3: "셋째", 4: "넷째 이상" }[hh.birthOrder]}라면 '이전'으로 돌아가 가족 칸에 형제자매도 넣어 주세요.</p>}
               </div>
             )}
             <p className="field-note">재산·거주 기간은 결과 화면에서 '정보 수정'으로 더 정확하게 넣을 수 있어요.</p>
@@ -102,8 +104,8 @@ export default function StartScreen({ regions, short, defaults, presets, example
             <h2>한 달에 얼마 버세요?</h2>
             <p className="hint">가족 모두의 근로소득을 더한 금액이에요 (세금 떼기 전).</p>
             <label className="income-big">
-              <input type="number" inputMode="numeric" min="0" value={Math.round(income / 10000)}
-                onChange={(e) => setIncome(Math.max(0, Number(e.target.value) || 0) * 10000)} aria-label="월 근로소득 (만 원)" />
+              <input type="number" inputMode="numeric" min="0" step="1" value={Math.round(income / 10000)}
+                onChange={(e) => setIncome(Math.max(0, Math.floor(Number(e.target.value) || 0)) * 10000)} aria-label="월 근로소득 (만 원)" />
               <span>만 원</span>
             </label>
             <div className="chips">

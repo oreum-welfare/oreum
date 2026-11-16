@@ -97,6 +97,24 @@ export function chartOptions(incomes, linesRef, { stacked = false, legend = true
   };
 }
 
+/* ---------------- 입력: 만 원 단위 숫자 칸 (소수 입력 중에도 글자가 지워지지 않게) ---------------- */
+function ManwonInput({ value, onChange, ...rest }) {
+  const toText = (v) => (v ? String(Math.round((v / 10000) * 100) / 100) : "0");
+  const [text, setText] = useState(toText(value));
+  const [focused, setFocused] = useState(false);
+  useEffect(() => { if (!focused) setText(toText(value)); }, [value, focused]); // 밖에서 값이 바뀌면 맞춤
+  return (
+    <input type="text" inputMode="decimal" value={text} {...rest}
+      onFocus={() => setFocused(true)}
+      onBlur={() => { setFocused(false); setText(toText(value)); }}
+      onChange={(e) => {
+        const t = e.target.value.replace(/[^\d.]/g, "").replace(/(\..*)\./g, "$1"); // 숫자와 소수점 하나만
+        setText(t);
+        onChange(Math.max(0, Math.round((Number(t) || 0) * 10000)));
+      }} />
+  );
+}
+
 /* ---------------- 입력: 우리 가구 ---------------- */
 function HouseholdPanel({ hh, set, regions, preset, applyPreset, includeInkind, setIncludeInkind }) {
   const [more, setMore] = useState(hh.housingAsset + hh.financialAsset + hh.debt > 0 || hh.residenceMonths !== 60);
@@ -104,7 +122,7 @@ function HouseholdPanel({ hh, set, regions, preset, applyPreset, includeInkind, 
     ["singleParent", "한부모"], ["disabled", "장애인 가구원"], ["severeDisabled", "본인 심한 장애"],
     ["newborn", "올해 출산"], ["thirdChild7to18", "셋째 이상 자녀(7~18세)"],
   ];
-  const money = (k) => ({ value: Math.round(hh[k] / 10000), onChange: (e) => set(k, Math.max(0, Number(e.target.value) || 0) * 10000) });
+  const money = (k) => ({ value: hh[k], onChange: (v) => set(k, v) });
   const assetSet = hh.housingAsset + hh.financialAsset + hh.debt > 0;
   return (
     <section className="panel" aria-label="우리 가구 정보">
@@ -149,6 +167,9 @@ function HouseholdPanel({ hh, set, regions, preset, applyPreset, includeInkind, 
           <Segmented label="출생 순위" options={[[1, "첫째"], [2, "둘째"], [3, "셋째"], [4, "넷째+"]]} value={hh.birthOrder} onChange={(v) => set("birthOrder", v)} />
         </div>
       )}
+      {hh.newborn && hh.birthOrder > hh.infants + hh.elem + hh.middle + hh.high && (
+        <p className="field-note warn-note">자녀가 {hh.infants + hh.elem + hh.middle + hh.high}명으로 입력돼 있어요. {{ 1: "첫째", 2: "둘째", 3: "셋째", 4: "넷째 이상" }[hh.birthOrder]}라면 위 가족 칸에 형제자매도 넣어 주세요. 그 전까지는 자녀 수에 맞춰 계산해요.</p>
+      )}
 
       <button type="button" className="step step-toggle" aria-expanded={more} onClick={() => setMore(!more)}>
         <span className="step-no muted">4</span>재산 · 거주 기간 <span className="optional">선택{assetSet ? " · 입력됨" : ""}</span>
@@ -157,7 +178,7 @@ function HouseholdPanel({ hh, set, regions, preset, applyPreset, includeInkind, 
       {more && (
         <div className="more-fields">
           {[["housingAsset", "주택·전세보증금"], ["financialAsset", "예금·적금 등"], ["debt", "대출 등 부채"]].map(([k, label]) => (
-            <label className="money" key={k}><span>{label}</span><span className="money-input"><input type="number" inputMode="numeric" min="0" step="100" {...money(k)} />만 원</span></label>
+            <label className="money" key={k}><span>{label}</span><span className="money-input"><ManwonInput aria-label={`${label} (만 원)`} {...money(k)} />만 원</span></label>
           ))}
           <div className="row"><span>지금 사는 곳 거주 기간</span><Stepper label="거주 기간" value={hh.residenceMonths} max={600} suffix="개월" onChange={(v) => set("residenceMonths", v)} /></div>
           <p className="field-note">재산은 소득으로 환산돼 계산에 들어가요. 비워 두면 0원이고, 토지·자동차는 반영하지 않아요.</p>
@@ -390,6 +411,7 @@ export default function Simulator() {
     if (k === "spouse" && v) n.singleParent = false; // 배우자가 있으면 한부모 가구가 아님
     if (k === "singleParent" && v) { n.spouse = false; n.spouse65 = false; n.dualEarner = false; }
     if (k === "newborn" && v && n.infants === 0) n.infants = 1;
+    if (k === "infants" && v === 0) n.newborn = false; // 영유아가 없으면 올해 출산 아님
     save({ hh: n, preset: null });
   };
   const applyPreset = (p) => { setDrawer(null); save({ hh: { ...DEFAULT_HH, ...p.hh }, income: p.income, compare: null, includeInkind: true, preset: p.key }, true); window.scrollTo(0, 0); };
@@ -572,8 +594,8 @@ export default function Simulator() {
     edit: { title: "우리 가구 정보", sub: presetTitle ? `예시: ${presetTitle}` : "직접 입력한 정보", body: (
       <>
         <label className="money base-income"><span><b>내 소득</b> 한 달 근로소득 (가구 합계)</span>
-          <span className="money-input"><input type="number" inputMode="numeric" min="0" value={Math.round(inc / 10000)}
-            onChange={(e) => setIncome(Math.max(0, Number(e.target.value) || 0) * 10000)} />만 원</span></label>
+          <span className="money-input"><input type="number" inputMode="numeric" min="0" step="1" value={Math.round(inc / 10000)}
+            onChange={(e) => setIncome(Math.max(0, Math.floor(Number(e.target.value) || 0)) * 10000)} />만 원</span></label>
         <HouseholdPanel hh={hh} set={set} regions={Object.keys(data.regions)} preset={preset} applyPreset={applyPreset}
           includeInkind={includeInkind} setIncludeInkind={setIncludeInkind} />
       </>) },

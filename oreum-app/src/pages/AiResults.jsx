@@ -4,7 +4,7 @@ import { useJson } from "../lib/useJson.js";
 import { PageHead } from "../components/ui.jsx";
 
 const pct = (x) => `${Math.round(x * 100)}%`;
-const ERROR_TYPES = ["판정 가능 여부", "조건 누락·오류", "정답에 없는 조건", "금액"];
+const ERROR_TYPES = ["판정 가능 여부", "조건 누락·오류", "정답에 없는 조건", "금액", "근거 인용"];
 
 function stageLabel(s) {
   return `${s.prompt} 프롬프트 · ${s.set}`;
@@ -96,7 +96,7 @@ export default function AiResults() {
             <div className="legend-note"><span className="box unseen" />처음 보는 서비스 <span className="box seen" />프롬프트를 고칠 때 쓴 서비스</div>
           </div>
           <AccuracyChart stages={data.stages} />
-          <p className="hint">서비스 정확도 = 조건·판정 가능 여부·금액이 <b>모두</b> 맞은 서비스 비율. 회색 막대는 같은 문제로 고치고 다시 잰 점수라 실제보다 높게 나옵니다.</p>
+          <p className="hint">서비스 정확도 = 조건·판정 가능 여부·금액·근거 인용이 <b>모두</b> 맞은 서비스 비율 (조건 기준값은 정확히 일치해야 정답). 회색 막대는 같은 문제로 고치고 다시 잰 점수라 실제보다 높게 나옵니다.</p>
         </div>
 
         <div className="card">

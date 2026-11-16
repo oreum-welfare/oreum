@@ -25,7 +25,7 @@ export function createEngine(data) {
     return {
       ...hh,
       age: int(hh.age), ...kids,
-      birthOrder: Math.min(4, Math.max(1, int(hh.birthOrder) || 1)),
+      birthOrder: Math.min(4, Math.max(1, int(hh.birthOrder) || 1), Math.max(1, children)), // 자녀 수보다 클 수 없음
       newborn: Boolean(hh.newborn && kids.infants >= 1), // 영유아가 0명이면 올해 출산 아님
       residenceMonths: int(hh.residenceMonths),
       housingAsset: Math.max(0, Number(hh.housingAsset) || 0), financialAsset: Math.max(0, Number(hh.financialAsset) || 0),

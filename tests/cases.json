@@ -179,5 +179,12 @@
   "elem": 5,
   "middle": 2,
   "high": 1
+ },
+ {
+  "region": "경상북도 경산시",
+  "age": 33,
+  "infants": 1,
+  "newborn": true,
+  "birth_order": 3
  }
 ]
