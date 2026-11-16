@@ -140,6 +140,9 @@
 .admin .cond-list { list-style: none; padding: 0; margin: 0 0 12px; display: flex; flex-direction: column; gap: 8px; }
 .admin .cond { border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; transition: border-color 0.15s; }
 .admin .cond:hover { border-color: var(--yellow); }
+.admin .cond { cursor: pointer; }
+.admin .cond.picked { border-color: var(--yellow); box-shadow: 0 0 0 1px var(--yellow); }
+.admin .source-text { position: relative; }
 .admin .cond.rejected { opacity: 0.45; text-decoration: line-through; }
 .admin .cond-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .admin .cond-field { font-weight: 700; font-size: 14px; margin-right: 2px; }

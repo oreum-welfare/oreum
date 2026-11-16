@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { won } from "../../lib/format.js";
 import { useJson } from "../../lib/useJson.js";
@@ -47,7 +47,20 @@ const STATUS_LABEL = {
 
 // 원문에서 근거 인용 위치를 칠한다. 여러 조건이 같은(또는 겹치는) 문장을 인용하면 한 칸으로 합치고,
 // 그 칸은 인용한 조건 중 어느 것에 마우스를 올려도 강조된다. 여러 구절을 ' / '·'…'로 이은 인용은 구절마다 찾는다.
-function Highlighted({ text, evidences, active }) {
+// 원문 + AI 근거 강조. jump가 바뀌면 그 조건의 근거가 보이도록 원문 칸을 스크롤한다
+function Highlighted({ text, evidences, active, jump }) {
+  const box = useRef(null);
+  useEffect(() => {
+    if (!jump || !box.current) return;
+    const pre = box.current;
+    const mark = pre.querySelector(`mark[data-ev~="${jump.i}"]`);
+    if (!mark) return;
+    // 원문 칸 안에서만 스크롤 (페이지 전체가 튀지 않게), 근거가 칸의 위쪽 1/3쯤 오도록. 원문 칸이 position: relative라 offsetTop은 칸 기준
+    pre.scrollTo({ top: Math.max(0, mark.offsetTop - pre.clientHeight / 3), behavior: "smooth" });
+    // 좁은 화면처럼 원문 칸이 화면 밖이면 원문 칸이 보이게
+    const r = pre.getBoundingClientRect();
+    if (r.bottom < 0 || r.top > window.innerHeight) pre.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [jump]);
   const found = [];
   evidences.forEach((ev, i) => {
     if (!ev) return;
@@ -69,11 +82,11 @@ function Highlighted({ text, evidences, active }) {
   let pos = 0;
   for (const r of ranges) {
     if (r.s > pos) out.push(text.slice(pos, r.s));
-    out.push(<mark key={r.s} className={r.is.has(active) ? "ev active" : "ev"}>{text.slice(r.s, r.e)}</mark>);
+    out.push(<mark key={r.s} data-ev={[...r.is].join(" ")} className={r.is.has(active) ? "ev active" : "ev"}>{text.slice(r.s, r.e)}</mark>);
     pos = r.e;
   }
   out.push(text.slice(pos));
-  return <pre className="source-text">{out}</pre>;
+  return <pre className="source-text" ref={box}>{out}</pre>;
 }
 
 function RunCompare({ runs }) {
@@ -98,7 +111,10 @@ export default function Review() {
   const { data, error } = useJson("/data/review.json");
   const [store, setStore] = useState(loadStore);
   const [sel, setSel] = useState(null);
-  const [active, setActive] = useState(null);
+  const [hover, setHover] = useState(null);
+  const [picked, setPicked] = useState(null); // 누른 조건 (근거 강조 유지)
+  const [jump, setJump] = useState(null);
+  const active = hover ?? picked;
   const [editing, setEditing] = useState(null);
   const [draft, setDraft] = useState("");
 
@@ -157,7 +173,7 @@ export default function Review() {
             <ul>
               {data.services.map((s) => (
                 <li key={s.id}>
-                  <button className={s.id === sel ? "active" : ""} onClick={() => { setSel(s.id); setActive(null); setEditing(null); }}>
+                  <button className={s.id === sel ? "active" : ""} onClick={() => { setSel(s.id); setHover(null); setPicked(null); setEditing(null); }}>
                     <span className="rv-name">{s.name}</span>
                     <span className="rv-sub">{s.provider}</span>
                     <span className="rv-badges">
@@ -186,8 +202,8 @@ export default function Review() {
             <div className="review-cols">
               <div className="card">
                 <h3 className="card-title">복지로 원문</h3>
-                <p className="hint">노란색 = AI가 근거로 인용한 문장. 오른쪽 조건에 마우스를 올리면 해당 근거가 진하게 표시됩니다.</p>
-                <Highlighted text={svc.text} evidences={conds.map((c) => c.evidence)} active={active} />
+                <p className="hint">노란색 = AI가 근거로 인용한 문장. 오른쪽 조건에 마우스를 올리면 근거가 진하게, 누르면 원문의 그 위치로 이동합니다.</p>
+                <Highlighted text={svc.text} evidences={conds.map((c) => c.evidence)} active={active} jump={jump} />
               </div>
 
               <div className="card">
@@ -202,7 +218,11 @@ export default function Review() {
                     const d = rec.conditions[i];
                     const [label, cls] = STATUS_LABEL[c.status];
                     return (
-                      <li key={i} className={`cond ${d?.type === "reject" ? "rejected" : ""}`} onMouseEnter={() => setActive(i)} onMouseLeave={() => setActive(null)}>
+                      <li key={i} className={`cond ${d?.type === "reject" ? "rejected" : ""} ${picked === i ? "picked" : ""}`}
+                        onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)}
+                        tabIndex={0} aria-label={`${FIELD_LABEL[c.field] || c.field} 근거를 원문에서 보기`}
+                        onClick={(e) => { if (e.target.closest("button, input")) return; setPicked(i); setJump({ i, n: Date.now() }); }}
+                        onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); setPicked(i); setJump({ i, n: Date.now() }); } }}>
                         <div className="cond-head">
                           <span className="cond-field">{FIELD_LABEL[c.field] || c.field}</span>
                           {c.group && <span className="pill s-group">그룹: {c.group}</span>}
