@@ -14,6 +14,7 @@ import {
 
 
 const STEP = 10000;
+const RANGE = 2; // 분석 범위: 기준중위소득의 200% (기초연금처럼 중위 100% 위에서 끊기는 혜택까지)
 const EXTRA = 100000;
 const TYPE_COLORS = [
   "#536B7D",
@@ -39,7 +40,7 @@ function runAll(data, engine) {
     for (const region of regions) {
       const hh = toHh(t.hh, region);
       const m = engine.medianIncome(engine.derive(hh).size);
-      const sim = engine.simulate(hh, Math.round(m / STEP) * STEP, STEP, true);
+      const sim = engine.simulate(hh, Math.round((m * RANGE) / STEP) * STEP, STEP, true);
       const cliffs = engine.findCliffs(sim).map((c) => ({ ...c, pct: (c.income / m) * 100 }));
       const cliffCauses = cliffs.map((cliff) => {
         const beforeBenefits = engine.evaluate(hh, sim.incomes[cliff.index - 1]);
@@ -146,7 +147,7 @@ function buildSensitivity(data, engine) {
 
         // 동일한 소득 범위에서 절벽 발생 여부 비교
         const maxIncome = Math.ceil(
-          Math.max(baseMedian, changedMedian) / STEP
+          (Math.max(baseMedian, changedMedian) * RANGE) / STEP
         ) * STEP;
 
         const baseSim = engine.simulate(base, maxIncome, STEP, true);
@@ -198,7 +199,7 @@ function Findings({ all }) {
   const top = cases.filter((c) => c.maxCliff).sort((a, b) => b.maxCliff.drop - a.maxCliff.drop)[0];
   const ends = cases.flatMap((c) => c.endings);
   let win = { from: 0, count: 0 };
-  for (let from = 0; from <= 90; from++) {
+  for (let from = 0; from <= RANGE * 100 - 10; from++) {
     const count = ends.filter((e) => e.pct > from && e.pct <= from + 10).length;
     if (count > win.count) win = { from, count };
   }
@@ -1079,9 +1080,10 @@ export default function Analysis() {
     data: c.sim.incomes.map((inc, j) => ({ x: (inc / c.m) * 100, y: (c.sim.disposable[j] / c.m) * 100 })),
   })) };
 
-  const buckets = Array.from({ length: 20 }, (_, i) => ({ from: i * 5, to: i * 5 + 5, count: 0, names: {} }));
+  const NB = RANGE * 20; // 5%p 구간 수
+  const buckets = Array.from({ length: NB }, (_, i) => ({ from: i * 5, to: i * 5 + 5, count: 0, names: {} }));
   for (const e of all.cases.flatMap((c) => c.endings)) {
-    const b = buckets[Math.min(19, Math.max(0, Math.ceil(e.pct / 5) - 1))];
+    const b = buckets[Math.min(NB - 1, Math.max(0, Math.ceil(e.pct / 5) - 1))];
     b.count++; b.names[e.name] = (b.names[e.name] || 0) + 1;
   }
   const maxB = Math.max(...buckets.map((b) => b.count));
@@ -1095,7 +1097,7 @@ export default function Analysis() {
     <>
       <main className="page">
         <PageHead title={<>복지 절벽은 <em>누구에게, 어디서</em> 나타날까?</>}
-          desc="대표 가구 6개 × 지역 2곳, 12가지 경우를 소득 0원부터 기준중위소득 100%까지 1만 원 단위로 계산했어요." />
+          desc="대표 가구 6개 × 지역 2곳, 12가지 경우를 소득 0원부터 기준중위소득 200%까지 1만 원 단위로 계산했어요." />
         <Findings all={all} />
         {data.provisional?.length > 0 && <div className="notice">일부 금액({data.provisional.length}개 항목)이 추정값이에요. 금액이 바뀌면 아래 결과도 함께 바뀌어요.</div>}
         <section className="card">
@@ -1111,7 +1113,7 @@ export default function Analysis() {
           <p className="hint">가로·세로 모두 <b>기준중위소득 대비 %</b>로 바꿔 겹쳐 그렸습니다. 선이 아래로 꺾이는 곳이 절벽입니다.</p>
           <div className="chart-box"><Scatter data={curveData} options={{
             responsive: true, maintainAspectRatio: false, animation: false, interaction: { mode: "nearest", intersect: false },
-            scales: { x: { min: 0, max: 100, title: { display: true, text: "월 근로소득 (기준중위소득 대비 %)" }, ticks: { callback: (v) => `${v}%` } },
+            scales: { x: { min: 0, max: RANGE * 100, title: { display: true, text: "월 근로소득 (기준중위소득 대비 %)" }, ticks: { callback: (v) => `${v}%` } },
               y: { min: 0, title: { display: true, text: "근로소득 + 혜택 (중위소득 대비 %)" }, ticks: { callback: (v) => `${v}%` } } },
             plugins: { legend: { position: "bottom" }, tooltip: { callbacks: { label: (it) => ` ${it.dataset.label}: 근로소득 ${it.parsed.x.toFixed(0)}% → 합계 ${it.parsed.y.toFixed(0)}%` } } },
           }} /></div>
@@ -1256,7 +1258,7 @@ export default function Analysis() {
             <div><h3>방법</h3><ol>
               <li>복지로 선정기준 원문을 판정 규칙으로 변환 (<code>rules.json</code>)</li>
               <li>가구 유형 6개 × 지역 2곳 = 12가지 경우 설정</li>
-              <li>소득 0원 ~ 기준중위소득 100%, 1만 원 단위로 받는 혜택 계산</li>
+              <li>소득 0원 ~ 기준중위소득 200%, 1만 원 단위로 받는 혜택 계산 (기초연금·자녀장려금처럼 중위 100% 위에서 끊기는 혜택 포함)</li>
               <li>'근로소득 + 혜택'이 1,000원 이상 줄어드는 지점을 절벽으로 기록</li>
               <li>같은 계산을 파이썬(<code>analysis/cliff_analysis.py</code>)으로도 실행해 결과 일치 확인</li>
             </ol></div>

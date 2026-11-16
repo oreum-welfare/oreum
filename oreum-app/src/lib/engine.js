@@ -7,21 +7,26 @@ export const KIND_LABEL = { cash: "현금", inkind: "감면·현물", access: "�
 export function createEngine(data) {
   const P = data.params;
   const L = data.lines;
-  const clampSize = (s) => Math.min(Math.max(s, 1), 6);
-
-  const medianIncome = (size) => Math.round(L.saeng_32[clampSize(size)] / 0.32);
-  const saengLine = (size) => L.saeng_32[clampSize(size)];
-  const jugeoLine = (size) => {
-    const s = clampSize(size);
-    return L.jugeo_48[s] ?? Math.round(medianIncome(s) * 0.48);
+  // 7인 이상 가구: 1인이 늘 때마다 '6인 기준 − 5인 기준' 차이를 6인 기준에 더한다 (기준중위소득 산정 방식)
+  const lineAt = (table, size) => {
+    const s = Math.max(1, size);
+    return s <= 6 ? table[s] : table[6] + (table[6] - table[5]) * (s - 6);
   };
+  const medianIncome = (size) => Math.round(lineAt(L.saeng_32, size) / 0.32);
+  const saengLine = (size) => lineAt(L.saeng_32, size);
+  const jugeoLine = (size) => (size <= 6 && L.jugeo_48[size] != null ? L.jugeo_48[Math.max(1, size)] : Math.round(medianIncome(size) * 0.48));
 
   // 입력값 정리: 자녀 수·나이는 0 이상의 정수(소수·음수·빈 값이면 NaN이 퍼짐), 배우자가 있으면 한부모 가구가 아님
+  // 출생 순위는 1~4(넷째 이상), 셋째 이상 자녀(7~18세)는 자녀가 3명 이상이고 초·중·고 자녀가 있을 때만
   function normalize(hh) {
     const int = (v) => Math.max(0, Math.floor(Number(v) || 0));
+    const kids = { infants: int(hh.infants), elem: int(hh.elem), middle: int(hh.middle), high: int(hh.high) };
+    const children = kids.infants + kids.elem + kids.middle + kids.high;
     return {
       ...hh,
-      age: int(hh.age), infants: int(hh.infants), elem: int(hh.elem), middle: int(hh.middle), high: int(hh.high),
+      age: int(hh.age), ...kids,
+      birthOrder: Math.min(4, Math.max(1, int(hh.birthOrder) || 1)),
+      thirdChild7to18: Boolean(hh.thirdChild7to18 && children >= 3 && kids.elem + kids.middle + kids.high >= 1),
       singleParent: Boolean(hh.singleParent && !hh.spouse),
       spouse65: Boolean(hh.spouse && hh.spouse65), dualEarner: Boolean(hh.spouse && hh.dualEarner),
     };
@@ -33,7 +38,7 @@ export function createEngine(data) {
     return {
       children,
       schoolKids: hh.elem + hh.middle + hh.high,
-      size: Math.min(1 + (hh.spouse ? 1 : 0) + children, 6),
+      size: 1 + (hh.spouse ? 1 : 0) + children, // 7인 이상도 그대로 (기준선은 lineAt으로 늘림)
       seniors: (hh.age >= 65 ? 1 : 0) + (hh.spouse && hh.spouse65 ? 1 : 0),
       disabled: Boolean(hh.disabled || hh.severeDisabled),
     };
@@ -134,7 +139,7 @@ export function createEngine(data) {
 
     const jugeoElig = ri <= jugeoLine(size);
     if (jugeoElig) {
-      const rent = P.rent[region.rent_grade][size];
+      const rent = P.rent[region.rent_grade][Math.min(size, 6)]; // 7인 이상은 6인 기준임대료 적용 (추정)
       const deduct = ri <= sLine ? 0 : P.jugeo_self_share * (ri - sLine);
       add("jugeo", "주거급여", "중앙", "cash", Math.max(0, rent - deduct),
         `소득인정액 ≤ 중위 48%, ${region.rent_grade} 기준임대료 (임차 가정)`);

@@ -4,6 +4,7 @@
     "service_accuracy": 0.35714285714285715,
     "condition_recall": 0.9333333333333333,
     "condition_precision": 1.0,
+    "unverified_conditions": 2,
     "judgeable_agreement": 0.42857142857142855,
     "evidence_grounding": 1.0,
     "amount_accuracy": 0.9285714285714286,
@@ -16,8 +17,10 @@
       "gold_required": 1,
       "correct": 0,
       "ai_conditions": 0,
+      "precision_base": 0,
       "precision_hits": 0,
       "extras": [],
+      "unverified": [],
       "evidence_total": 3,
       "evidence_grounded": 3,
       "judgeable_ok": false,
@@ -27,6 +30,7 @@
         0
       ],
       "amount_note": "화장료 차액 100% (금액이 사용량에 따라 다름) → 0",
+      "evidence_ok": true,
       "service_ok": false,
       "details": [
         {
@@ -42,8 +46,10 @@
       "gold_required": 1,
       "correct": 1,
       "ai_conditions": 1,
+      "precision_base": 1,
       "precision_hits": 1,
       "extras": [],
+      "unverified": [],
       "evidence_total": 2,
       "evidence_grounded": 2,
       "judgeable_ok": false,
@@ -53,6 +59,7 @@
         0
       ],
       "amount_note": "원문에 금액 없음",
+      "evidence_ok": true,
       "service_ok": false,
       "details": [
         {
@@ -68,8 +75,10 @@
       "gold_required": 1,
       "correct": 1,
       "ai_conditions": 1,
+      "precision_base": 1,
       "precision_hits": 1,
       "extras": [],
+      "unverified": [],
       "evidence_total": 2,
       "evidence_grounded": 2,
       "judgeable_ok": false,
@@ -79,6 +88,7 @@
         0
       ],
       "amount_note": "엽산제 현물, 금액 없음",
+      "evidence_ok": true,
       "service_ok": false,
       "details": [
         {
@@ -94,8 +104,10 @@
       "gold_required": 1,
       "correct": 1,
       "ai_conditions": 1,
+      "precision_base": 1,
       "precision_hits": 1,
       "extras": [],
+      "unverified": [],
       "evidence_total": 3,
       "evidence_grounded": 3,
       "judgeable_ok": true,
@@ -106,6 +118,7 @@
         200000
       ],
       "amount_note": "가구당 20만 원, 매년 1회 (연액 → 월 16,667원 또는 20만 원)",
+      "evidence_ok": true,
       "service_ok": false,
       "details": [
         {
@@ -121,8 +134,10 @@
       "gold_required": 0,
       "correct": 0,
       "ai_conditions": 0,
+      "precision_base": 0,
       "precision_hits": 0,
       "extras": [],
+      "unverified": [],
       "evidence_total": 2,
       "evidence_grounded": 2,
       "judgeable_ok": false,
@@ -132,6 +147,7 @@
         100000
       ],
       "amount_note": "매월 10만 원",
+      "evidence_ok": true,
       "service_ok": false,
       "details": []
     },
@@ -141,8 +157,10 @@
       "gold_required": 1,
       "correct": 1,
       "ai_conditions": 1,
+      "precision_base": 1,
       "precision_hits": 1,
       "extras": [],
+      "unverified": [],
       "evidence_total": 4,
       "evidence_grounded": 4,
       "judgeable_ok": false,
@@ -154,6 +172,7 @@
         25000
       ],
       "amount_note": "사망위로금 30만 원 1회",
+      "evidence_ok": true,
       "service_ok": false,
       "details": [
         {
@@ -169,8 +188,10 @@
       "gold_required": 2,
       "correct": 2,
       "ai_conditions": 2,
+      "precision_base": 2,
       "precision_hits": 2,
       "extras": [],
+      "unverified": [],
       "evidence_total": 4,
       "evidence_grounded": 4,
       "judgeable_ok": false,
@@ -182,6 +203,7 @@
         4167
       ],
       "amount_note": "최대 5만 원 (실비)",
+      "evidence_ok": true,
       "service_ok": false,
       "details": [
         {
@@ -202,8 +224,10 @@
       "gold_required": 2,
       "correct": 2,
       "ai_conditions": 2,
+      "precision_base": 2,
       "precision_hits": 2,
       "extras": [],
+      "unverified": [],
       "evidence_total": 8,
       "evidence_grounded": 8,
       "judgeable_ok": false,
@@ -213,6 +237,7 @@
         120000
       ],
       "amount_note": "월 12만 원",
+      "evidence_ok": true,
       "service_ok": false,
       "details": [
         {
@@ -233,8 +258,12 @@
       "gold_required": 0,
       "correct": 0,
       "ai_conditions": 1,
-      "precision_hits": 1,
+      "precision_base": 0,
+      "precision_hits": 0,
       "extras": [],
+      "unverified": [
+        "residence_region == 경산시"
+      ],
       "evidence_total": 4,
       "evidence_grounded": 4,
       "judgeable_ok": false,
@@ -246,6 +275,7 @@
         25000
       ],
       "amount_note": "사망위로금 30만 원 1회",
+      "evidence_ok": true,
       "service_ok": false,
       "details": []
     },
@@ -255,8 +285,10 @@
       "gold_required": 0,
       "correct": 0,
       "ai_conditions": 0,
+      "precision_base": 0,
       "precision_hits": 0,
       "extras": [],
+      "unverified": [],
       "evidence_total": 2,
       "evidence_grounded": 2,
       "judgeable_ok": true,
@@ -266,6 +298,7 @@
         0
       ],
       "amount_note": "구호비 실비, 금액 없음",
+      "evidence_ok": true,
       "service_ok": true,
       "details": []
     },
@@ -275,8 +308,10 @@
       "gold_required": 2,
       "correct": 2,
       "ai_conditions": 2,
+      "precision_base": 2,
       "precision_hits": 2,
       "extras": [],
+      "unverified": [],
       "evidence_total": 3,
       "evidence_grounded": 3,
       "judgeable_ok": true,
@@ -289,6 +324,7 @@
         500000
       ],
       "amount_note": "출생 순위별 월 10/20/30/50만 원 + 축하금 50만 원",
+      "evidence_ok": true,
       "service_ok": true,
       "details": [
         {
@@ -309,8 +345,10 @@
       "gold_required": 2,
       "correct": 2,
       "ai_conditions": 2,
+      "precision_base": 2,
       "precision_hits": 2,
       "extras": [],
+      "unverified": [],
       "evidence_total": 3,
       "evidence_grounded": 3,
       "judgeable_ok": true,
@@ -322,6 +360,7 @@
         12500
       ],
       "amount_note": "15만 원 상당 현물 1회",
+      "evidence_ok": true,
       "service_ok": true,
       "details": [
         {
@@ -342,8 +381,12 @@
       "gold_required": 1,
       "correct": 1,
       "ai_conditions": 2,
-      "precision_hits": 2,
+      "precision_base": 1,
+      "precision_hits": 1,
       "extras": [],
+      "unverified": [
+        "residence_region == 경산시"
+      ],
       "evidence_total": 4,
       "evidence_grounded": 4,
       "judgeable_ok": true,
@@ -353,6 +396,7 @@
         0
       ],
       "amount_note": "면접정장 대여 (금액 없음)",
+      "evidence_ok": true,
       "service_ok": true,
       "details": [
         {
@@ -368,8 +412,10 @@
       "gold_required": 1,
       "correct": 1,
       "ai_conditions": 3,
+      "precision_base": 3,
       "precision_hits": 3,
       "extras": [],
+      "unverified": [],
       "evidence_total": 7,
       "evidence_grounded": 7,
       "judgeable_ok": true,
@@ -379,6 +425,7 @@
         0
       ],
       "amount_note": "융자 한도 1,200만 원 (월 금액 아님)",
+      "evidence_ok": true,
       "service_ok": true,
       "details": [
         {

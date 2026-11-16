@@ -29,6 +29,25 @@ export function analyzeNextCliff(sim, cliffs, income) {
   };
 }
 
+// 지금 손해 구간에 있는지: 이미 지나온 절벽 가운데, 절벽 직전 수준을 아직 되찾지 못한 것
+// (다음 절벽만 보면 '지금 손해 중'인 경우를 놓친다)
+export function analyzeCurrentLoss(sim, cliffs, income) {
+  const idx = Math.min(sim.incomes.length - 1, Math.round(income / sim.step));
+  const now = sim.disposable[idx];
+  let worst = null;
+  for (const c of cliffs) {
+    if (c.index > idx) break;
+    const before = sim.disposable[c.index - 1];
+    if (now < before && (!worst || before > worst.before)) worst = { cliff: c, before };
+  }
+  if (!worst) return null;
+  let recover = null;
+  for (let j = idx + 1; j < sim.incomes.length; j++) {
+    if (sim.disposable[j] >= worst.before) { recover = sim.incomes[j]; break; }
+  }
+  return { ...worst, shortfall: worst.before - now, recover, beforeIncome: sim.incomes[worst.cliff.index - 1] };
+}
+
 // 이 가구에 맞는 자립 지원 제도 (조건이 맞는 것만)
 // 세부 조건·금액은 해마다 바뀌므로 '대상'과 '무엇을 하는지'만 안내하고 신청 전 확인을 권한다.
 export function recommendPrograms(hh, benefits, params, income) {
@@ -61,7 +80,7 @@ export function recommendPrograms(hh, benefits, params, income) {
       where: "읍면동 행정복지센터 · 복지로",
     });
   }
-  if ((recipient && !saengMedical) || nearPoor) {
+  if (((recipient && !saengMedical) || nearPoor) && income > 0) { // 일하는 가구 대상
     out.push({
       key: "hope2", title: "희망저축계좌Ⅱ",
       why: recipient ? "주거·교육급여를 받는 일하는 가구가 대상입니다." : "차상위계층의 일하는 가구가 대상입니다.",
