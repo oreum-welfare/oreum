@@ -12,6 +12,7 @@ import { Drawer, Icon, MoreButton, Segmented, Stepper } from "../components/ui.j
 import { analyzeCliffCause } from "../lib/analytics.js";
 
 const STEP = 10000;
+const MAX_MEDIAN_MULTIPLE = 3; // 계산 범위 상한: 기준중위소득의 3배
 // 혜택 색: 현금(남색 계열) · 감면·현물(청록 계열) · 지자체(주황 계열)
 // 혜택 종류별 색상: 현금(블루 계열) · 감면·현물(그린 계열) · 지자체(웜톤 계열)
 export const COLORS = {
@@ -543,9 +544,11 @@ export default function Simulator() {
     if (!engine) return null;
     const d = engine.derive(hh);
     const m = engine.medianIncome(d.size);
-    // 계산 범위: 기본은 기준중위소득 100%, 내 소득이 그보다 많으면 내 소득의 1.2배까지 넓혀 그대로 계산
+    // 계산 범위: 기본은 기준중위소득 100%, 내 소득이 그보다 많으면 내 소득의 1.2배까지 넓혀 그대로 계산.
+    // 단, 잘못 입력한 아주 큰 소득(예: 10억)으로 계산이 멈추지 않도록 기준중위소득의 3배를 넘지 않게 한다.
     const medianMax = Math.round(m / STEP) * STEP;
-    const maxIncome = income > medianMax ? Math.ceil((income * 1.2) / STEP) * STEP : medianMax;
+    const capMax = medianMax * MAX_MEDIAN_MULTIPLE;
+    const maxIncome = income > medianMax ? Math.min(capMax, Math.ceil((income * 1.2) / STEP) * STEP) : medianMax;
     const inc = Math.min(income, maxIncome);
     const sim = engine.simulate(hh, maxIncome, STEP, includeInkind);
     const cliffs = engine.findCliffs(sim);
@@ -814,6 +817,7 @@ export default function Simulator() {
         </div>
         <div className="summary">
           <h1>{summary}</h1>
+          {income > maxIncome && <p className="notice">입력한 소득(월 {man(income)} 원)이 계산 범위를 넘어서, 계산할 수 있는 가장 큰 소득인 월 {man(maxIncome)} 원 기준으로 보여 드려요. (기준중위소득의 {MAX_MEDIAN_MULTIPLE}배까지 계산)</p>}
           <p className="summary-sub">{summarySub}</p>
           <div className="summary-links">
             <button type="button" className="link" onClick={() => setDrawer("intro")}><Icon name="info" size={15} />복지 절벽이란?</button>
