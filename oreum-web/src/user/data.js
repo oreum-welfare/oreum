@@ -1,0 +1,56 @@
+// 사용자 화면에서 쓰는 기본값·예시 가구·이름표와 숫자 표기
+export const STEP = 10000;
+export const RANGE_MEDIAN_MULTIPLE = 2; // 기본 계산 범위: 기준중위소득 200% (기초연금 등 중위 100% 위의 절벽까지)
+export const MAX_MEDIAN_MULTIPLE = 3; // 계산 범위 상한: 잘못 넣은 아주 큰 소득으로 화면이 멈추지 않게
+
+export const DEFAULT_HH = {
+  region: "경상북도 경산시", age: 40, spouse: false, spouse65: false, dualEarner: false,
+  infants: 0, elem: 0, middle: 0, high: 0, newborn: false, birthOrder: 1,
+  disabled: false, severeDisabled: false, singleParent: false, thirdChild7to18: false, residenceMonths: 60,
+  housingAsset: 0, financialAsset: 0, debt: 0,
+};
+
+export const PRESETS = [
+  { key: "single-parent", title: "한부모 + 자녀 2명", sub: "경산시 · 월 300만 원", income: 3000000,
+    hh: { region: "경상북도 경산시", age: 38, singleParent: true, elem: 1, middle: 1 } },
+  { key: "senior-couple", title: "어르신 부부", sub: "대구 북구 · 월 150만 원", income: 1500000,
+    hh: { region: "대구광역시 북구", age: 70, spouse: true, spouse65: true } },
+  { key: "youth", title: "1인 청년", sub: "경산시 · 월 100만 원", income: 1000000, hh: { region: "경상북도 경산시", age: 29 } },
+  { key: "family", title: "4인 가구", sub: "경산시 · 월 250만 원", income: 2500000,
+    hh: { region: "경상북도 경산시", age: 36, spouse: true, infants: 1, elem: 1 } },
+];
+
+export const REGION_SHORT = { "대구광역시 북구": "대구 북구", "경상북도 경산시": "경산시" };
+export const short = (r) => REGION_SHORT[r] || r;
+export const ORDINAL = { 1: "첫째", 2: "둘째", 3: "셋째", 4: "넷째 이상" };
+
+export const NAMES = {
+  saeng: "생계급여", medical: "의료급여", jugeo: "주거급여", edu: "교육급여", energy: "에너지바우처",
+  telecom: "이동통신요금 감면", eitc: "근로장려금", ctc: "자녀장려금", basic_pension: "기초연금",
+  gs_birth: "출산장려금", gs_clinic: "65세 이상 진료비 감면", bk_nhis: "건강보험료지원", gs_multichild: "다자녀가정 지원",
+  sp_child: "한부모 아동양육비", munhwa: "문화누리카드", dis_pension: "장애인연금", gs_loan: "저소득주민생활안정자금(융자)",
+};
+
+// 숫자 표기: 10만 원 이상은 만 원 단위 정수, 그 아래는 소수 한 자리
+export const manwon = (won) => {
+  const v = won / 10000;
+  if (Math.abs(v) >= 10) return `${Math.round(v).toLocaleString("ko-KR")}만`;
+  const r = Math.round(v * 10) / 10;
+  return `${Number.isInteger(r) ? r : r.toFixed(1)}만`;
+};
+
+// "약 ○만 원"용: 1만 원 이상은 만 원 단위로 반올림 (9.7만 → 10만)
+export const about = (won) => (Math.abs(won) >= 10000 ? `${Math.round(won / 10000).toLocaleString("ko-KR")}만` : manwon(won));
+export const won = (x) => `${Math.round(x).toLocaleString("ko-KR")}원`;
+
+// 받침에 따라 '이/가'
+export const iga = (w) => { const c = w.charCodeAt(w.length - 1); return c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 ? "이" : "가"; };
+
+// 근거 확인 정도 (확인 / 일부 추정 / 추정). 재산 근거(asset_*)는 재산을 넣었을 때만
+const statusClass = (status) => (status.startsWith("추정") ? "est" : status.includes("추정") ? "part" : "ok");
+export const LEVEL_LABEL = { ok: "확인", part: "일부 추정", est: "추정" };
+export const sourceKeys = (data, id, hasAssets) => (data.benefit_sources?.[id]?.verification || []).filter((k) => hasAssets || !k.startsWith("asset_"));
+export const levelOf = (data, id, hasAssets) => {
+  const st = sourceKeys(data, id, hasAssets).map((k) => statusClass(data.verification[k].status));
+  return st.includes("est") ? "est" : st.includes("part") ? "part" : "ok";
+};
