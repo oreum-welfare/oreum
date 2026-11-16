@@ -21,8 +21,8 @@
 /* ===== 틀: 위쪽 막대 + 탭 ===== */
 .admin .admin-top { position: sticky; top: 0; z-index: 30; background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
 .admin .admin-bar { max-width: 1160px; margin: 0 auto; padding: 0 24px; height: 60px; display: flex; align-items: center; gap: 28px; }
-.admin .admin-id { display: flex; align-items: baseline; gap: 8px; text-decoration: none; color: var(--ink); flex: none; }
-.admin .admin-id .wordmark { font-size: 21px; font-weight: 800; letter-spacing: -0.07em; line-height: 1; }
+.admin .admin-id { display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--ink); flex: none; }
+.admin .admin-id .wordmark { display: block; color: var(--ink); }
 .admin .admin-id span { font-size: 13px; font-weight: 600; color: var(--muted); }
 .admin .admin-tabs { display: flex; gap: 4px; height: 100%; }
 .admin .admin-tabs a { display: flex; align-items: center; padding: 0 12px; height: 100%; text-decoration: none; color: var(--muted); font-size: 15px; font-weight: 600; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }

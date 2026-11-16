@@ -5,6 +5,7 @@ import { decodeState, encodeState } from "../lib/urlState.js";
 import { useJson } from "../lib/useJson.js";
 import { calculate } from "./calc.js";
 import { DEFAULT_HH, PRESETS, STEP } from "./data.js";
+import Logo from "../ui/Logo.jsx";
 import Questions from "./Questions.jsx";
 import Result from "./Result.jsx";
 
@@ -43,7 +44,7 @@ export default function UserApp() {
   return (
     <>
       <header className="topbar"><div className="col">
-        <Link to="/" className="wordmark" onClick={(e) => { if (!started) e.preventDefault(); else { e.preventDefault(); restart(); } }} aria-label="오름 처음 화면">오름</Link>
+        <Link to="/" className="wordmark" onClick={(e) => { if (!started) e.preventDefault(); else { e.preventDefault(); restart(); } }} aria-label="오름 처음 화면"><Logo height={26} /></Link>
         {started && !editing && <button type="button" className="top-action" onClick={() => setEditing(1)}>수정</button>}
       </div></header>
       <main>

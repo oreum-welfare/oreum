@@ -1,6 +1,7 @@
 import { Link, Navigate, NavLink, Route, Routes } from "react-router-dom";
 import "./chartSetup.js";
 import "./admin.css";
+import Logo from "../ui/Logo.jsx";
 import AiResults from "./pages/AiResults.jsx";
 import Analysis from "./pages/Analysis.jsx";
 import Review from "./pages/Review.jsx";
@@ -18,7 +19,7 @@ export default function AdminApp() {
       <header className="admin-top">
         <div className="admin-bar">
           <Link to="/admin" className="admin-id" aria-label="오름 관리자 첫 화면">
-            <span className="wordmark">오름</span><span>관리자</span>
+            <span className="wordmark"><Logo height={24} /></span><span>관리자</span>
           </Link>
           <nav className="admin-tabs" aria-label="관리자 메뉴">
             {TABS.map(([path, label]) => <NavLink key={path} to={`/admin/${path}`}>{label}</NavLink>)}

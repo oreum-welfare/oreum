@@ -41,7 +41,7 @@ a { color: inherit; }
 .user .col { width: 100%; max-width: var(--col); margin: 0 auto; padding: 0 20px; }
 .user .topbar { position: sticky; top: 0; z-index: 20; background: rgba(255, 255, 255, 0.94); backdrop-filter: saturate(1.4) blur(8px); }
 .user .topbar .col { display: flex; align-items: center; justify-content: space-between; height: 56px; }
-.user .wordmark { font-size: 22px; font-weight: 800; letter-spacing: -0.07em; text-decoration: none; color: var(--text); line-height: 1; }
+.user .wordmark { display: block; text-decoration: none; color: var(--text); line-height: 0; }
 .user .top-action { background: none; border: 0; color: var(--text-2); font-size: 15px; padding: 8px 4px; }
 .user .back { background: none; border: 0; padding: 8px 8px 8px 0; color: var(--text); font-size: 22px; line-height: 1; }
 .user .screen { min-height: calc(100vh - 56px); display: flex; flex-direction: column; }
