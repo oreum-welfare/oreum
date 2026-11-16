@@ -179,6 +179,13 @@ a { color: inherit; }
 .user .tag.gray { background: var(--surface-2); color: var(--text-2); }
 .user .item-detail { padding: 0 0 16px; font-size: 14px; color: var(--text-2); }
 .user .item-detail p { margin: 0 0 8px; }
+.user .apply { background: var(--surface); border-radius: 12px; padding: 12px 14px; margin: 4px 0 12px; }
+.user .apply p { margin: 0 0 4px; }
+.user .apply-title { font-weight: 700; color: var(--text); }
+.user .apply-title span { font-weight: 600; color: var(--red-ink); }
+.user .apply-contact { color: var(--text-3); font-size: 13px; }
+.user .apply-link { display: inline-block; margin-top: 6px; font-weight: 700; color: var(--brand-ink); text-decoration: none; }
+.user .apply-link:hover { text-decoration: underline; }
 .user .sum { display: flex; justify-content: space-between; padding: 14px 16px; background: var(--surface); border-radius: 14px; margin: 4px 0 8px; font-size: 15px; }
 .user .sum b { font-size: 17px; }
 .user .card { background: var(--surface); border-radius: 14px; padding: 16px; margin: 0 0 10px; }

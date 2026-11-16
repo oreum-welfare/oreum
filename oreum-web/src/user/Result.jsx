@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { Link } from "react-router-dom";
 import { Sheet } from "../ui/index.jsx";
+import { applyInfo } from "./apply.js";
 import Chart from "./Chart.jsx";
 import { LEVEL_LABEL, STEP, about, iga, levelOf, manwon, short, sourceKeys, won } from "./data.js";
 
@@ -124,7 +125,7 @@ function BenefitsSheet({ data, benefits, total, inc, soonLost, hasAssets, includ
                   <small>{b.level} · {b.kind === "cash" ? "현금" : b.kind === "inkind" ? "감면·현물" : "자격·융자"}</small></span>
                 <span className="item-amt">{b.kind === "access" ? "자격" : won(b.monthly)}</span>
               </button>
-              {open === b.id && <div className="item-detail"><p>{b.note}</p><Evidence data={data} id={b.id} hasAssets={hasAssets} /></div>}
+              {open === b.id && <div className="item-detail"><p>{b.note}</p><Apply id={b.id} soon={soonLost.has(b.name)} /><Evidence data={data} id={b.id} hasAssets={hasAssets} /></div>}
             </li>
           );
         })}
@@ -134,6 +135,19 @@ function BenefitsSheet({ data, benefits, total, inc, soonLost, hasAssets, includ
         의료급여·통신비 같은 감면·현물도 금액으로 계산
       </label>
     </Sheet>
+  );
+}
+
+// 신청 안내: 어디서·어떻게, 문의처, 복지로 바로가기
+function Apply({ id, soon }) {
+  const a = applyInfo(id);
+  return (
+    <div className="apply">
+      <p className="apply-title">신청하기{soon && <span> · 끊기기 전에 챙기세요</span>}</p>
+      {a.how && <p>{a.how}</p>}
+      {a.contact && <p className="apply-contact">문의 {a.contact}</p>}
+      {a.link && <a className="apply-link" href={a.link} target="_blank" rel="noopener noreferrer">복지로에서 신청 방법 보기 ↗</a>}
+    </div>
   );
 }
 
