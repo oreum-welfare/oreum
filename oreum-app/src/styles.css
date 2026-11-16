@@ -40,6 +40,8 @@
   /* 분석 화면에서 쓰는 별칭 (정의가 빠져 색이 안 보이던 문제) */
   --cliff: var(--red-ink);
   --ok: var(--green);
+  --cliff-soft: var(--red-soft);   
+  --ok-soft: var(--green-soft);
 
   /* 모서리 둥글기 */
   --radius: 18px;
