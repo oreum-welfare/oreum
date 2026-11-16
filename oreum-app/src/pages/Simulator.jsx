@@ -62,10 +62,12 @@ function HouseholdForm({ hh, setHh, includeInkind, setIncludeInkind, regions, on
   const set = (k, v) => { onEdit(); setHh((h) => {
     const n = { ...h, [k]: v };
     if (k === "spouse" && !v) { n.spouse65 = false; n.dualEarner = false; }
+    if (k === "spouse" && v) n.singleParent = false; // 배우자가 있으면 한부모 가구가 아님
+    if (k === "singleParent" && v) { n.spouse = false; n.spouse65 = false; n.dualEarner = false; }
     if (k === "newborn" && v && n.infants === 0) n.infants = 1;
     return n;
   }); };
-  const num = (k) => (e) => set(k, Math.max(0, Number(e.target.value) || 0));
+  const num = (k) => (e) => set(k, Math.max(0, Math.floor(Number(e.target.value) || 0))); // 0 이상의 정수만
   const chk = (k) => (e) => set(k, e.target.checked);
   return (
     <div className="card">
@@ -77,7 +79,7 @@ function HouseholdForm({ hh, setHh, includeInkind, setIncludeInkind, regions, on
         <span className="field-note">현재 대구 북구·경상북도 경산시만 지원합니다. 다른 지역은 공공데이터포털 API와 AI 변환으로 넓혀 갈 예정입니다.</span>
       </label>
       <label className="field"><span>본인 나이</span>
-        <input type="number" min="19" max="100" value={hh.age} onChange={(e) => set("age", Number(e.target.value) || 40)} />
+        <input type="number" min="19" max="100" value={hh.age} step="1" onChange={(e) => set("age", Math.floor(Number(e.target.value)) || 40)} />
       </label>
       <div className="checks">
         <label><input type="checkbox" checked={hh.spouse} onChange={chk("spouse")} /> 배우자 있음</label>
@@ -87,7 +89,7 @@ function HouseholdForm({ hh, setHh, includeInkind, setIncludeInkind, regions, on
       <fieldset className="kids">
         <legend>자녀 수</legend>
         {[["infants", "영유아 (0~6세)"], ["elem", "초등학생"], ["middle", "중학생"], ["high", "고등학생"]].map(([k, label]) => (
-          <label key={k}><span>{label}</span><input type="number" min="0" max="5" value={hh[k]} onChange={num(k)} /></label>
+          <label key={k}><span>{label}</span><input type="number" min="0" max="5" step="1" inputMode="numeric" value={hh[k]} onChange={num(k)} /></label>
         ))}
       </fieldset>
       <div className="checks">
@@ -101,11 +103,11 @@ function HouseholdForm({ hh, setHh, includeInkind, setIncludeInkind, regions, on
         )}
         <label><input type="checkbox" checked={hh.disabled} onChange={chk("disabled")} /> 장애인 가구원 있음</label>
         <label className="sub"><input type="checkbox" checked={hh.severeDisabled} onChange={chk("severeDisabled")} /> 본인이 심한 장애 (장애인연금, 18~64세)</label>
-        <label><input type="checkbox" checked={hh.singleParent} onChange={chk("singleParent")} /> 한부모 가구</label>
+        <label title="배우자가 있으면 한부모 가구가 아니에요"><input type="checkbox" checked={hh.singleParent} onChange={chk("singleParent")} /> 한부모 가구{hh.spouse && <small className="hint"> (선택하면 '배우자 있음'이 해제돼요)</small>}</label>
         <label><input type="checkbox" checked={hh.thirdChild7to18} onChange={chk("thirdChild7to18")} /> 셋째 이상 자녀 (7~18세) 있음</label>
       </div>
       <label className="field"><span>현 거주지 거주 기간 (개월)</span>
-        <input type="number" min="0" max="600" value={hh.residenceMonths} onChange={num("residenceMonths")} />
+        <input type="number" min="0" max="600" step="1" value={hh.residenceMonths} onChange={num("residenceMonths")} />
       </label>
       <fieldset className="assets">
         <legend>재산 <span className="optional">(선택, 만 원)</span></legend>

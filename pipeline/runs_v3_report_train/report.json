@@ -2,7 +2,7 @@
   "summary": {
     "services": 13,
     "service_accuracy": 0.6153846153846154,
-    "condition_recall": 0.8387096774193549,
+    "condition_recall": 0.8064516129032258,
     "condition_precision": 0.825,
     "judgeable_agreement": 0.8461538461538461,
     "evidence_grounding": 1.0,
@@ -14,7 +14,7 @@
       "id": "c01_saeng",
       "service": "생계급여(맞춤형 급여)",
       "gold_required": 1,
-      "correct": 1,
+      "correct": 0,
       "ai_conditions": 7,
       "precision_hits": 1,
       "extras": [
@@ -39,7 +39,7 @@
         {
           "gold": "income_recognized_pct_median <= 32",
           "ai": "income_recognized_pct_median <= 32",
-          "result": "정답"
+          "result": "AND/OR 다름"
         }
       ]
     },

@@ -1,5 +1,5 @@
 ﻿서비스,정답 조건,AI 조건,결과
-생계급여(맞춤형 급여),income_recognized_pct_median <= 32,income_recognized_pct_median <= 32,정답
+생계급여(맞춤형 급여),income_recognized_pct_median <= 32,income_recognized_pct_median <= 32,AND/OR 다름
 생계급여(맞춤형 급여),,income_recognized_won <= 820556,정답에 없는 조건
 생계급여(맞춤형 급여),,income_recognized_won <= 1343773,정답에 없는 조건
 생계급여(맞춤형 급여),,income_recognized_won <= 1714892,정답에 없는 조건

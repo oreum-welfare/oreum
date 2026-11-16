@@ -9,12 +9,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
-from rules import Household, find_cliffs, median_income, simulate  # noqa: E402
+from rules import Household, find_cliffs, median_income, normalize, simulate  # noqa: E402
 
 cases = json.loads((ROOT / "tests" / "cases.json").read_text(encoding="utf-8"))
 out = []
 for c in cases:
-    hh = Household(**c)
+    hh = normalize(Household(**c))  # 소수 자녀 수 등 잘못된 입력도 JS와 같게 정리
     mx = int(round(median_income(hh.size), -4))
     df, el = simulate(hh, mx)
     out.append({

@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 import pandas as pd
@@ -172,14 +172,28 @@ def _asset_incomes(hh: Household, region: dict) -> tuple[float, float, float]:
     pfin = max(0, F - a_pen["financial_deduction"])
     pension = (max(0, general + pfin - D) * a_pen["annual_rate"]) / 12
     total = H + F
-    factor = 0.0 if total >= a_eitc["limit"] else 0.5 if total > a_eitc["half_over"] else 1.0
+    factor = 0.0 if total >= a_eitc["limit"] else 0.5 if total >= a_eitc["half_from"] else 1.0  # 1억7천만 원 이상 50%
     return basic, pension, factor
 
 
 # ---------------------------------------------------------------------------
 # 판정
 # ---------------------------------------------------------------------------
+def normalize(hh: Household) -> Household:
+    """입력값 정리: 자녀 수·나이는 0 이상의 정수, 배우자가 있으면 한부모 가구가 아님 (engine.js normalize와 같음)."""
+    def to_int(v) -> int:
+        try:
+            return max(0, int(float(v or 0) // 1))
+        except (TypeError, ValueError):
+            return 0
+    return replace(hh, age=to_int(hh.age), infants=to_int(hh.infants), elem=to_int(hh.elem),
+                   middle=to_int(hh.middle), high=to_int(hh.high),
+                   single_parent=bool(hh.single_parent and not hh.spouse),
+                   spouse_65=bool(hh.spouse and hh.spouse_65), dual_earner=bool(hh.spouse and hh.dual_earner))
+
+
 def evaluate(hh: Household, earned: float) -> list[Benefit]:
+    hh = normalize(hh)
     """월 근로소득(가구 합계) earned 일 때 받을 수 있는 혜택 목록."""
     size = hh.size
     m = median_income(size)
@@ -189,12 +203,12 @@ def evaluate(hh: Household, earned: float) -> list[Benefit]:
 
     # 기초연금 (소득인정액 계산에 들어가므로 먼저)
     bp = 0.0
-    if hh.age >= 65:
+    if hh.seniors > 0:  # 본인 또는 배우자 중 65세 이상인 사람이 받는다 (부부가구는 부부 선정기준액)
         couple = hh.spouse
         line = BASIC_PENSION_LINE["couple" if couple else "single"]
         eval_income = 0.7 * max(0.0, earned - BASIC_PENSION_EARNED_DEDUCTION) + asset_pension
         if eval_income <= line:
-            if couple and hh.spouse_65:
+            if hh.seniors == 2:
                 bp = 2 * BASIC_PENSION_AMOUNT * (1 - BASIC_PENSION_COUPLE_CUT)
             else:
                 bp = BASIC_PENSION_AMOUNT
