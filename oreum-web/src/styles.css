@@ -144,6 +144,14 @@ a { color: inherit; }
 .user .row span:last-child { color: var(--text-3); font-weight: 400; font-size: 15px; }
 .user .row .chev::after { content: "›"; margin-left: 8px; font-size: 20px; color: var(--text-3); }
 
+.user .reassure { margin: 6px 2px 0; font-size: 14px; color: var(--text-3); }
+.user .reassure .link-btn { font-size: 14px; padding: 0; }
+.user .share { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 24px 0 0; padding: 16px; background: var(--surface); border-radius: var(--radius); }
+.user .share b { font-size: 15px; }
+.user .share p { margin: 2px 0 0; font-size: 13px; color: var(--text-3); }
+.user .share .btn { flex: none; background: #fff; border: 1px solid var(--line); color: var(--text); }
+.user .membership { margin: 0 0 12px; font-size: 13px; color: var(--text-2); background: var(--surface); border-radius: 12px; padding: 12px 14px; }
+.user .membership a, .user .footer .membership a { color: var(--brand-ink); font-weight: 700; }
 .user .footer { padding: 32px 0 140px; font-size: 13px; color: var(--text-3); }
 .user .footer a, .user .footer button { color: var(--text-3); }
 

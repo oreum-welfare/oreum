@@ -37,6 +37,7 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
             {curLoss.recover != null
               ? <p className="recover">{manwon(curLoss.recover)} 원부터 다시 늘어요</p>
               : <p className="note">계산 범위 안에서는 회복되지 않아요</p>}
+            <p className="reassure">일을 줄이라는 뜻이 아니에요 · <button type="button" className="link-btn" onClick={() => setSheet("path")}>넘는 방법 보기</button></p>
           </>
         ) : cliff ? (
           <>
@@ -47,6 +48,7 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
             {cliff.recover != null
               ? <p className="recover">{manwon(cliff.recover)} 원부터 다시 {cliff.recoverBetter ? "늘어요" : "회복돼요"}</p>
               : <p className="note">계산 범위 안에서는 다시 회복되지 않아요</p>}
+            <p className="reassure">일을 줄이라는 뜻이 아니에요 · <button type="button" className="link-btn" onClick={() => setSheet("path")}>넘는 방법 보기</button></p>
           </>
         ) : (
           <div className="alert calm">
@@ -85,9 +87,13 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
           <button type="button" className="row" onClick={() => setSheet("basis")}><span>계산 기준</span><span className="chev" /></button>
         </nav>
 
+        {/* 6. 상담 연결: 결과 링크 복사 (입력값이 주소에 저장돼 있어 같은 화면이 열림) */}
+        <ShareBox />
+
         <footer className="footer">
           <p style={{ margin: "0 0 8px" }}>{short(hh.region)} · {hh.age}세{hh.spouse ? " · 배우자" : ""}{hh.infants + hh.elem + hh.middle + hh.high ? ` · 자녀 ${hh.infants + hh.elem + hh.middle + hh.high}명` : ""}{hh.singleParent ? " · 한부모" : ""}</p>
           <p style={{ margin: "0 0 12px" }}>2026년 기준 참고용이에요. 실제 수급은 읍면동 행정복지센터에서 결정돼요.</p>
+          <p className="membership">내 실제 소득·재산으로 정확히 확인하려면 <a href="https://www.bokjiro.go.kr/ssis-tbu/index.do" target="_blank" rel="noopener noreferrer">복지로</a>의 <b>맞춤형급여안내(복지멤버십)</b>에 가입해 보세요. 동의하면 받을 수 있는 복지를 정부가 직접 알려 줘요.</p>
           <button type="button" className="link-btn" onClick={onRestart} style={{ fontSize: 13 }}>처음부터 다시</button>
           <span style={{ margin: "0 8px" }}>·</span>
           <Link to="/admin" style={{ fontSize: 13 }}>관리자 화면</Link>
@@ -135,6 +141,28 @@ function BenefitsSheet({ data, benefits, total, inc, soonLost, hasAssets, includ
         의료급여·통신비 같은 감면·현물도 금액으로 계산
       </label>
     </Sheet>
+  );
+}
+
+// 결과 링크 복사: 상담할 때 사례관리자에게 보여 주거나 가족과 나누기
+function ShareBox() {
+  const [done, setDone] = useState(false);
+  const copy = async () => {
+    const url = window.location.href;
+    try { await navigator.clipboard.writeText(url); }
+    catch {
+      const ta = document.createElement("textarea");
+      ta.value = url; document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); } finally { ta.remove(); }
+    }
+    setDone(true);
+    setTimeout(() => setDone(false), 2000);
+  };
+  return (
+    <section className="share">
+      <div><b>상담할 때 이 결과를 보여 주세요</b><p>링크를 열면 같은 결과가 보여요. 입력한 내용은 링크 안에만 있어요.</p></div>
+      <button type="button" className="btn small" onClick={copy} aria-live="polite">{done ? "복사했어요" : "링크 복사"}</button>
+    </section>
   );
 }
 
@@ -263,6 +291,7 @@ function BasisSheet({ data, benefits, hasAssets, close }) {
       <p className="group-title">가정</p>
       <ul style={{ margin: 0, paddingLeft: 18, color: "var(--text-2)", fontSize: 14 }}>{data.assumptions.map((a) => <li key={a} style={{ marginBottom: 6 }}>{a}</li>)}
         <li style={{ marginBottom: 6 }}>입력한 소득은 일해서 버는 소득(근로·사업소득)으로 보고 계산합니다. 자영업자의 근로·자녀장려금은 실제로 매출에 업종별 조정률을 곱해 계산하지만, 오름은 업종별 조정률을 반영하지 않습니다.</li></ul>
+      <p className="membership">내 실제 소득·재산으로 정확히 확인하려면 <a href="https://www.bokjiro.go.kr/ssis-tbu/index.do" target="_blank" rel="noopener noreferrer">복지로</a>의 <b>맞춤형급여안내(복지멤버십)</b>에 가입해 보세요. 동의하면 받을 수 있는 복지를 정부가 직접 알려 줘요.</p>
       <p className="note">출처: 복지로(보건복지부), 한국사회보장정보원, 지자체 공고 · 실제 수급은 행정복지센터에서 결정돼요.</p>
     </Sheet>
   );
