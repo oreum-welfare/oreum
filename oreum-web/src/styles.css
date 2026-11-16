@@ -192,6 +192,13 @@ a { color: inherit; }
 .user .bar i { display: block; height: 100%; background: var(--red); border-radius: 4px; }
 .user .kv { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--surface-2); font-size: 15px; }
 .user .kv span { color: var(--text-2); }
+.user .path { list-style: none; margin: 0 0 4px; padding: 0 0 0 18px; border-left: 2px solid var(--line); }
+.user .path li { position: relative; padding: 0 0 14px 4px; font-size: 15px; color: var(--text-2); }
+.user .path li::before { content: ""; position: absolute; left: -25px; top: 7px; width: 10px; height: 10px; border-radius: 50%; background: var(--line); }
+.user .path li.bad::before { background: var(--red); }
+.user .path li.up::before { background: var(--brand); }
+.user .path li b { color: var(--text); }
+.user .card .gain { font-weight: 700; color: var(--brand-ink); margin: 2px 0 6px; }
 .user .asset-hint { font-size: 14px; color: var(--text-3); margin: 10px 0 0; }
 .user .asset-hint .link-btn { font-size: 14px; padding: 0; color: var(--text-2); }
 .user .notice { font-size: 13px; color: var(--text-2); background: var(--surface); border-radius: 12px; padding: 12px 14px; margin: 12px 0 0; }

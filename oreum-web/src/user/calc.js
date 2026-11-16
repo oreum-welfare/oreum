@@ -1,7 +1,21 @@
 // 결과 화면에 필요한 계산을 한곳에서 (엔진 결과만 읽음 → engine.js·rules.py와 맞출 필요 없음)
 import { analyzeCliffCause } from "../lib/analytics.js";
+import { createEngine } from "../lib/engine.js";
 import { analyzeCurrentLoss, analyzeNextCliff, recommendPrograms } from "../lib/guide.js";
 import { MAX_MEDIAN_MULTIPLE, NAMES, RANGE_MEDIAN_MULTIPLE, STEP } from "./data.js";
+
+// 근로소득공제가 없다고 가정한 엔진 (공제 덕분에 얼마를 더 받는지 보여 주기 위해). 데이터마다 한 번만 만든다
+const noDeductionEngines = new WeakMap();
+function noDeductionEngine(data) {
+  if (!noDeductionEngines.has(data)) {
+    const d = structuredClone(data);
+    d.params.earned_deduction_rate = 0;
+    if (d.params.youth_deduction) d.params.youth_deduction.flat = 0;
+    if (d.params.senior_disabled_deduction) d.params.senior_disabled_deduction.flat = 0;
+    noDeductionEngines.set(data, createEngine(d));
+  }
+  return noDeductionEngines.get(data);
+}
 
 const sumCounted = (engine, bs, includeInkind) => bs.filter((b) => engine.counted(b, includeInkind)).reduce((s, b) => s + b.monthly, 0);
 
@@ -42,6 +56,17 @@ export function calculate({ engine, data, hh, income, compare, includeInkind }) 
     };
   }
 
+  // 넘는 방법에 보여 줄 금액
+  // - 근로소득공제 덕분에 지금 더 받는 돈 (공제가 없다면 받았을 혜택과의 차이)
+  // - 다시 늘어나는 소득(없으면 절벽 소득)에서도 계속 받는 근로·자녀장려금
+  const e0 = noDeductionEngine(data);
+  const deductionGain = income > 0 ? Math.max(0, total - sumCounted(e0, e0.evaluate(hh, inc), includeInkind)) : 0;
+  const creditAt = (v) => engine.evaluate(hh, v).filter((b) => b.id === "eitc" || b.id === "ctc").reduce((s, b) => s + b.monthly, 0);
+  // 소득 길에 보여 주는 소득과 같은 기준: 지금 줄어든 구간이면 그 회복 소득, 아니면 다음 절벽의 회복 소득
+  const afterIncome = curLoss ? (curLoss.recover ?? null) : info ? (info.recover ?? info.cliff.income) : null;
+  const creditAfter = afterIncome != null ? creditAt(afterIncome) : 0;
+  const gains = { deductionGain, afterIncome, creditAfter };
+
   // 지역 비교
   const regions = Object.keys(data.regions).map((r) => {
     const h2 = { ...hh, region: r };
@@ -61,5 +86,5 @@ export function calculate({ engine, data, hh, income, compare, includeInkind }) 
     gained: [...cmpNames].filter((n) => !baseNames.has(n)),
   };
 
-  return { m, maxIncome, inc, capped, sim, cliffs, benefits, total, nowDisp, info, curLoss, cliff, programs, regions, cmp, cmpTotal, diff };
+  return { m, maxIncome, inc, capped, sim, cliffs, benefits, total, nowDisp, info, curLoss, cliff, programs, gains, regions, cmp, cmpTotal, diff };
 }

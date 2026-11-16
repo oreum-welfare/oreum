@@ -79,7 +79,7 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
         <nav className="rows" aria-label="자세히 보기">
           <button type="button" className="row" onClick={() => setSheet("benefits")}><span>받는 혜택 {benefits.length}가지</span><span className="chev">월 {manwon(total)} 원</span></button>
           {cliff && <button type="button" className="row" onClick={() => setSheet("cliff")}><span>왜 줄어드나요?</span><span className="chev">{cliff.lost[0]}</span></button>}
-          <button type="button" className="row" onClick={() => setSheet("path")}><span>생활비 줄지 않게 넘는 방법</span><span className="chev">{r.programs.length}가지</span></button>
+          <button type="button" className="row" onClick={() => setSheet("path")}><span>생활비 줄지 않게 넘는 방법</span><span className="chev">{pathCount(r.programs, r.gains)}가지</span></button>
           <button type="button" className="row" onClick={() => setSheet("region")}><span>다른 지역이라면?</span><span className="chev" /></button>
           <button type="button" className="row" onClick={() => setSheet("basis")}><span>계산 기준</span><span className="chev" /></button>
         </nav>
@@ -100,7 +100,7 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
 
       {sheet === "benefits" && <BenefitsSheet {...{ data, benefits, total, inc, soonLost, hasAssets, includeInkind, setIncludeInkind, close }} />}
       {sheet === "cliff" && cliff && <CliffSheet cliff={cliff} cliffs={r.cliffs} m={r.m} close={close} />}
-      {sheet === "path" && <PathSheet programs={r.programs} cliff={cliff} close={close} />}
+      {sheet === "path" && <PathSheet programs={r.programs} cliff={cliff} curLoss={curLoss} gains={r.gains} close={close} />}
       {sheet === "region" && <RegionSheet regions={r.regions} hh={hh} close={close} />}
       {sheet === "basis" && <BasisSheet data={data} benefits={benefits} hasAssets={hasAssets} close={close} />}
     </div>
@@ -167,14 +167,59 @@ function CliffSheet({ cliff, cliffs, m, close }) {
   );
 }
 
-function PathSheet({ programs, cliff, close }) {
+// 넘는 방법: ① 이 가구의 소득 길(엔진 계산) ② 넘는 동안 버티기 ③ 길게 보는 자립 준비
+const BRIDGE = ["hope1", "gsloan", "eitc"]; // 끊기기 전에 챙기거나, 넘은 뒤 메우는 것
+const LONG = ["hope2", "youth", "jahwal"]; // 절벽과 직접 관계는 없지만 자립에 도움
+// 근로·자녀장려금은 다시 늘어나는 소득에서도 계속 받을 때만 '넘는 동안 버티기'에 넣는다
+const pathPrograms = (programs, gains) => programs.filter((p) => p.key !== "eitc" || gains.afterIncome == null || gains.creditAfter > 0);
+const pathCount = (programs, gains) => pathPrograms(programs, gains).filter((p) => BRIDGE.includes(p.key) || LONG.includes(p.key)).length;
+
+function PathSheet({ programs, cliff, curLoss, gains, close }) {
+  const shown = pathPrograms(programs, gains);
+  const pick = (keys) => keys.map((k) => shown.find((p) => p.key === k)).filter(Boolean);
+  const bridge = pick(BRIDGE), long = pick(LONG);
+  const extra = (p) => {
+    if (p.key === "eitc" && gains.creditAfter > 0) return `월 ${manwon(gains.afterIncome)} 원이 돼도 월 약 ${about(gains.creditAfter)} 원을 계속 받아요`;
+    if (p.key === "gsloan") return "최대 1,200만 원 무이자 융자 · 탈수급 전에만 신청 가능";
+    if (p.key === "hope1") return "탈수급할 때 모은 돈을 받아요";
+    return null;
+  };
+  const Card = (p) => (
+    <div className="card" key={p.key}>
+      <h3>{p.title}</h3>
+      {extra(p) && <p className="gain">{extra(p)}</p>}
+      <p>{p.why}</p><p style={{ marginTop: 6 }}>{p.what}</p><p className="where">{p.where}</p>
+    </div>
+  );
   return (
-    <Sheet title="생활비 줄지 않게 넘는 방법" sub="이 가구에 해당하는 제도만 골랐어요" onClose={close}>
-      {cliff && <p style={{ margin: "4px 0 14px", fontSize: 15, color: "var(--text-2)" }}>월 {manwon(cliff.income)} 원 구간을 넘을 때 생활비가 덜 줄도록 도와줘요.</p>}
-      {!programs.length && <p className="note">지금 소득에서 해당되는 제도가 없어요.</p>}
-      {programs.map((p) => (
-        <div className="card" key={p.key}><h3>{p.title}</h3><p>{p.why}</p><p style={{ marginTop: 6 }}>{p.what}</p><p className="where">{p.where}</p></div>
-      ))}
+    <Sheet title="생활비 줄지 않게 넘는 방법" sub="이 가구의 소득으로 계산했어요" onClose={close}>
+      <p className="group-title" style={{ marginTop: 4 }}>1. 이 가구의 소득 길</p>
+      <ol className="path">
+        {curLoss ? <>
+          <li className="bad"><b>지금</b> 월 {manwon(curLoss.beforeIncome)} 원일 때보다 생활비가 {manwon(curLoss.shortfall)} 원 적어요</li>
+          {curLoss.recover != null
+            ? <li className="up"><b>월 {manwon(curLoss.recover)} 원부터</b> 다시 늘어요. 소득이 오른다면 이 금액 이상을 목표로 하세요</li>
+            : <li>계산 범위 안에서는 회복되지 않아요</li>}
+        </> : cliff ? <>
+          <li><b>월 {manwon(cliff.before)} 원까지</b> 소득이 늘수록 생활비도 늘어요</li>
+          <li className="bad"><b>월 {manwon(cliff.income)} 원부터</b> {cliff.lost[0]}{iga(cliff.lost[0])} 끊겨 생활비가 줄어요</li>
+          {cliff.recover != null
+            ? <li className="up"><b>월 {manwon(cliff.recover)} 원부터</b> 다시 늘어요. 소득이 오른다면 이 금액 이상을 목표로 하세요</li>
+            : <li>계산 범위 안에서는 다시 늘지 않아요</li>}
+        </> : <li className="up">앞으로 생활비가 줄어드는 구간은 없어요</li>}
+      </ol>
+      {gains.deductionGain > 0 && <p className="notice">근로소득공제 덕분에 지금 매달 약 <b>{about(gains.deductionGain)} 원</b>을 더 받고 있어요. 신청하지 않아도 자동으로 적용돼요.</p>}
+
+      {bridge.length > 0 && <>
+        <p className="group-title">2. 넘는 동안 버티기</p>
+        <p className="note" style={{ marginTop: 0, marginBottom: 10 }}>끊기기 전에 챙기거나, 넘은 뒤 줄어든 생활비를 메워 줘요</p>
+        {bridge.map(Card)}
+      </>}
+      {long.length > 0 && <>
+        <p className="group-title">3. 길게 보는 자립 준비</p>
+        <p className="note" style={{ marginTop: 0, marginBottom: 10 }}>절벽을 막아 주지는 않지만, 자립에 도움이 돼요</p>
+        {long.map(Card)}
+      </>}
       <p className="note">세부 조건과 금액은 해마다 바뀌어요. 신청 전에 복지로나 행정복지센터에서 확인하세요.</p>
     </Sheet>
   );
