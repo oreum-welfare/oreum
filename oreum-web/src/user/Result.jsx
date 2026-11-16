@@ -261,7 +261,8 @@ function BasisSheet({ data, benefits, hasAssets, close }) {
     <Sheet title="계산 기준" sub="2026년 기준 · 참고용" onClose={close}>
       <div className="kv"><span>근거 확인</span><b>확인 {cnt("ok")} · 일부 추정 {cnt("part")} · 추정 {cnt("est")}</b></div>
       <p className="group-title">가정</p>
-      <ul style={{ margin: 0, paddingLeft: 18, color: "var(--text-2)", fontSize: 14 }}>{data.assumptions.map((a) => <li key={a} style={{ marginBottom: 6 }}>{a}</li>)}</ul>
+      <ul style={{ margin: 0, paddingLeft: 18, color: "var(--text-2)", fontSize: 14 }}>{data.assumptions.map((a) => <li key={a} style={{ marginBottom: 6 }}>{a}</li>)}
+        <li style={{ marginBottom: 6 }}>입력한 소득은 일해서 버는 소득(근로·사업소득)으로 보고 계산합니다. 자영업자의 근로·자녀장려금은 실제로 매출에 업종별 조정률을 곱해 계산하지만, 오름은 업종별 조정률을 반영하지 않습니다.</li></ul>
       <p className="note">출처: 복지로(보건복지부), 한국사회보장정보원, 지자체 공고 · 실제 수급은 행정복지센터에서 결정돼요.</p>
     </Sheet>
   );

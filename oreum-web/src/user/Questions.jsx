@@ -134,15 +134,16 @@ export default function Questions({ regions, initial, initialIncome, editing, st
 
         {step === 5 && <>
           <h1 className="title">한 달에 얼마 버세요?</h1>
-          <p className="desc">가족 모두의 근로소득을 더한 금액, 세금 떼기 전이에요</p>
+          <p className="desc">직업과 상관없이 가족 모두가 일해서 버는 돈(월급·사업·아르바이트)을 더한 금액, 세금 떼기 전이에요</p>
           <label className="money">
-            <input type="number" inputMode="numeric" min="0" step="1" value={Math.round(income / 10000)} aria-label="한 달 근로소득 (만 원)"
+            <input type="number" inputMode="numeric" min="0" step="1" value={Math.round(income / 10000)} aria-label="한 달 소득 (만 원)"
               onChange={(e) => setIncome(Math.max(0, Math.floor(Number(e.target.value) || 0)) * 10000)} />
             <span>만 원</span>
           </label>
           <div className="chips">
             {QUICK.map((q) => <button type="button" key={q} className={`chip ${income === q * 10000 ? "on" : ""}`} onClick={() => setIncome(q * 10000)}>{q ? `${q}만 원` : "소득 없음"}</button>)}
           </div>
+          <p className="note">자영업·프리랜서는 매출이 아니라 경비를 뺀 소득을 넣어 주세요</p>
           <p className="privacy">입력한 내용은 서버로 보내지 않고, 이 기기 안에서만 계산해요.</p>
         </>}
       </div>
