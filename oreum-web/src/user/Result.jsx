@@ -35,7 +35,7 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
               <p>월 {manwon(curLoss.beforeIncome)} 원일 때보다 생활비가 {manwon(curLoss.shortfall)} 원 적어요</p>
             </div>
             {curLoss.recover != null
-              ? <p className="recover">{manwon(curLoss.recover)} 원부터 다시 늘어요</p>
+              ? <p className="recover">월급이 {manwon(curLoss.recover)} 원이 되면 생활비가 {manwon(curLoss.beforeIncome)} 원 벌 때만큼 돌아와요</p>
               : <p className="note">계산 범위 안에서는 회복되지 않아요</p>}
             <p className="reassure"><button type="button" className="link-btn" onClick={() => setSheet("path")}>줄어드는 동안 도움이 되는 제도 보기 ›</button></p>
           </>
@@ -46,7 +46,7 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
               <p>{cliff.lost[0]}{iga(cliff.lost[0])} 끊겨 {cliff.vsNow != null ? `약 ${about(cliff.vsNow)} 원 줄어요` : `바로 전(${manwon(cliff.before)} 원)보다 ${manwon(cliff.drop)} 원 줄어요`}</p>
             </div>
             {cliff.recover != null
-              ? <p className="recover">{manwon(cliff.recover)} 원부터 다시 {cliff.recoverBetter ? "늘어요" : "회복돼요"}</p>
+              ? <p className="recover">월급이 {manwon(cliff.recover)} 원이 되면 생활비가 {manwon(cliff.before)} 원 벌 때만큼 돌아와요</p>
               : <p className="note">계산 범위 안에서는 다시 회복되지 않아요</p>}
             <p className="reassure"><button type="button" className="link-btn" onClick={() => setSheet("path")}>줄어드는 동안 도움이 되는 제도 보기 ›</button></p>
           </>
@@ -58,7 +58,8 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
         )}
 
         {/* 4. 그래프 */}
-        <Chart sim={r.sim} inc={inc} cmp={cmp} cliff={cliff} cliffs={r.cliffs} />
+        <Chart sim={r.sim} inc={inc} cmp={cmp} cliffs={r.cliffs}
+          focus={curLoss ? { income: curLoss.cliff.income, recover: curLoss.recover } : cliff ? { income: cliff.income, recover: cliff.recover } : null} />
 
         {/* 5. 비교 */}
         <section className="compare" aria-label="소득을 바꿔 보기">
@@ -240,13 +241,13 @@ function PathSheet({ programs, cliff, curLoss, gains, close }) {
         {curLoss ? <>
           <li className="bad"><b>지금</b> 월 {manwon(curLoss.beforeIncome)} 원일 때보다 생활비가 {manwon(curLoss.shortfall)} 원 적어요</li>
           {curLoss.recover != null
-            ? <li className="up"><b>월 {manwon(curLoss.recover)} 원부터</b> 다시 늘어요. 소득이 오른다면 이 금액 이상을 목표로 하세요</li>
+            ? <li className="up"><b>월 {manwon(curLoss.recover)} 원부터</b> 생활비가 {manwon(curLoss.beforeIncome)} 원 벌 때만큼 돌아와요. 소득이 오른다면 이 금액 이상을 목표로 하세요</li>
             : <li>계산 범위 안에서는 회복되지 않아요</li>}
         </> : cliff ? <>
           <li><b>월 {manwon(cliff.before)} 원까지</b> 소득이 늘수록 생활비도 늘어요</li>
           <li className="bad"><b>월 {manwon(cliff.income)} 원부터</b> {cliff.lost[0]}{iga(cliff.lost[0])} 끊겨 생활비가 줄어요</li>
           {cliff.recover != null
-            ? <li className="up"><b>월 {manwon(cliff.recover)} 원부터</b> 다시 늘어요. 소득이 오른다면 이 금액 이상을 목표로 하세요</li>
+            ? <li className="up"><b>월 {manwon(cliff.recover)} 원부터</b> 생활비가 {manwon(cliff.before)} 원 벌 때만큼 돌아와요. 소득이 오른다면 이 금액 이상을 목표로 하세요</li>
             : <li>계산 범위 안에서는 다시 늘지 않아요</li>}
         </> : <li className="up">앞으로 생활비가 줄어드는 구간은 없어요</li>}
       </ol>
