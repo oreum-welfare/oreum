@@ -31,6 +31,8 @@ def error_types(r: dict) -> list[str]:
         out.append("정답에 없는 조건")
     if not r["amount_ok"]:
         out.append("금액")
+    if not r.get("evidence_ok", True):  # 서비스 정확도에 근거 인용 포함 (2026-11-16)
+        out.append("근거 인용")
     return out
 
 

@@ -19,7 +19,7 @@ export function encodeState({ hh, income, compare, includeInkind, preset }, defa
   for (const [k, key, type] of FIELDS) {
     if (hh[k] === defaults[k]) continue;
     if (type === "bool") q.set(key, hh[k] ? "1" : "0");
-    else if (type === "man") q.set(key, String(Math.round(hh[k] / 10000)));
+    else if (type === "man") q.set(key, String(Math.round(hh[k] / 100) / 100)); // 만 원 단위, 소수 둘째 자리까지 (12.5만 원 등)
     else q.set(key, String(hh[k]));
   }
   q.set("inc", String(Math.round(income / 10000)));
@@ -37,7 +37,7 @@ export function decodeState(params, defaults) {
     if (type === "bool") hh[k] = raw === "1";
     else {
       const n = Number(raw);
-      if (Number.isFinite(n) && n >= 0) hh[k] = type === "man" ? n * 10000 : Math.round(n);
+      if (Number.isFinite(n) && n >= 0) hh[k] = type === "man" ? Math.round(n * 10000) : Math.round(n);
     }
   }
   if (hh.spouse) hh.singleParent = false; // 배우자가 있으면 한부모 가구가 아님 (engine normalize와 같게)

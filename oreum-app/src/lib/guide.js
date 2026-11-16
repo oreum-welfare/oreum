@@ -11,7 +11,7 @@ export function analyzeNextCliff(sim, cliffs, income) {
     if (sim.disposable[j] >= before) { recover = sim.incomes[j]; break; }
   }
   const prev = sim.elig[next.index - 1], after = sim.elig[next.index];
-  // 절벽 너머: 그다음 절벽 직전(없으면 기준중위소득 100%)까지 오르면 지금보다 얼마나 나아지나
+  // 절벽 너머: 그다음 절벽 직전(없으면 계산 범위 끝)까지 오르면 지금보다 얼마나 나아지나
   const nowIdx = Math.min(sim.incomes.length - 1, Math.round(income / sim.step));
   const following = cliffs.find((c) => c.income > (recover ?? next.income));
   const hIdx = following ? following.index - 1 : sim.incomes.length - 1;

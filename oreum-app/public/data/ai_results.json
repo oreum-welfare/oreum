@@ -42,7 +42,9 @@
      "id": "c03_medical_copay",
      "name": "의료급여(본인부담 보상금)",
      "ok": false,
-     "errors": [],
+     "errors": [
+      "근거 인용"
+     ],
      "missing": [],
      "extras": []
     },

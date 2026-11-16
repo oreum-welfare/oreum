@@ -194,7 +194,7 @@ def normalize(hh: Household) -> Household:
             return 0
     kids = [to_int(hh.infants), to_int(hh.elem), to_int(hh.middle), to_int(hh.high)]
     return replace(hh, age=to_int(hh.age), infants=kids[0], elem=kids[1], middle=kids[2], high=kids[3],
-                   birth_order=min(4, max(1, to_int(hh.birth_order) or 1)),
+                   birth_order=min(4, max(1, to_int(hh.birth_order) or 1), max(1, sum(kids))),  # 자녀 수보다 클 수 없음
                    newborn=bool(hh.newborn and kids[0] >= 1),
                    residence_months=to_int(hh.residence_months),
                    housing_asset=max(0.0, float(hh.housing_asset or 0)), financial_asset=max(0.0, float(hh.financial_asset or 0)),

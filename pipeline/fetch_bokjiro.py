@@ -89,7 +89,8 @@ def call(base: str, op: str, key: str, **params) -> ET.Element:
                 raise ApiTimeout(f"{op} 응답 없음 (3번 시도)")
             print(f"    응답이 늦어 다시 시도합니다 ({attempt + 2}/3)")
             time.sleep(3 * (attempt + 1))
-    r.raise_for_status()
+    if r.status_code >= 400:  # raise_for_status()는 serviceKey가 든 요청 주소를 오류 메시지에 찍으므로 쓰지 않는다
+        raise RuntimeError(f"{op} 요청 실패: HTTP {r.status_code} (인증키가 맞는지, 서비스 신청이 승인됐는지 확인)")
     root = ET.fromstring(r.content)
     # 인증 오류 등은 OpenAPI_ServiceResponse 형식으로 온다
     err = root.findtext(".//returnAuthMsg") or root.findtext(".//errMsg")
