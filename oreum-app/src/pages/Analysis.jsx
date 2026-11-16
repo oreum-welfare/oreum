@@ -769,7 +769,7 @@ function SensitivitySection({ rows }) {
             <div style={{
               width: `${Math.abs(item.supportDelta) / maxEffect * 100}%`,
               height: "100%",
-              background: item.supportDelta < 0 ? "#C45D50" : "#527B62",
+              background: "var(--data)",
               borderRadius: 10,
             }} />
           </div>
@@ -1021,7 +1021,7 @@ function CoLossSection({ cases }) {
         </div>
       )}
 
-      <p className="muted">
+      <p className="hint" style={{ marginTop: 12 }}>
         분석 기준: 시뮬레이션에서 확인된 복지 절벽 이벤트 중
         두 개 이상의 혜택 자격이 동시에 종료된 조합입니다.
         발생 비율은 전체 절벽 이벤트 대비 해당 조합의 발생 비율이며,
