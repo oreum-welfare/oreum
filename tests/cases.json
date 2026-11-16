@@ -159,5 +159,25 @@
   "region": "경상북도 경산시",
   "age": 40,
   "third_child_7to18": true
+ },
+ {
+  "region": "경상북도 경산시",
+  "age": 72,
+  "severe_disabled": true
+ },
+ {
+  "region": "경상북도 경산시",
+  "age": 50,
+  "spouse": true,
+  "high": 3,
+  "third_child_7to18": true
+ },
+ {
+  "region": "대구광역시 북구",
+  "age": 45,
+  "spouse": true,
+  "elem": 5,
+  "middle": 2,
+  "high": 1
  }
 ]
