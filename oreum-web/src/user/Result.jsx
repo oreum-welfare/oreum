@@ -93,7 +93,6 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
         <footer className="footer">
           <p style={{ margin: "0 0 8px" }}>{short(hh.region)} · {hh.age}세{hh.spouse ? " · 배우자" : ""}{hh.infants + hh.elem + hh.middle + hh.high ? ` · 자녀 ${hh.infants + hh.elem + hh.middle + hh.high}명` : ""}{hh.singleParent ? " · 한부모" : ""}</p>
           <p style={{ margin: "0 0 12px" }}>2026년 기준 참고용이에요. 실제 수급은 읍면동 행정복지센터에서 결정돼요.</p>
-          <p className="membership">내 실제 소득·재산으로 정확히 확인하려면 <a href="https://www.bokjiro.go.kr/ssis-tbu/index.do" target="_blank" rel="noopener noreferrer">복지로</a>의 <b>맞춤형급여안내(복지멤버십)</b>에 가입해 보세요. 동의하면 받을 수 있는 복지를 정부가 직접 알려 줘요.</p>
           <button type="button" className="link-btn" onClick={onRestart} style={{ fontSize: 13 }}>처음부터 다시</button>
           <span style={{ margin: "0 8px" }}>·</span>
           <Link to="/admin" style={{ fontSize: 13 }}>관리자 화면</Link>
@@ -136,6 +135,7 @@ function BenefitsSheet({ data, benefits, total, inc, soonLost, hasAssets, includ
           );
         })}
       </ul>
+      <p className="membership">내 실제 소득·재산으로 정확히 확인하려면 <a href="https://www.bokjiro.go.kr/ssis-tbu/index.do" target="_blank" rel="noopener noreferrer">복지로</a>의 <b>맞춤형급여안내(복지멤버십)</b>에 가입해 보세요. 동의하면 받을 수 있는 복지를 정부가 직접 알려 줘요.</p>
       <label style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 12, fontSize: 15 }}>
         <input type="checkbox" checked={includeInkind} onChange={(e) => setIncludeInkind(e.target.checked)} style={{ width: 20, height: 20, accentColor: "var(--brand-strong)" }} />
         의료급여·통신비 같은 감면·현물도 금액으로 계산
