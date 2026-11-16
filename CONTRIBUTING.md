@@ -66,11 +66,21 @@ docs: 데이터 분석 문서 링크 추가
 
 ### 계산 엔진
 - **두 곳을 항상 똑같이 고칩니다:** `oreum-app/src/lib/engine.js`(JS), `rules.py`(파이썬)
-- 고친 뒤 일치 검사를 실행합니다. PR을 올리면 CI가 같은 검사를 다시 합니다.
+- 고친 뒤 일치 검사와 기대값 검사를 실행합니다. PR을 올리면 CI가 같은 검사를 다시 합니다.
   ```bash
   python tests/parity_py.py
   node tests/parity.mjs
+  node tests/engine_checks.mjs
   ```
+  - 일치 검사: JS와 파이썬이 같은 결과를 내는지 (`tests/cases.json` 가구들)
+  - 기대값 검사: 둘 다 같이 틀리는 경우를 잡기 위해, 알려진 경우의 정답 금액과 비교
+
+### AI 채점기 (`pipeline/evaluate.py`)
+- 고친 뒤 채점기 검사를 실행합니다. 일부러 틀리게 바꾼 답(AND/OR, 이상↔이하, 빈 값)을 오답으로 잡아야 합니다.
+  ```bash
+  python tests/grader_checks.py
+  ```
+- 채점 결과가 바뀌면 `pipeline/RESULTS.md`에 바뀐 이유와 숫자를 기록합니다.
 
 ### 데이터 (`data/rules.json`)
 - 금액·기준을 바꾸면 같은 항목의 `verification`(값, 확인 상태, 근거)도 같이 고칩니다.
