@@ -3,7 +3,14 @@ import { Link } from "react-router-dom";
 import { Sheet } from "../ui/index.jsx";
 import { applyInfo } from "./apply.js";
 import Chart from "./Chart.jsx";
-import { LEVEL_LABEL, STEP, about, iga, levelOf, manwon, short, sourceKeys, won } from "./data.js";
+import { CHECK_LABEL, LEVEL_LABEL, STEP, about, iga, levelOf, manwon, short, sourceKeys, statusClass, won } from "./data.js";
+
+// 데이터 출처 (결과 화면 아래와 계산 기준 시트에 함께 보여 준다)
+const SOURCES = [
+  ["복지서비스 원문", "복지로 복지서비스(보건복지부) · 한국사회보장정보원 복지서비스 API — 경산시·대구 북구·영천시 43건"],
+  ["기준선", "2026 기준중위소득 · 급여별 선정기준(보건복지부 고시), 주거급여 기준임대료(국토교통부 고시)"],
+  ["금액 근거", "보건복지부·국토교통부 고시, 한국에너지공단 지침, 국세청, 지자체 조례·추진계획, 2024 건강보험통계"],
+];
 
 // 결과 화면: 숫자 하나 → 조심할 곳 한 줄 → 다시 좋아지는 곳 → 그래프 → 비교 → 자세히(시트)
 export default function Result({ data, hh, income, r, includeInkind, setIncludeInkind, setCompare, adoptCompare, onEdit, onRestart }) {
@@ -107,6 +114,7 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
 
         <footer className="footer">
           <p style={{ margin: "0 0 8px" }}>{short(hh.region)} · {hh.age}세{hh.spouse ? " · 배우자" : ""}{hh.infants + hh.elem + hh.middle + hh.high ? ` · 자녀 ${hh.infants + hh.elem + hh.middle + hh.high}명` : ""}{hh.singleParent ? " · 한부모" : ""}</p>
+          <p style={{ margin: "0 0 8px" }}>데이터: 복지로 · 한국사회보장정보원 복지서비스 API, 보건복지부·국토교통부 고시 (2026년 기준) · <button type="button" className="link-btn" onClick={() => setSheet("basis")} style={{ fontSize: 13 }}>출처 자세히</button></p>
           <p style={{ margin: "0 0 12px" }}>2026년 기준 참고용이에요. 실제 수급은 읍면동 행정복지센터에서 결정돼요.</p>
           <button type="button" className="link-btn" onClick={onRestart} style={{ fontSize: 13 }}>처음부터 다시</button>
           <span style={{ margin: "0 8px" }}>·</span>
@@ -216,6 +224,15 @@ function CliffSheet({ cliff, cliffs, m, close }) {
           <div className="bar-row" key={c.id}><span>{c.name}</span><div className="bar"><i style={{ width: `${(c.reduction / top) * 100}%` }} /></div><b className="bad">−{manwon(c.reduction)}</b></div>
         ))}
       </div>}
+      {cliff.kept.length > 0 && <>
+        <p className="group-title">넘어도 계속 받는 혜택</p>
+        <div className="chips static">{cliff.kept.map((n) => <span className="chip" key={n}>{n}</span>)}</div>
+      </>}
+      {cliff.gained.length > 0 && <>
+        <p className="group-title">넘으면 새로 생기는 혜택</p>
+        <div className="chips static">{cliff.gained.map((n) => <span className="chip on" key={n}>{n}</span>)}</div>
+        <p className="note" style={{ marginTop: 8 }}>수급 자격이 바뀌면서 대상이 바뀌는 혜택이에요.</p>
+      </>}
       <p className="group-title" style={{ marginTop: 24 }}>이 가구의 모든 절벽</p>
       {cliffs.map((c) => (
         <div className="kv" key={c.index}><span>월 {manwon(c.income)} 원 (중위 {Math.round((c.income / m) * 100)}%)</span><b className="bad">−{manwon(c.drop)}</b></div>
@@ -298,16 +315,28 @@ function RegionSheet({ regions, hh, close }) {
 }
 
 function BasisSheet({ data, benefits, hasAssets, close }) {
+  const [showAll, setShowAll] = useState(false);
   const levels = benefits.map((b) => levelOf(data, b.id, hasAssets));
+  const checks = Object.entries(data.verification);
   const cnt = (k) => levels.filter((l) => l === k).length;
   return (
     <Sheet title="계산 기준" sub="2026년 기준 · 참고용" onClose={close}>
+      <p className="group-title" style={{ marginTop: 4 }}>데이터 출처</p>
+      {SOURCES.map(([k, v]) => <div className="src" key={k}><b>{k}</b><span>{v}</span></div>)}
+      <p className="group-title">받는 혜택의 근거</p>
       <div className="kv"><span>근거 확인</span><b>확인 {cnt("ok")} · 일부 추정 {cnt("part")} · 추정 {cnt("est")}</b></div>
+      <p className="group-title">숫자별 확인 상태 ({checks.length}개)</p>
+      <ul className="checks">
+        {(showAll ? checks : checks.slice(0, 6)).map(([k, v]) => (
+          <li key={k}><span className={`tag ${statusClass(v.status) === "ok" ? "green" : statusClass(v.status) === "part" ? "gray" : "red"}`}>{LEVEL_LABEL[statusClass(v.status)]}</span><span><b>{CHECK_LABEL[k] || k}</b> {v.value}<small>{v.status}</small></span></li>
+        ))}
+      </ul>
+      {checks.length > 6 && <button type="button" className="link-btn" onClick={() => setShowAll(!showAll)} style={{ fontSize: 14 }}>{showAll ? "접기" : `${checks.length - 6}개 더 보기`}</button>}
       <p className="group-title">가정</p>
       <ul style={{ margin: 0, paddingLeft: 18, color: "var(--text-2)", fontSize: 14 }}>{data.assumptions.map((a) => <li key={a} style={{ marginBottom: 6 }}>{a}</li>)}
         <li style={{ marginBottom: 6 }}>입력한 소득은 일해서 버는 소득(근로·사업소득)으로 보고 계산합니다. 자영업자의 근로·자녀장려금은 실제로 매출에 업종별 조정률을 곱해 계산하지만, 오름은 업종별 조정률을 반영하지 않습니다.</li></ul>
       <p className="membership">내 실제 소득·재산으로 정확히 확인하려면 <a href="https://www.bokjiro.go.kr/ssis-tbu/index.do" target="_blank" rel="noopener noreferrer">복지로</a>의 <b>맞춤형급여안내(복지멤버십)</b>에 가입해 보세요. 동의하면 받을 수 있는 복지를 정부가 직접 알려 줘요.</p>
-      <p className="note">출처: 복지로(보건복지부), 한국사회보장정보원, 지자체 공고 · 실제 수급은 행정복지센터에서 결정돼요.</p>
+      <p className="note">실제 수급은 읍면동 행정복지센터의 조사로 결정돼요.</p>
     </Sheet>
   );
 }

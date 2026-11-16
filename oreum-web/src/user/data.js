@@ -47,7 +47,17 @@ export const won = (x) => `${Math.round(x).toLocaleString("ko-KR")}원`;
 export const iga = (w) => { const c = w.charCodeAt(w.length - 1); return c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 ? "이" : "가"; };
 
 // 근거 확인 정도 (확인 / 일부 추정 / 추정). 재산 근거(asset_*)는 재산을 넣었을 때만
-const statusClass = (status) => (status.startsWith("추정") ? "est" : status.includes("추정") ? "part" : "ok");
+export const statusClass = (status) => (status.startsWith("추정") ? "est" : status.includes("추정") ? "part" : "ok");
+// 계산 기준 시트의 '숫자별 확인 상태'에 보여 줄 항목 이름 (rules.json verification 키)
+export const CHECK_LABEL = {
+  earned_deduction_rate: "근로소득공제율", youth_deduction: "청년 근로소득공제", senior_disabled_deduction: "노인·장애인 근로소득공제",
+  rent: "주거급여 기준임대료", jugeo_self_share: "주거급여 자기부담", edu_annual: "교육급여 금액", energy_annual: "에너지바우처 금액",
+  telecom_monthly: "통신요금 감면액", medical_value_per_person: "의료급여 가치", basic_pension_amount: "기초연금 금액",
+  basic_pension_couple_cut: "기초연금 부부 감액", eitc: "근로장려금 최대액", ctc: "자녀장려금", bukgu_min_premium: "북구 최저보험료",
+  bukgu_nhis_value: "북구 건강보험료 지원액", gs_clinic_value: "경산 진료비 감면 가치", gs_multichild_annual: "경산 다자녀 지원액",
+  sp_child: "한부모 아동양육비", munhwa: "문화누리카드", dis_pension: "장애인연금", asset_basic: "재산 기본공제(기초생활)",
+  asset_pension: "재산 공제(기초·장애인연금)", asset_eitc: "장려금 재산 기준",
+};
 export const LEVEL_LABEL = { ok: "확인", part: "일부 추정", est: "추정" };
 export const sourceKeys = (data, id, hasAssets) => (data.benefit_sources?.[id]?.verification || []).filter((k) => hasAssets || !k.startsWith("asset_"));
 export const levelOf = (data, id, hasAssets) => {

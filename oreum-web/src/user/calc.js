@@ -53,6 +53,7 @@ export function calculate({ engine, data, hh, income, compare, includeInkind }) 
       before: info.cliff.income - STEP,
       recover: info.recover, recoverBetter: recoverDisp != null && recoverDisp > nowDisp,
       causes: raw.causes.filter((c) => c.reduction >= 1000),
+      kept: info.kept, gained: info.gained, // 절벽을 넘어도 계속 받는 혜택 / 넘으면 새로 생기는 혜택 (수급 자격 연쇄 변동)
     };
   }
 
