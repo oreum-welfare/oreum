@@ -55,6 +55,16 @@ a { color: inherit; }
 .user .bad { color: var(--red); }
 
 /* ===== 진행 막대 ===== */
+.user .steps { display: flex; gap: 6px; margin-top: 2px; }
+.user .step { flex: 1 1 0; display: flex; align-items: center; gap: 6px; background: none; border: 0; border-bottom: 4px solid var(--surface-2); padding: 6px 0 10px; color: var(--text-3); font-size: 14px; font-weight: 600; min-width: 0; text-align: left; }
+.user .step:disabled { cursor: default; }
+.user .step .num { flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--surface-2); color: var(--text-3); font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+.user .step .name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.user .step.done { border-bottom-color: var(--brand); color: var(--text-2); }
+.user .step.done .num { background: var(--brand-soft); color: var(--brand-ink); }
+.user .step.on { border-bottom-color: var(--brand-strong); color: var(--text); font-weight: 700; }
+.user .step.on .num { background: var(--brand-strong); color: #fff; }
+@media (max-width: 479px) { .user .step:not(.on) .name { display: none; } .user .step.on { flex-grow: 3; } }
 .user .progress { height: 4px; background: var(--surface-2); border-radius: 2px; overflow: hidden; margin-top: 4px; }
 .user .progress i { display: block; height: 100%; background: var(--brand); border-radius: 2px; transition: width 0.25s ease; }
 
@@ -103,6 +113,9 @@ a { color: inherit; }
 /* ===== 시작 화면 ===== */
 .user .hero { padding: 36px 0 8px; }
 .user .hero h1 { font-size: 32px; font-weight: 800; letter-spacing: -0.045em; line-height: 1.3; margin: 0 0 14px; }
+.user .hero .badge { display: inline-block; margin-bottom: 16px; padding: 6px 14px; border-radius: 999px; background: var(--surface-2); color: var(--text-2); font-size: 13px; font-weight: 700; }
+.user .hero h1 em { font-style: normal; color: var(--brand-ink); }
+.user .hero p b { color: var(--text); }
 .user .hero p { font-size: 17px; color: var(--text-2); margin: 0; }
 .user .example { margin: 28px 0 0; padding: 18px; background: var(--surface); border-radius: var(--radius); }
 .user .example b { font-size: 18px; }

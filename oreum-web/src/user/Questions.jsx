@@ -3,6 +3,7 @@ import { ManwonInput, Option, Seg, Stepper } from "../ui/index.jsx";
 import { ORDINAL, PRESETS, iga, manwon, short } from "./data.js";
 
 const TOTAL = 5;
+const STEPS = ["사는 곳", "가족", "해당하는 것", "재산", "소득"];
 const GS = "경상북도 경산시";
 const QUICK = [0, 100, 200, 300, 400];
 
@@ -35,8 +36,9 @@ export default function Questions({ regions, initial, initialIncome, editing, st
       <div className="screen">
         <div className="screen-body col">
           <section className="hero">
-            <h1>소득이 오르면,<br />받던 복지는<br />어떻게 될까요?</h1>
-            <p>가족과 소득만 알려 주세요. 지금 받는 복지와, 혜택이 한꺼번에 끊기는 소득을 알려 드려요.</p>
+            <span className="badge">오름 · 복지 절벽 시뮬레이터</span>
+            <h1>소득이 오르면,<br />받는 복지는 <em>어떻게 바뀔까요?</em></h1>
+            <p>몇 가지만 알려 주시면 지금 받을 수 있는 복지와, 소득이 늘 때 혜택이 한꺼번에 끊기는 <b>복지 절벽</b>이 어디에 있는지 계산해 드려요.</p>
           </section>
           {example && (
             <div className="example">
@@ -64,11 +66,18 @@ export default function Questions({ regions, initial, initialIncome, editing, st
   return (
     <div className="screen">
       <div className="col" style={{ paddingTop: 4 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <button type="button" className="back" onClick={back} aria-label="이전">‹</button>
-          <span className="label">{step} / {TOTAL}</span>
-        </div>
-        <div className="progress" role="progressbar" aria-valuemin={1} aria-valuemax={TOTAL} aria-valuenow={step}><i style={{ width: `${(step / TOTAL) * 100}%` }} /></div>
+        <button type="button" className="back" onClick={back} aria-label="이전">‹</button>
+        {/* 단계 탭: 지난 단계는 눌러서 돌아갈 수 있음 */}
+        <nav className="steps" aria-label={`질문 ${step} / ${TOTAL}`}>
+          {STEPS.map((name, i) => {
+            const n = i + 1, state = n === step ? "on" : n < step ? "done" : "";
+            return (
+              <button type="button" key={name} className={`step ${state}`} disabled={n > step} aria-current={n === step ? "step" : undefined} onClick={() => setStep(n)}>
+                <span className="num">{n}</span><span className="name">{name}</span>
+              </button>
+            );
+          })}
+        </nav>
       </div>
 
       <div className="screen-body col">
