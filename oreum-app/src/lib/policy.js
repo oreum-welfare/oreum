@@ -37,8 +37,20 @@ export function taperSimulation(sim, median, widthPct, deductionRate = 0.3) {
     if (drop >= 1000) cliffs.push({ index: i, income: sim.incomes[i], drop });
   }
   return {
-    disposable, cliffs, K, widthEarned,
-    extraAvg: extraSteps ? extraSum / extraSteps : 0, // 점감 구간에서 늘어나는 지원의 평균 (월)
+    disposable,
+    cliffs,
+    K,
+    widthEarned,
+    extraAvg: extraSteps ? extraSum / extraSteps : 0,
     extraMax: Math.max(0, ...extraAt),
+
+    // 소득 단계별 추가 지원액
+    extraByIncome: extraAt,
+
+    // 모든 가상 소득 단계의 추가 지원액 합계
+    extraTotal: extraAt.reduce((sum, value) => sum + value, 0),
+
+    // 추가 지원이 발생한 소득 단계 수
+    extraSteps,
   };
 }
