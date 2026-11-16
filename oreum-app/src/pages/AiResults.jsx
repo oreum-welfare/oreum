@@ -1,6 +1,7 @@
 import { Bar } from "react-chartjs-2";
 import { Link } from "react-router-dom";
 import { useJson } from "../lib/useJson.js";
+import { PageHead } from "../components/ui.jsx";
 
 const pct = (x) => `${Math.round(x * 100)}%`;
 const ERROR_TYPES = ["판정 가능 여부", "조건 누락·오류", "정답에 없는 조건", "금액"];
@@ -16,15 +17,32 @@ function AccuracyChart({ stages }) {
     datasets: [{
       label: "서비스 정확도",
       data: done.map((s) => Math.round(s.summary.service_accuracy * 100)),
-      backgroundColor: done.map((s) => (s.unseen ? "#3b5bdb" : "#ced4da")),
+      backgroundColor: done.map((s) => (s.unseen ? "#254C3D" : "#D9E0E2")),
       borderRadius: 6, maxBarThickness: 64,
     }],
   };
   const options = {
     responsive: true, maintainAspectRatio: false, animation: false,
     scales: {
-      y: { min: 0, max: 100, ticks: { callback: (v) => `${v}%`, color: "#868e96" }, grid: { color: "#f1f3f5" } },
-      x: { grid: { display: false }, ticks: { color: "#4a5260", font: { size: 11 } } },
+      y: {
+        min: 0,
+        max: 100,
+        ticks: {
+          callback: (v) => `${v}%`,
+          color: "#7E8A90",
+        },
+        grid: { color: "#E4E8E7" },
+      },
+      x: {
+        grid: { display: false },
+        ticks: {
+          color: "#59666D",
+          font: { size: 11 },
+          maxRotation: 0,
+          minRotation: 0,
+          autoSkip: false,
+        },
+      },
     },
     plugins: {
       legend: { display: false },
@@ -37,7 +55,7 @@ function AccuracyChart({ stages }) {
       const { ctx } = chart;
       chart.getDatasetMeta(0).data.forEach((bar, i) => {
         ctx.save();
-        ctx.fillStyle = "#1f2430"; ctx.font = "700 13px Pretendard, sans-serif"; ctx.textAlign = "center";
+        ctx.fillStyle = "#26333C"; ctx.font = "700 13px Pretendard, sans-serif"; ctx.textAlign = "center";
         ctx.fillText(`${chart.data.datasets[0].data[i]}%`, bar.x, bar.y - 6);
         ctx.restore();
       });
@@ -48,8 +66,8 @@ function AccuracyChart({ stages }) {
 
 export default function AiResults() {
   const { data, error } = useJson("/data/ai_results.json");
-  if (error) return <main className="wrap page"><div className="alert cliff"><h3>AI 결과를 불러오지 못했습니다</h3><p>{String(error.message)}</p></div></main>;
-  if (!data) return <main className="wrap page"><p className="empty">불러오는 중…</p></main>;
+  if (error) return <main className="page"><div className="alert cliff"><h3>AI 결과를 불러오지 못했습니다</h3><p>{String(error.message)}</p></div></main>;
+  if (!data) return <main className="page"><p className="empty">불러오는 중…</p></main>;
 
   const done = data.stages.filter((s) => s.status === "done");
   const unseen = done.filter((s) => s.unseen);
@@ -60,13 +78,9 @@ export default function AiResults() {
 
   return (
     <>
-      <section className="hero small"><div className="wrap">
-        <h1>AI가 복지 기준을 <em>얼마나 정확히</em> 읽을까요?</h1>
-        <p>오름은 복지로 서비스 원문을 AI({data.model})가 판정 규칙으로 바꾸고, 팀이 만든 정답과 비교해 정확도를 잽니다.
-          프롬프트를 고칠 때 보지 않은 <b>처음 보는 서비스</b>로 따로 시험해서 실제 성능을 확인합니다.</p>
-      </div></section>
-
-      <main className="wrap page">
+      <main className="page">
+        <PageHead title={<>AI가 복지 기준을 <em>얼마나 정확히</em> 읽을까요?</>}
+          desc={`복지로 원문을 AI(${data.model})가 판정 규칙으로 바꾸고, 팀이 만든 정답과 비교해요. 프롬프트를 고칠 때 보지 않은 '처음 보는 서비스'로 따로 시험해 실제 성능을 확인해요.`} />
         {latest && (
           <div className="stats">
             <div className="stat accent"><div className="label">처음 보는 서비스 정확도 (최신)</div><div className="value">{pct(latest.summary.service_accuracy)}</div><div className="stat-sub">{stageLabel(latest)}</div></div>
@@ -88,10 +102,10 @@ export default function AiResults() {
         <div className="card">
           <h2 className="card-title">공정하게 재는 방법</h2>
           <ol className="fair">
-            <li><b>정답을 먼저</b> — 시험용 서비스의 정답 규칙은 AI 결과를 보기 전에 팀이 작성합니다.</li>
-            <li><b>고치지 않기</b> — 결과를 본 뒤에는 그 시험의 정답과 채점 기준을 바꾸지 않습니다.</li>
-            <li><b>새 문제로 다시</b> — 프롬프트를 고치는 데 쓴 서비스는 다음 시험에 쓰지 않습니다. 2차는 경산, 3차는 대구 북구·영천 서비스로 시험했습니다.</li>
-            <li><b>채점기도 검사</b> — 정답을 그대로 넣으면 100%, 일부러 실수 6개를 심으면 6개 모두 잡아내는지 확인했습니다.</li>
+            <li><b>정답을 먼저</b>시험용 서비스의 정답 규칙은 AI 결과를 보기 전에 팀이 작성합니다.</li>
+            <li><b>고치지 않기</b>결과를 본 뒤에는 그 시험의 정답과 채점 기준을 바꾸지 않습니다.</li>
+            <li><b>새 문제로 다시</b>프롬프트를 고치는 데 쓴 서비스는 다음 시험에 쓰지 않습니다. 2차는 경산, 3차는 대구 북구·영천 서비스로 시험했습니다.</li>
+            <li><b>채점기도 검사</b>정답을 그대로 넣으면 100%, 일부러 실수 6개를 심으면 6개 모두 잡아내는지 확인했습니다.</li>
           </ol>
         </div>
 

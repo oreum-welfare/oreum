@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { won } from "../lib/format.js";
 import { useJson } from "../lib/useJson.js";
+import { PageHead } from "../components/ui.jsx";
 
 const FIELD_LABEL = {
   age: "나이", household_size: "가구원 수", income_recognized_pct_median: "소득인정액 (중위소득 %)",
@@ -98,8 +99,8 @@ export default function Review() {
   const svc = useMemo(() => data?.services.find((s) => s.id === sel), [data, sel]);
   const conds = useMemo(() => (svc ? conditionStatus(svc) : []), [svc]);
 
-  if (error) return <main className="wrap"><p className="empty">검수 데이터를 불러오지 못했습니다: {String(error.message)}</p></main>;
-  if (!data || !svc) return <main className="wrap"><p className="empty">불러오는 중…</p></main>;
+  if (error) return <main className="page"><p className="empty">검수 데이터를 불러오지 못했습니다: {String(error.message)}</p></main>;
+  if (!data || !svc) return <main className="page"><p className="empty">불러오는 중…</p></main>;
 
   const rec = store[svc.id] || { conditions: {}, done: false };
   const setRec = (fn) => setStore((s) => ({ ...s, [svc.id]: fn(s[svc.id] || { conditions: {}, done: false }) }));
@@ -125,13 +126,11 @@ export default function Review() {
 
   return (
     <>
-      <section className="hero"><div className="wrap">
-        <h1>AI가 만든 규칙, <em>사람이 확인합니다</em></h1>
-        <p>복지로 원문을 GPT-5가 판정 규칙으로 바꿨습니다. 검수자는 원문과 나란히 보며 조건마다 승인·수정·삭제하고, 결과를 JSON으로 내보냅니다.
-          승인된 규칙만 규칙 파일(rules.json)에 반영하는 구조이며, 지금은 이 반영을 사람이 직접 합니다. 아래는 학습용 서비스 13건의 실제 변환 결과입니다.</p>
-      </div></section>
-
-      <main className="wrap analysis">
+      <main className="page">
+        <PageHead title={<>AI가 만든 규칙, <em>사람이 확인해요</em></>}
+          desc="복지로 원문을 GPT-5가 판정 규칙으로 바꿨어요. 원문과 나란히 보며 조건마다 승인·수정·삭제하고, 결과를 JSON으로 내보내요. 승인된 규칙만 규칙 파일(rules.json)에 반영하는 구조이고, 지금은 이 반영을 사람이 직접 해요.">
+          <span className="pill brand">학습용 서비스 13건</span>
+        </PageHead>
         <section className="card">
           <div className="card-head">
             <h2 className="card-title">이 화면의 13건: 1차 → 2차 정확도 (사람이 만든 정답과 비교)</h2>
@@ -171,8 +170,8 @@ export default function Review() {
                 <span className="hint">{svc.source}</span>
               </div>
               {flags.length > 0
-                ? <div className="warn">🔎 먼저 확인할 것: {flags.join(" · ")}</div>
-                : <div className="alert ok" style={{ padding: "10px 14px" }}><div>✅ 자동 점검 통과 — 빠르게 확인 후 승인할 수 있습니다.</div></div>}
+                ? <div className="rv-check warn"><b>먼저 확인할 것</b> {flags.join(" · ")}</div>
+                : <div className="rv-check ok"><b>자동 점검 통과</b> 빠르게 확인한 뒤 승인할 수 있어요.</div>}
             </div>
 
             <div className="review-cols">
@@ -213,9 +212,9 @@ export default function Review() {
                         )}
                         <div className="cond-ev">“{c.evidence}”</div>
                         <div className="cond-actions">
-                          <button className={`btn sm ${d?.type === "approve" ? "on" : ""}`} onClick={() => decide(i, { type: "approve" })}>✅ 승인</button>
-                          <button className={`btn sm ${d?.type === "edit" ? "on" : ""}`} onClick={() => { setEditing(i); setDraft(d?.value ?? c.value); }}>✏️ 수정</button>
-                          <button className={`btn sm ${d?.type === "reject" ? "on danger" : ""}`} onClick={() => decide(i, { type: "reject" })}>🗑️ 삭제</button>
+                          <button className={`btn sm ${d?.type === "approve" ? "on" : ""}`} onClick={() => decide(i, { type: "approve" })}>승인</button>
+                          <button className={`btn sm ${d?.type === "edit" ? "on" : ""}`} onClick={() => { setEditing(i); setDraft(d?.value ?? c.value); }}>수정</button>
+                          <button className={`btn sm ${d?.type === "reject" ? "on danger" : ""}`} onClick={() => decide(i, { type: "reject" })}>삭제</button>
                         </div>
                       </li>
                     );
