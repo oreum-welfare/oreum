@@ -973,18 +973,18 @@ function CoLossSection({ cases }) {
         복지 절벽 발생 시 함께 자격을 잃는 혜택 조합을 분석합니다.
       </p>
 
-      <div className="stat-grid">
-        <div>
-          <strong>{man(result.totalEvents)}</strong>
-          <span>전체 절벽 이벤트</span>
+      <div className="stats compact">
+        <div className="stat">
+          <div className="label">전체 절벽 이벤트</div>
+          <div className="value">{man(result.totalEvents)}<small>건</small></div>
         </div>
-        <div>
-          <strong>{man(result.multiLossEvents)}</strong>
-          <span>2개 이상 동시 탈락</span>
+        <div className="stat">
+          <div className="label">2개 이상 동시 탈락</div>
+          <div className="value">{man(result.multiLossEvents)}<small>건</small></div>
         </div>
-        <div>
-          <strong>{result.multiLossPct.toFixed(1)}%</strong>
-          <span>동시 탈락 이벤트 비율</span>
+        <div className="stat">
+          <div className="label">동시 탈락 이벤트 비율</div>
+          <div className="value">{result.multiLossPct.toFixed(1)}<small>%</small></div>
         </div>
       </div>
 

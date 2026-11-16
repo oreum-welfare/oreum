@@ -19,6 +19,8 @@
 ### 계산·데이터를 바꿨다면
 - [ ] `oreum-app/src/lib/engine.js`와 `rules.py` 두 곳을 똑같이 고쳤습니다
 - [ ] `python tests/parity_py.py && node tests/parity.mjs` 가 "모두 일치"로 끝납니다
+- [ ] `node tests/engine_checks.mjs` 가 "모두 통과"로 끝납니다
+- [ ] (AI 채점기를 바꿨다면) `python tests/grader_checks.py` 가 "모두 통과"로 끝납니다
 - [ ] `rules.json`에서 바꾼 값의 `verification`(근거·확인 상태)도 고쳤습니다
 
 ## 스크린샷 / 참고

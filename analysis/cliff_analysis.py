@@ -40,7 +40,7 @@ def run_all() -> list[dict]:
             endings = [
                 {"name": name, "income": incomes[i], "pct": incomes[i] / m * 100}
                 for i in range(1, len(incomes))
-                for name in elig[i - 1] - elig[i]
+                for name in sorted(elig[i - 1] - elig[i])  # 집합은 실행마다 순서가 달라 정렬해서 결과 파일 순서를 고정
             ]
             k = EXTRA // STEP
             retained = [disp[i + k] - disp[i] for i in range(len(disp) - k)]

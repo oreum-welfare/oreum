@@ -32,12 +32,12 @@
 | `rules.py` | 판정 엔진 (파이썬, 데이터 분석용). `data/rules.json`을 읽음 |
 | `analysis/` | 가구 유형별 절벽 분석 (CSV 출력) |
 | `pipeline/` | **AI 변환 파이프라인**: 원문 → GPT-5(또는 Claude) → 규칙 JSON → 정답과 비교해 정확도 ([안내](pipeline/README.md), [결과](pipeline/RESULTS.md)) |
-| `tests/` | JS 엔진과 파이썬 엔진의 계산 일치 검사. PR마다 CI가 자동 실행 |
+| `tests/` | 엔진 일치 검사(JS↔파이썬), 엔진 기대값 검사, AI 채점기 검사. PR마다 CI가 자동 실행 |
 | `assets/logo.html` | 로고 미리보기와 PNG 다운로드 |
-| `docs/` | [기획안](docs/01_기획안.md), [PRD](docs/02_PRD.md), [기능명세서](docs/03_기능명세서.md), [제안서 초안](docs/04_제안서_초안.md) |
 
 > **금액을 바꿀 때:** `data/rules.json`만 고치면 앱과 분석에 함께 반영됩니다. 같은 항목의 `verification`(근거·확인 상태)도 고쳐 주세요.
-> **계산 방식을 바꿀 때:** `oreum-app/src/lib/engine.js`와 `rules.py`를 똑같이 고친 뒤 `python tests/parity_py.py && node tests/parity.mjs`로 확인합니다.
+> **계산 방식을 바꿀 때:** `oreum-app/src/lib/engine.js`와 `rules.py`를 똑같이 고친 뒤 `python tests/parity_py.py && node tests/parity.mjs`(일치 검사)와 `node tests/engine_checks.mjs`(기대값 검사)로 확인합니다.
+> **AI 채점기를 바꿀 때:** `python tests/grader_checks.py`로 틀린 답을 오답으로 잡는지 확인합니다.
 
 ## 내 컴퓨터에서 실행
 ```bash
