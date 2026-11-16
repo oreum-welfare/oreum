@@ -1,12 +1,12 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { Icon } from "./ui.jsx";
 
-// [주소, 메뉴 이름, 아이콘]
+// [주소, 메뉴 이름, 휴대폰 하단 탭 이름, 아이콘]
 const MENUS = [
-  ["/", "소득·복지 시뮬레이터", "home"],
-  ["/analysis", "복지 데이터 분석", "chart"],
-  ["/ai", "AI 성능 평가", "cpu"],
-  ["/review", "AI 결과 검수", "check"],
+  ["/", "소득·복지 시뮬레이터", "시뮬레이터", "home"],
+  ["/analysis", "복지 데이터 분석", "데이터 분석", "chart"],
+  ["/ai", "AI 성능 평가", "AI 성능", "cpu"],
+  ["/review", "AI 결과 검수", "AI 검수", "check"],
 ];
 
 // 마지막으로 사용한 시뮬레이션 조건 유지
@@ -20,6 +20,7 @@ function lastSim() {
 }
 
 export default function Layout() {
+  useLocation(); // 화면이 바뀔 때마다 다시 그려서 '시뮬레이터' 메뉴가 마지막 결과 주소를 가리키게 함
   return (
     <div className="app-shell">
       <aside className="sidebar" aria-label="메뉴">
@@ -34,7 +35,7 @@ export default function Layout() {
         <div className="sidebar-caption">복지 서비스</div>
 
         <nav className="side-nav" aria-label="주요 메뉴">
-          {MENUS.map(([to, label, icon]) => (
+          {MENUS.map(([to, label, shortLabel, icon]) => (
             <NavLink
               key={to}
               to={to === "/" ? lastSim() : to}
@@ -44,7 +45,8 @@ export default function Layout() {
               }
             >
               <Icon name={icon} />
-              <span>{label}</span>
+              <span className="nav-full">{label}</span>
+              <span className="nav-short">{shortLabel}</span>
             </NavLink>
           ))}
         </nav>
@@ -67,6 +69,10 @@ export default function Layout() {
       </aside>
 
       <div className="main-shell">
+        <header className="mobile-top">
+          <NavLink className="brand" to="/" aria-label="오름 홈"><img src="/oreum-logo.png" alt="오름" className="brand-logo" /></NavLink>
+          <span>복지 절벽 시뮬레이터</span>
+        </header>
         <main className="main-content">
           <Outlet />
         </main>

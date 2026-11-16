@@ -337,8 +337,8 @@ function ProgramCards({ programs }) {
   );
 }
 
-function horizonText(h) {
-  const where = h.beforeNextCliff ? `다음 절벽 직전인 월 ${won(h.income)}` : `기준중위소득 100%인 월 ${won(h.income)}`;
+function horizonText(h, rangeEnd) {
+  const where = h.beforeNextCliff ? `다음 절벽 직전인 월 ${won(h.income)}` : (rangeEnd || `기준중위소득 100%인 월 ${won(h.income)}`);
   return h.gain > 0
     ? <>{where}까지 오르면 지금보다 한 달에 <b className="good">{won(h.gain)}</b> 더 쓸 수 있습니다.</>
     : <>{where}까지 올라도 지금보다 쓸 수 있는 돈이 늘지 않습니다 (<b>{won(h.gain)}</b>). 절벽이 겹쳐 있는 구간입니다.</>;
@@ -543,7 +543,9 @@ export default function Simulator() {
     if (!engine) return null;
     const d = engine.derive(hh);
     const m = engine.medianIncome(d.size);
-    const maxIncome = Math.round(m / STEP) * STEP;
+    // 계산 범위: 기본은 기준중위소득 100%, 내 소득이 그보다 많으면 내 소득의 1.2배까지 넓혀 그대로 계산
+    const medianMax = Math.round(m / STEP) * STEP;
+    const maxIncome = income > medianMax ? Math.ceil((income * 1.2) / STEP) * STEP : medianMax;
     const inc = Math.min(income, maxIncome);
     const sim = engine.simulate(hh, maxIncome, STEP, includeInkind);
     const cliffs = engine.findCliffs(sim);
@@ -565,7 +567,7 @@ export default function Simulator() {
       disposable: cmp + cmpTotal - (inc + total), benefit: cmpTotal - total,
       lost: [...baseNames].filter((n) => !cmpNames.has(n)), gained: [...cmpNames].filter((n) => !baseNames.has(n)),
     };
-    return { d, m, maxIncome, inc, sim, cliffs, benefits, total, regions, info, programs, cmp, cmpTotal, diff };
+    return { d, m, medianMax, maxIncome, inc, sim, cliffs, benefits, total, regions, info, programs, cmp, cmpTotal, diff };
   }, [engine, data, hh, income, compare, includeInkind]);
 
   const example = useMemo(() => {
@@ -581,7 +583,8 @@ export default function Simulator() {
   if (!calc) return <main className="page"><p className="empty">불러오는 중…</p></main>;
   if (!started) return <StartScreen regions={Object.keys(data.regions)} short={short} defaults={DEFAULT_HH} presets={PRESETS} example={example} onFinish={finishStart} onPreset={applyPreset} />;
 
-  const { d, m, maxIncome, inc, sim, cliffs, benefits, total, regions, info, programs, cmp, cmpTotal, diff } = calc;
+  const { d, m, medianMax, maxIncome, inc, sim, cliffs, benefits, total, regions, info, programs, cmp, cmpTotal, diff } = calc;
+  const rangeEnd = maxIncome > medianMax ? `계산 범위 끝인 월 ${won(maxIncome)}` : `기준중위소득 100%인 월 ${won(maxIncome)}`;
   const idx = (v) => Math.round(v / STEP);
   markers.current = {
     current: idx(inc),
@@ -676,7 +679,10 @@ export default function Simulator() {
     })),
   };
 
-  const summary = <>월 <em>{man(inc)} 원</em>을 벌면, 복지 혜택으로 매달 <em>{man(total)} 원</em>을 받아요.</>;
+  const incText = inc > 0 ? <>월 <em>{man(inc)} 원</em>을 벌면</> : <>근로소득이 <em>없을 때</em></>;
+  const summary = total > 0
+    ? <>{incText}, 복지 혜택으로 매달 <em>{man(total)} 원</em>을 받아요.</>
+    : <>{incText}, 지금 계산되는 복지 혜택은 <em>없어요</em>.</>;
   const lostName = info ? (info.lost[0] || "일부 혜택") + (info.lost.length > 1 ? ` 등 ${info.lost.length}가지` : "") : "";
   const summarySub = info
     ? <>소득이 <b>월 {man(info.cliff.income)} 원</b>이 되면 {lostName}{iga(lostName)} 끊겨, 한 달에 쓸 수 있는 돈이 <b className="bad">{man(info.cliff.drop)} 원 줄어들어요</b>.
@@ -685,7 +691,7 @@ export default function Simulator() {
 
   const kidsN = hh.infants + hh.elem + hh.middle + hh.high;
   const profile = [
-    `월 ${man(inc)}원`, short(hh.region), `${hh.age}세`, hh.spouse ? "배우자 있음" : null,
+    inc > 0 ? `월 ${man(inc)}원` : "근로소득 없음", short(hh.region), `${hh.age}세`, hh.spouse ? "배우자 있음" : null,
     kidsN ? `자녀 ${kidsN}명` : "자녀 없음",
     hh.singleParent ? "한부모" : null, hh.disabled ? "장애인 가구원" : null, hh.severeDisabled ? "본인 심한 장애" : null,
     hh.newborn ? "올해 출산" : null, hh.thirdChild7to18 ? "셋째 이상" : null,
@@ -697,8 +703,8 @@ export default function Simulator() {
     edit: { title: "우리 가구 정보", sub: presetTitle ? `예시: ${presetTitle}` : "직접 입력한 정보", body: (
       <>
         <label className="money base-income"><span><b>내 소득</b> 한 달 근로소득 (가구 합계)</span>
-          <span className="money-input"><input type="number" inputMode="numeric" min="0" max={maxIncome / 10000} value={Math.round(inc / 10000)}
-            onChange={(e) => setIncome(Math.min(maxIncome, Math.max(0, Number(e.target.value) || 0) * 10000))} />만 원</span></label>
+          <span className="money-input"><input type="number" inputMode="numeric" min="0" value={Math.round(inc / 10000)}
+            onChange={(e) => setIncome(Math.max(0, Number(e.target.value) || 0) * 10000)} />만 원</span></label>
         <HouseholdPanel hh={hh} set={set} regions={Object.keys(data.regions)} preset={preset} applyPreset={applyPreset}
           includeInkind={includeInkind} setIncludeInkind={setIncludeInkind} />
       </>) },
@@ -748,8 +754,8 @@ export default function Simulator() {
       <div className="prose">
         {info.recover != null
           ? <p>월 {won(info.cliff.income)}부터 {won(info.recover)}까지 <b>{man(info.lossSpan)}원</b> 구간은 <b>손해 구간</b>이에요. 일을 더 해도 절벽 직전보다 쓸 수 있는 돈이 적어요.</p>
-          : <p>기준중위소득 100%까지 벌어도 절벽 직전 수준을 되찾지 못해요.</p>}
-        {info.recover != null && <div className="callout good">{horizonText(info.horizon)}</div>}
+          : <p>{maxIncome > medianMax ? `계산 범위(월 ${won(maxIncome)})` : "기준중위소득 100%"}까지 벌어도 절벽 직전 수준을 되찾지 못해요.</p>}
+        {info.recover != null && <div className="callout good">{horizonText(info.horizon, rangeEnd)}</div>}
         {info.kept.length > 0 && <><h3 className="sub-title">절벽을 넘어도 계속 받는 혜택</h3><div className="chips">{info.kept.map((n) => <span key={n} className="chip good">{n}</span>)}</div></>}
         {info.gained.length > 0 && <><h3 className="sub-title">절벽을 넘으면 새로 생기는 혜택</h3><div className="chips">{info.gained.map((n) => <span key={n} className="chip on">{n}</span>)}</div></>}
         <p className="hint">손해 구간을 한 번에 넘을 수 있는 일자리인지 확인하고, 넘는 방법의 제도로 그 사이를 메우는 계획을 세워 보세요.</p>
@@ -852,7 +858,7 @@ export default function Simulator() {
                   <div className="kpi-foot"><span className="pill good">↑ 이후 이득</span><span>손해 구간 {man(info.lossSpan)}원</span></div>
                 </> : info ? <>
                   <div className="kpi-num">—</div>
-                  <div className="kpi-foot"><span className="pill warn">중위 100% 안에서 회복 안 됨</span></div>
+                  <div className="kpi-foot"><span className="pill warn">{maxIncome > medianMax ? "계산 범위" : "중위 100%"} 안에서 회복 안 됨</span></div>
                 </> : <>
                   <div className="kpi-num">—</div>
                   <div className="kpi-foot"><span>손해 구간이 없어요</span></div>

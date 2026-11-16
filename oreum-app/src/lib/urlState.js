@@ -40,6 +40,8 @@ export function decodeState(params, defaults) {
       if (Number.isFinite(n) && n >= 0) hh[k] = type === "man" ? n * 10000 : Math.round(n);
     }
   }
+  if (hh.spouse) hh.singleParent = false; // 배우자가 있으면 한부모 가구가 아님 (engine normalize와 같게)
+  else { hh.spouse65 = false; hh.dualEarner = false; }
   const inc = Number(params.get("inc"));
   const cmp = params.has("cmp") ? Number(params.get("cmp")) : NaN;
   return {
