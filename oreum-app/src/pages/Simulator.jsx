@@ -9,18 +9,31 @@ import { man, won } from "../lib/format.js";
 import { useJson } from "../lib/useJson.js";
 import { analyzeNextCliff, recommendPrograms } from "../lib/guide.js";
 import { Drawer, Icon, MoreButton, Segmented, Stepper } from "../components/ui.jsx";
-import {
-  summarizeCliffs,
-  summarizeSimulationBenefitEndings,
-} from "../lib/analytics.js";
+import { analyzeCliffCause } from "../lib/analytics.js";
 
 const STEP = 10000;
 // 혜택 색: 현금(남색 계열) · 감면·현물(청록 계열) · 지자체(주황 계열)
+// 혜택 종류별 색상: 현금(블루 계열) · 감면·현물(그린 계열) · 지자체(웜톤 계열)
 export const COLORS = {
-  saeng: "#24402F", jugeo: "#315B46", edu: "#527B62", basic_pension: "#315B46", dis_pension: "#41694B", sp_child: "#6E9278",
-  eitc: "#8CAA94", ctc: "#AFC4B4",
-  medical: "#3F6E6E", energy: "#5A8A87", telecom: "#7FA6A1", munhwa: "#A7C4BF",
-  gs_birth: "#A8742F", gs_clinic: "#C48A3C", gs_multichild: "#D9A861", bk_nhis: "#E8C58E",
+  saeng: "#536B7D",
+  jugeo: "#71889A",
+  edu: "#8B9EAD",
+  basic_pension: "#657F91",
+  dis_pension: "#3F596C",
+  sp_child: "#A7B5BF",
+
+  eitc: "#47745C",
+  ctc: "#71917D",
+
+  medical: "#477C78",
+  energy: "#64918C",
+  telecom: "#83A7A1",
+  munhwa: "#A5BDB8",
+
+  gs_birth: "#A98A5C",
+  gs_clinic: "#B49A62",
+  gs_multichild: "#C3AA79",
+  bk_nhis: "#D2C19D",
 };
 export const NAMES = {
   saeng: "생계급여", medical: "의료급여", jugeo: "주거급여", edu: "교육급여", energy: "에너지바우처",
@@ -57,13 +70,21 @@ export function chartOptions(incomes, linesRef, { stacked = false, legend = true
     scales: {
       x: { stacked, grid: { display: false }, border: { display: false },
         ticks: { autoSkip: false, maxRotation: 0, callback: (_v, i) => (incomes[i] % 1000000 === 0 ? man(incomes[i]) : null) } },
-      y: { stacked, beginAtZero: true, grid: { color: "#EFECE4" }, border: { display: false }, ticks: { callback: (v) => man(v), maxTicksLimit: 5 } },
+        y: {
+          stacked,
+          beginAtZero: true,
+          grid: { color: "#E4E8E7" },
+          border: { display: false },
+          ticks: { callback: (v) => man(v), maxTicksLimit: 5 },
+        },
     },
     plugins: {
       [pluginId]: { ref: linesRef },
       legend: { display: legend, position: "bottom", labels: { boxWidth: 10, boxHeight: 10, usePointStyle: true } },
       tooltip: {
-        backgroundColor: "#29332D", padding: 10, cornerRadius: 10,
+        backgroundColor: "#26333C",
+        padding: 10,
+        cornerRadius: 10,
         filter: (item) => item.raw > 0,
         callbacks: {
           title: (items) => `월 근로소득 ${won(incomes[items[0].dataIndex])}`,
@@ -288,7 +309,10 @@ function BenefitList({ benefits, data, lostSet, hasAssets }) {
 function ChartLegend({ ids, current }) {
   return (
     <div className="chart-legend">
-      <span className="lg"><i style={{ background: "#E2DDD2" }} />근로소득</span>
+      <span className="lg">
+  <i style={{ background: "#D9E0E2" }} />
+  근로소득
+</span>
       {ids.map((id) => (
         <span key={id} className={`lg ${current.has(id) ? "" : "off"}`}><i style={{ background: COLORS[id] }} />{NAMES[id]}</span>
       ))}
@@ -571,8 +595,12 @@ export default function Simulator() {
   const currentIds = new Set(benefits.filter((b) => b.monthly > 0).map((b) => b.id));
   const lostSet = new Set(info?.lost || []);
   const maxDrop = cliffs.reduce((a, c) => Math.max(a, c.drop), 0);
-  const cliffStats = summarizeCliffs(cliffs);
-  const benefitLossCounts = summarizeSimulationBenefitEndings(sim);
+  // 다음 절벽에서 어떤 혜택이 얼마나 줄어드는지 (절벽 직전 → 직후)
+  const cause = (() => {
+    if (!info) return null;
+    const r = analyzeCliffCause(sim, info.cliff, Object.entries(NAMES).map(([id, name]) => ({ id, name })));
+    return { ...r, causes: r.causes.filter((c) => c.reduction >= 1000) }; // 천 원 미만의 점진적 감소는 숨김
+  })();
   // 손해 구간: 절벽부터 절벽 직전 수준을 되찾는 소득까지 (슬라이더 위에 표시)
   const zones = cliffs.map((c) => {
     const before = sim.disposable[c.index - 1];
@@ -591,20 +619,59 @@ export default function Simulator() {
 
   const mainData = {
     labels: sim.incomes,
-    datasets: [{ label: "한 달에 쓸 수 있는 돈", data: sim.disposable, borderColor: "#315B46", borderWidth: 2.5, fill: true,
-      backgroundColor: "rgba(49, 91, 70, 0.07)", stepped: false }],
+    datasets: [{
+      label: "한 달에 쓸 수 있는 돈",
+      data: sim.disposable,
+      borderColor: "#254C3D",
+      borderWidth: 2.5,
+      fill: true,
+      backgroundColor: "rgba(37, 76, 61, 0.08)",
+      stepped: false,
+    }],
   };
   const stackData = {
     labels: sim.incomes,
     datasets: [
-      { label: "근로소득", data: sim.incomes, stack: "s", fill: true, backgroundColor: "rgba(222,226,230,0.7)", borderWidth: 0, order: 3 },
-      ...ids.map((id) => ({ label: NAMES[id], data: sim.series[id], stack: "s", fill: true, backgroundColor: COLORS[id] + "d9", borderColor: COLORS[id], borderWidth: 0, order: 2 })),
-      { label: "근로소득 + 혜택", data: sim.disposable, stack: "total", fill: false, borderColor: "#29332D", borderWidth: 2, order: 1 },
+      {
+        label: "근로소득",
+        data: sim.incomes,
+        stack: "s",
+        fill: true,
+        backgroundColor: "rgba(217, 224, 226, 0.8)",
+        borderWidth: 0,
+        order: 3,
+      },
+      ...ids.map((id) => ({
+        label: NAMES[id],
+        data: sim.series[id],
+        stack: "s",
+        fill: true,
+        backgroundColor: COLORS[id] + "d9",
+        borderColor: COLORS[id],
+        borderWidth: 0,
+        order: 2,
+      })),
+      {
+        label: "근로소득 + 혜택",
+        data: sim.disposable,
+        stack: "total",
+        fill: false,
+        borderColor: "#26333C",
+        borderWidth: 2,
+        order: 1,
+      },
     ],
   };
   const regionData = {
     labels: sim.incomes,
-    datasets: regions.map((r, i) => ({ label: short(r.region), data: r.sim.disposable, borderColor: ["#315B46", "#C48A3C"][i], backgroundColor: ["#315B46", "#C48A3C"][i], borderWidth: 2.5, fill: false })),
+    datasets: regions.map((r, i) => ({
+      label: short(r.region),
+      data: r.sim.disposable,
+      borderColor: ["#254C3D", "#536B7D"][i],
+      backgroundColor: ["#254C3D", "#536B7D"][i],
+      borderWidth: 2.5,
+      fill: false,
+    })),
   };
 
   const summary = <>월 <em>{man(inc)} 원</em>을 벌면, 복지 혜택으로 매달 <em>{man(total)} 원</em>을 받아요.</>;
@@ -659,6 +726,19 @@ export default function Simulator() {
       <div className="prose">
         <p>지금보다 <b>{won(info.gap)}</b> 더 벌어 월 {won(info.cliff.income)}이 되면, 아래 혜택이 끊겨 쓸 수 있는 돈이 <b className="bad">{won(info.cliff.drop)}</b> 줄어요.</p>
         <div className="chips">{info.lost.map((n) => <span key={n} className="chip bad">{n}</span>)}</div>
+        {cause?.causes.length > 0 && <>
+          <h3 className="sub-title">무엇이 얼마나 줄어드나</h3>
+          <div className="cause-list">
+            {cause.causes.map((c) => (
+              <div className="cause-row" key={c.id}>
+                <span>{c.name}</span>
+                <div className="cause-bar"><i style={{ width: `${(c.reduction / cause.causes[0].reduction) * 100}%` }} /></div>
+                <b className="bad">−{man(c.reduction)}원</b>
+              </div>
+            ))}
+          </div>
+          <p className="hint">월 {won(info.cliff.income - STEP)} → {won(info.cliff.income)}으로 1만 원 더 벌 때 각 혜택이 줄어드는 금액이에요. 여기서 근로소득 1만 원과 새로 생기는 혜택을 빼면 실제로 줄어드는 돈({won(info.cliff.drop)})이 돼요.</p>
+        </>}
         <h3 className="sub-title">이 가구의 모든 절벽</h3>
         <CliffTable cliffs={cliffs} m={m} />
       </div>) : <p className="empty">이 소득 이후로는 절벽이 없어요.</p> },
@@ -756,7 +836,7 @@ export default function Simulator() {
                 <div className="kpi-label"><i className="mk red">2</i>다음 절벽</div>
                 {info ? <>
                   <div className="kpi-num">{man(info.cliff.income)}<small>원</small></div>
-                  <div className="kpi-foot"><span className="pill bad">↓ {man(info.cliff.drop)}원 손해</span><span>{info.lost[0] || "혜택 감소"}{info.lost.length > 1 ? ` 외 ${info.lost.length - 1}` : ""} 끊김</span></div>
+                  <div className="kpi-foot"><span className="pill bad">↓ {man(info.cliff.drop)}원 손해</span><span>{cause?.causes[0] ? `${cause.causes[0].name} −${man(cause.causes[0].reduction)}원${cause.causes.length > 1 ? ` 외 ${cause.causes.length - 1}` : ""}` : `${info.lost[0] || "혜택 감소"} 끊김`}</span></div>
                 </> : <>
                   <div className="kpi-num good">없음</div>
                   <div className="kpi-foot"><span className="pill good">더 벌수록 이득</span></div>
@@ -781,87 +861,6 @@ export default function Simulator() {
         </section>
 
         <div className="next">
-        <section className="card analysis-card">
-          <div className="card-head">
-            <div>
-              <h2>복지 절벽 데이터 분석</h2>
-              <p className="hint">
-                현재 입력한 가구의 소득 구간별 복지 혜택 손실 분석
-              </p>
-            </div>
-            <span className="pill">분석 결과</span>
-          </div>
-
-          <div className="analysis-grid">
-            <div className="analysis-stat">
-              <span>절벽 발생 횟수</span>
-              <strong>{cliffStats.count}회</strong>
-            </div>
-
-            <div className="analysis-stat">
-              <span>최대 손실 금액</span>
-              <strong className="bad">
-                {man(cliffStats.maxCliff?.drop || 0)}원
-              </strong>
-            </div>
-
-            <div className="analysis-stat">
-              <span>평균 손실 금액</span>
-              <strong>{man(cliffStats.avgDrop)}원</strong>
-            </div>
-
-            <div className="analysis-stat">
-              <span>절벽 손실액 합계</span>
-              <strong>{man(cliffStats.totalDrop)}원</strong>
-            </div>
-          </div>
-
-          {cliffStats.maxCliff && (
-            <div className="analysis-highlight">
-              <b>가장 큰 손실이 발생하는 소득 구간</b>
-              <p>
-                월 소득 <strong>{man(cliffStats.maxCliff.income)}원</strong>에서
-                한 달에 쓸 수 있는 돈이{" "}
-                <strong className="bad">
-                  {man(cliffStats.maxCliff.drop)}원 감소
-                </strong>
-                해요.
-              </p>
-            </div>
-          )}
-
-          <h3 className="sub-title">혜택별 상실 빈도 분석</h3>
-
-          {benefitLossCounts.length > 0 ? (
-            <div className="analysis-loss-list">
-              {benefitLossCounts.map((item) => (
-                <div className="analysis-loss" key={item.name}>
-                  <span>{item.name}</span>
-                  <div className="analysis-bar">
-                    <div
-                      className="analysis-bar-fill"
-                      style={{
-                        width: `${
-                          (item.frequency / benefitLossCounts[0].frequency) * 100
-                        }%`,
-                      }}
-                    />
-                  </div>
-                  <b>{item.frequency}회</b>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="empty">분석할 복지 혜택 손실이 없어요.</p>
-          )}
-
-          <p className="hint analysis-note">
-            분석 범위: 현재 가구 조건과 등록된 복지 규칙을 기반으로 한 시뮬레이션.
-            절벽 손실액 합계는 각 절벽에서 탐지된 손실액의 합이며,
-            실제 월별·연간 누적 손실액을 의미하지 않아요.
-            혜택별 상실 빈도는 동일 혜택이 여러 구간에서 끊기는 경우 중복 집계돼요.
-          </p>
-        </section>
           <section className="card path-card">
             <MoreButton label="넘는 방법" onClick={() => setDrawer("path")} />
             <h2><Icon name="route" />절벽을 손해 없이 넘는 방법</h2>
