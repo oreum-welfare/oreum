@@ -3,7 +3,8 @@
     "services": 16,
     "service_accuracy": 0.8125,
     "condition_recall": 0.95,
-    "condition_precision": 0.9354838709677419,
+    "condition_precision": 0.9090909090909091,
+    "unverified_conditions": 9,
     "judgeable_agreement": 0.9375,
     "evidence_grounding": 1.0,
     "amount_accuracy": 0.9375,
@@ -16,8 +17,10 @@
       "gold_required": 0,
       "correct": 0,
       "ai_conditions": 0,
+      "precision_base": 0,
       "precision_hits": 0,
       "extras": [],
+      "unverified": [],
       "evidence_total": 7,
       "evidence_grounded": 7,
       "judgeable_ok": true,
@@ -27,6 +30,7 @@
         0
       ],
       "amount_note": "가사지원·병원동행 서비스 (금액 없음). 핵심 조건 '돌봄이 필요한 자'는 담당자 판단 → 판정 불가. 소득 기준은 자부담 비율이지 자격이 아님",
+      "evidence_ok": true,
       "service_ok": true,
       "details": []
     },
@@ -36,8 +40,12 @@
       "gold_required": 1,
       "correct": 1,
       "ai_conditions": 2,
-      "precision_hits": 2,
+      "precision_base": 1,
+      "precision_hits": 1,
       "extras": [],
+      "unverified": [
+        "residence_region == 대구광역시 북구"
+      ],
       "evidence_total": 6,
       "evidence_grounded": 6,
       "judgeable_ok": true,
@@ -47,6 +55,7 @@
         0
       ],
       "amount_note": "활동지원서비스 (금액 없음). 4개 경로(긴급·탈시설·최중증 점수·구청장 인정) 모두 입력 항목 밖 → 판정 불가",
+      "evidence_ok": true,
       "service_ok": true,
       "details": [
         {
@@ -62,8 +71,15 @@
       "gold_required": 3,
       "correct": 3,
       "ai_conditions": 7,
-      "precision_hits": 7,
+      "precision_base": 3,
+      "precision_hits": 3,
       "extras": [],
+      "unverified": [
+        "child_count >= 3",
+        "recipient_status in 생계,의료,주거,교육",
+        "recipient_status == 차상위",
+        "income_recognized_pct_median <= 50"
+      ],
       "evidence_total": 7,
       "evidence_grounded": 7,
       "judgeable_ok": true,
@@ -73,6 +89,7 @@
         0
       ],
       "amount_note": "차량 렌트 현물 (금액 없음). 두 자녀는 수급·차상위, 세 자녀 이상은 소득 무관",
+      "evidence_ok": true,
       "service_ok": true,
       "details": [
         {
@@ -98,8 +115,10 @@
       "gold_required": 0,
       "correct": 0,
       "ai_conditions": 0,
+      "precision_base": 0,
       "precision_hits": 0,
       "extras": [],
+      "unverified": [],
       "evidence_total": 1,
       "evidence_grounded": 1,
       "judgeable_ok": true,
@@ -111,6 +130,7 @@
         8333
       ],
       "amount_note": "사망위로금 1인당 10만 원 1회. 핵심 조건(참전유공자 사망·유족)은 입력 밖",
+      "evidence_ok": true,
       "service_ok": true,
       "details": []
     },
@@ -120,8 +140,10 @@
       "gold_required": 0,
       "correct": 0,
       "ai_conditions": 0,
+      "precision_base": 0,
       "precision_hits": 0,
       "extras": [],
+      "unverified": [],
       "evidence_total": 1,
       "evidence_grounded": 1,
       "judgeable_ok": true,
@@ -132,6 +154,7 @@
         16667
       ],
       "amount_note": "1회 10만 원, 연 2회 (월 환산 16,667원). 국가유공자·유족은 입력 밖",
+      "evidence_ok": true,
       "service_ok": false,
       "details": []
     },
@@ -141,8 +164,10 @@
       "gold_required": 0,
       "correct": 0,
       "ai_conditions": 0,
+      "precision_base": 0,
       "precision_hits": 0,
       "extras": [],
+      "unverified": [],
       "evidence_total": 1,
       "evidence_grounded": 1,
       "judgeable_ok": true,
@@ -153,6 +178,7 @@
         150000
       ],
       "amount_note": "지원 대상이 개인이 아닌 이용업소 → 판정 불가. '어르신'에 나이 기준 없음",
+      "evidence_ok": true,
       "service_ok": true,
       "details": []
     },
@@ -162,8 +188,10 @@
       "gold_required": 4,
       "correct": 4,
       "ai_conditions": 4,
+      "precision_base": 4,
       "precision_hits": 4,
       "extras": [],
+      "unverified": [],
       "evidence_total": 14,
       "evidence_grounded": 14,
       "judgeable_ok": false,
@@ -173,6 +201,7 @@
         200000
       ],
       "amount_note": "월세 월 20만 원 최대 12회. 주택 소유·공공임대·공무원 등은 일부 제외 조건. '부모와 별도 거주'는 가구 세부 확인",
+      "evidence_ok": true,
       "service_ok": false,
       "details": [
         {
@@ -203,8 +232,10 @@
       "gold_required": 3,
       "correct": 3,
       "ai_conditions": 3,
+      "precision_base": 3,
       "precision_hits": 3,
       "extras": [],
+      "unverified": [],
       "evidence_total": 9,
       "evidence_grounded": 9,
       "judgeable_ok": true,
@@ -214,6 +245,7 @@
         0
       ],
       "amount_note": "대출이자 연 최대 150만 원 한도 (사람마다 다름 → 0). 혼인 7년 이내·전세대출은 입력 밖",
+      "evidence_ok": true,
       "service_ok": true,
       "details": [
         {
@@ -239,8 +271,12 @@
       "gold_required": 0,
       "correct": 0,
       "ai_conditions": 1,
-      "precision_hits": 1,
+      "precision_base": 0,
+      "precision_hits": 0,
       "extras": [],
+      "unverified": [
+        "residence_months >= 6"
+      ],
       "evidence_total": 2,
       "evidence_grounded": 2,
       "judgeable_ok": true,
@@ -253,6 +289,7 @@
         16667
       ],
       "amount_note": "전입 시 5만 + 6개월 후 15만 = 20만 원 (1회). 핵심 조건 '다른 시군구에서 1년 이상 살다 전입'은 입력 밖",
+      "evidence_ok": true,
       "service_ok": true,
       "details": []
     },
@@ -262,8 +299,10 @@
       "gold_required": 2,
       "correct": 2,
       "ai_conditions": 2,
+      "precision_base": 2,
       "precision_hits": 2,
       "extras": [],
+      "unverified": [],
       "evidence_total": 5,
       "evidence_grounded": 5,
       "judgeable_ok": true,
@@ -276,6 +315,7 @@
         83333
       ],
       "amount_note": "300만 원을 3년간 100만 원씩 3회. 혼인신고 시점은 입력 밖. 원문 지원대상(2년)과 선정기준(7년)이 서로 다름",
+      "evidence_ok": true,
       "service_ok": true,
       "details": [
         {
@@ -296,8 +336,14 @@
       "gold_required": 2,
       "correct": 2,
       "ai_conditions": 6,
-      "precision_hits": 6,
+      "precision_base": 3,
+      "precision_hits": 3,
       "extras": [],
+      "unverified": [
+        "residence_region == 영천시",
+        "recipient_status in 생계,의료,주거,교육",
+        "basic_pension_recipient == true"
+      ],
       "evidence_total": 9,
       "evidence_grounded": 9,
       "judgeable_ok": true,
@@ -307,6 +353,7 @@
         0
       ],
       "amount_note": "보청기 구입비 현금 (금액 없음). 이비인후과 난청 진단이 핵심 조건 → 판정 불가",
+      "evidence_ok": true,
       "service_ok": true,
       "details": [
         {
@@ -327,11 +374,13 @@
       "gold_required": 2,
       "correct": 1,
       "ai_conditions": 3,
+      "precision_base": 3,
       "precision_hits": 1,
       "extras": [
         "age >= 16",
         "age <= 18"
       ],
+      "unverified": [],
       "evidence_total": 5,
       "evidence_grounded": 5,
       "judgeable_ok": true,
@@ -341,6 +390,7 @@
         14000
       ],
       "amount_note": "월 14,000원 바우처. '여성'은 입력 항목에 없는 핵심 조건 → 판정 불가 (애매한 문항: 나이로는 판정 가능)",
+      "evidence_ok": true,
       "service_ok": false,
       "details": [
         {
@@ -361,8 +411,10 @@
       "gold_required": 1,
       "correct": 1,
       "ai_conditions": 1,
+      "precision_base": 1,
       "precision_hits": 1,
       "extras": [],
+      "unverified": [],
       "evidence_total": 3,
       "evidence_grounded": 3,
       "judgeable_ok": true,
@@ -374,6 +426,7 @@
         25000
       ],
       "amount_note": "1인당 30만 원 1회. 핵심 조건 '중·고 신입생(입학)'은 입력 밖",
+      "evidence_ok": true,
       "service_ok": true,
       "details": [
         {
@@ -389,8 +442,10 @@
       "gold_required": 2,
       "correct": 2,
       "ai_conditions": 2,
+      "precision_base": 2,
       "precision_hits": 2,
       "extras": [],
+      "unverified": [],
       "evidence_total": 4,
       "evidence_grounded": 4,
       "judgeable_ok": true,
@@ -403,6 +458,7 @@
         300000
       ],
       "amount_note": "출생 순위별 월 10/20/25/30만 원 + 출생 시 100만 원",
+      "evidence_ok": true,
       "service_ok": true,
       "details": [
         {
@@ -423,8 +479,10 @@
       "gold_required": 0,
       "correct": 0,
       "ai_conditions": 0,
+      "precision_base": 0,
       "precision_hits": 0,
       "extras": [],
+      "unverified": [],
       "evidence_total": 3,
       "evidence_grounded": 3,
       "judgeable_ok": true,
@@ -434,6 +492,7 @@
         150000
       ],
       "amount_note": "월 15만 원. 국가유공자 본인·유족은 입력 밖",
+      "evidence_ok": true,
       "service_ok": true,
       "details": []
     },
@@ -443,8 +502,10 @@
       "gold_required": 0,
       "correct": 0,
       "ai_conditions": 0,
+      "precision_base": 0,
       "precision_hits": 0,
       "extras": [],
+      "unverified": [],
       "evidence_total": 2,
       "evidence_grounded": 2,
       "judgeable_ok": true,
@@ -454,6 +515,7 @@
         0
       ],
       "amount_note": "무연고 사망자 장례비 (금액 없음, 신청자는 장례를 치른 법인·개인)",
+      "evidence_ok": true,
       "service_ok": true,
       "details": []
     }

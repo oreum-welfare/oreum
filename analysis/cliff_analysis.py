@@ -21,6 +21,7 @@ from rules import DATA, REGIONS, Household, find_cliffs, median_income, simulate
 
 STEP = 10_000
 EXTRA = 100_000
+RANGE = 2  # 분석 범위: 기준중위소득의 200% (Analysis.jsx와 같음)
 OUT = Path(__file__).resolve().parent / "output"
 
 
@@ -30,7 +31,7 @@ def run_all() -> list[dict]:
         for region in REGIONS:
             hh = Household(region=region, **t["hh"])
             m = median_income(hh.size)
-            max_income = round(m / STEP) * STEP
+            max_income = round(m * RANGE / STEP) * STEP
             df, elig = simulate(hh, max_income, STEP, include_inkind=True)
             cliffs = find_cliffs(df, elig)
             for c in cliffs:
@@ -84,7 +85,7 @@ def report(cases: list[dict]) -> None:
     print(f"가장 큰 절벽: {top['type']} ({top['region']}) - 월 {mc['income']:,}원(중위 {mc['pct']:.0f}%)에서 "
           f"{mc['drop']:,.0f}원 손해 / 사라지는 혜택: {', '.join(mc['lost'])}")
     ends = [e for c in cases for e in c["endings"]]
-    best = max(((frm, sum(1 for e in ends if frm < e["pct"] <= frm + 10)) for frm in range(0, 91)), key=lambda x: x[1])
+    best = max(((frm, sum(1 for e in ends if frm < e["pct"] <= frm + 10)) for frm in range(0, RANGE * 100 - 9)), key=lambda x: x[1])
     print(f"혜택이 끊기는 지점 {len(ends)}개 중 {best[1] / len(ends):.0%}({best[1]}개)가 근로소득 기준 중위 {best[0]}~{best[0] + 10}% 구간")
     print(f"10만 원을 더 벌어도 손해인 구간이 있는 경우: {sum(1 for c in cases if c['loss_zones'])}/{len(cases)}")
     for r in REGIONS:

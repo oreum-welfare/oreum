@@ -7,6 +7,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const { createEngine } = await import(pathToFileURL(join(root, "oreum-app/src/lib/engine.js")));
+const { analyzeCurrentLoss, recommendPrograms } = await import(pathToFileURL(join(root, "oreum-app/src/lib/guide.js")));
 const data = JSON.parse(readFileSync(join(root, "data/rules.json"), "utf8"));
 const eng = createEngine(data);
 const P = data.params;
@@ -52,6 +53,49 @@ const check = (name, ok, detail) => {
     const total = eng.evaluate(h, 0).reduce((s, b) => s + b.monthly, 0);
     check(`자녀 수 ${JSON.stringify(v)} 입력`, Number.isFinite(m) && Number.isFinite(total), `중위소득 ${m}, 혜택 합계 ${Math.round(total)}`);
   }
+}
+
+// 5. 출생 순위 0 등 잘못된 값도 오류 없이 계산 (1~4로 정리)
+{
+  let ok = true, gs = 0;
+  try { gs = amount(hh({ infants: 1, newborn: true, birthOrder: 0 }), 0, "gs_birth"); } catch { ok = false; }
+  check("출생 순위 0 입력 시 오류 없음 (첫째로 계산)", ok && gs === amount(hh({ infants: 1, newborn: true, birthOrder: 1 }), 0, "gs_birth"), `${gs}`);
+}
+
+// 6. 셋째 이상 자녀(7~18세)는 자녀 3명 이상 + 초·중·고 자녀가 있을 때만
+{
+  const noKids = eng.evaluate(hh({ thirdChild7to18: true }), 0).some((b) => b.id === "gs_multichild");
+  const three = eng.evaluate(hh({ thirdChild7to18: true, elem: 1, middle: 1, high: 1 }), 0).some((b) => b.id === "gs_multichild");
+  check("자녀 없이 '셋째 이상' 체크 시 다자녀 지원 없음, 3자녀면 있음", !noKids && three);
+}
+
+// 7. 7인 이상 가구: 가구원 수가 6으로 고정되지 않고, 기준중위소득이 6인보다 큼
+{
+  const seven = hh({ spouse: true, elem: 3, middle: 1, high: 1 });
+  const six = hh({ spouse: true, elem: 2, middle: 1, high: 1 });
+  const s7 = eng.derive(seven).size, m7 = eng.medianIncome(s7), m6 = eng.medianIncome(eng.derive(six).size), m5 = eng.medianIncome(5);
+  check("7인 가구 가구원 수 7, 중위소득 = 6인 + (6인 − 5인)", s7 === 7 && Math.abs(m7 - (m6 + (m6 - m5))) <= 2, `7인 ${m7}, 6인 ${m6}`);
+  check("7인 가구 계산에 NaN 없음", eng.evaluate(seven, 0).every((b) => Number.isFinite(b.monthly)));
+}
+
+// 8. 지금 손해 구간: 절벽을 막 지난 소득이면 '지금 손해 구간'으로 판정
+{
+  const sp = hh({ age: 38, singleParent: true, elem: 1, middle: 1 });
+  const sim = eng.simulate(sp, 6000000);
+  const cl = eng.findCliffs(sim);
+  const just = analyzeCurrentLoss(sim, cl, cl[0].income);
+  const before = analyzeCurrentLoss(sim, cl, cl[0].income - 10000);
+  check("절벽 직후는 '지금 손해 구간', 절벽 직전은 아님", Boolean(just) && just.shortfall > 0 && !before, just ? `${Math.round(just.shortfall)}원 적음, 회복 ${just.recover}` : "");
+}
+
+// 9. 희망저축계좌Ⅱ는 근로소득이 있을 때만 추천
+{
+  let zeroHope2 = false;
+  for (const p of [{ age: 45, spouse: true, elem: 2 }, { age: 40, financialAsset: 60000000 }, { age: 30, housingAsset: 100000000 }]) {
+    const h2 = hh(p);
+    if (recommendPrograms(h2, eng.evaluate(h2, 0), data.params, 0).some((x) => x.key === "hope2")) zeroHope2 = true;
+  }
+  check("근로소득 0원이면 희망저축계좌Ⅱ 추천 없음", !zeroHope2);
 }
 
 if (bad) {

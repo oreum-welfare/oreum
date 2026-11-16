@@ -55,15 +55,21 @@ REGIONS = DATA["regions"]
 ASSETS = _P.get("assets")
 
 
+def line_at(table: dict, size: int) -> float:
+    """7인 이상 가구: 1인이 늘 때마다 '6인 기준 − 5인 기준' 차이를 6인 기준에 더한다 (engine.js lineAt과 같음)."""
+    s = max(1, size)
+    return table[s] if s <= 6 else table[6] + (table[6] - table[5]) * (s - 6)
+
+
 def median_income(size: int) -> int:
     """기준중위소득 100% (월). 생계급여 32% 기준표에서 역산 (주거급여 48% 표와 일치 확인)."""
-    s = min(max(size, 1), 6)
-    return round(SAENG_LINE[s] / 0.32)
+    return round(line_at(SAENG_LINE, size) / 0.32)
 
 
 def jugeo_line(size: int) -> int:
-    s = min(max(size, 1), 6)
-    return JUGEO_LINE.get(s, round(median_income(s) * 0.48))
+    if size <= 6 and max(1, size) in JUGEO_LINE:
+        return JUGEO_LINE[max(1, size)]
+    return round(median_income(size) * 0.48)
 
 
 # ---------------------------------------------------------------------------
@@ -101,7 +107,7 @@ class Household:
 
     @property
     def size(self) -> int:
-        return min(1 + int(self.spouse) + self.children, 6)
+        return 1 + int(self.spouse) + self.children  # 7인 이상도 그대로 (기준선은 line_at으로 늘림)
 
     @property
     def is_disabled(self) -> bool:
@@ -186,8 +192,10 @@ def normalize(hh: Household) -> Household:
             return max(0, int(float(v or 0) // 1))
         except (TypeError, ValueError):
             return 0
-    return replace(hh, age=to_int(hh.age), infants=to_int(hh.infants), elem=to_int(hh.elem),
-                   middle=to_int(hh.middle), high=to_int(hh.high),
+    kids = [to_int(hh.infants), to_int(hh.elem), to_int(hh.middle), to_int(hh.high)]
+    return replace(hh, age=to_int(hh.age), infants=kids[0], elem=kids[1], middle=kids[2], high=kids[3],
+                   birth_order=min(4, max(1, to_int(hh.birth_order) or 1)),
+                   third_child_7to18=bool(hh.third_child_7to18 and sum(kids) >= 3 and sum(kids[1:]) >= 1),
                    single_parent=bool(hh.single_parent and not hh.spouse),
                    spouse_65=bool(hh.spouse and hh.spouse_65), dual_earner=bool(hh.spouse and hh.dual_earner))
 
@@ -232,7 +240,7 @@ def evaluate(hh: Household, earned: float) -> list[Benefit]:
     eval_earned = max(0.0, earned - flat)
     ri = eval_earned * (1 - EARNED_DEDUCTION_RATE) + asset_basic + bp + dp_basic
 
-    saeng_line = SAENG_LINE[size]
+    saeng_line = line_at(SAENG_LINE, size)
     saeng = max(0.0, saeng_line - ri)
     if saeng > 0:
         out.append(Benefit("saeng", "생계급여", "중앙", "cash", saeng,
@@ -245,7 +253,7 @@ def evaluate(hh: Household, earned: float) -> list[Benefit]:
 
     jugeo_elig = ri <= jugeo_line(size)
     if jugeo_elig:
-        rent = RENT[region["rent_grade"]][size]
+        rent = RENT[region["rent_grade"]][min(size, 6)]  # 7인 이상은 6인 기준임대료 적용 (추정)
         deduct = 0.0 if ri <= saeng_line else JUGEO_SELF_SHARE * (ri - saeng_line)
         jugeo = max(0.0, rent - deduct)
         out.append(Benefit("jugeo", "주거급여", "중앙", "cash", jugeo,
@@ -334,7 +342,7 @@ def evaluate(hh: Household, earned: float) -> list[Benefit]:
 def simulate(hh: Household, max_income: int, step: int = 10_000,
              include_inkind: bool = True) -> tuple[pd.DataFrame, list[set[str]]]:
     rows, elig = [], []
-    for inc in range(0, max_income + step, step):
+    for inc in range(0, max_income + 1, step):  # 최대 소득을 넘지 않음 (engine.js와 같음)
         bs = evaluate(hh, inc)
         row = {"income": inc}
         for b in bs:
