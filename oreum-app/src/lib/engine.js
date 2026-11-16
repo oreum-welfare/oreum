@@ -26,6 +26,10 @@ export function createEngine(data) {
       ...hh,
       age: int(hh.age), ...kids,
       birthOrder: Math.min(4, Math.max(1, int(hh.birthOrder) || 1)),
+      newborn: Boolean(hh.newborn && kids.infants >= 1), // 영유아가 0명이면 올해 출산 아님
+      residenceMonths: int(hh.residenceMonths),
+      housingAsset: Math.max(0, Number(hh.housingAsset) || 0), financialAsset: Math.max(0, Number(hh.financialAsset) || 0),
+      debt: Math.max(0, Number(hh.debt) || 0), // 음수 재산·부채로 소득환산액이 마이너스가 되지 않게
       thirdChild7to18: Boolean(hh.thirdChild7to18 && children >= 3 && kids.elem + kids.middle + kids.high >= 1),
       singleParent: Boolean(hh.singleParent && !hh.spouse),
       spouse65: Boolean(hh.spouse && hh.spouse65), dualEarner: Boolean(hh.spouse && hh.dualEarner),
@@ -137,12 +141,16 @@ export function createEngine(data) {
     const medical = ri <= 0.4 * m;
     if (medical) add("medical", "의료급여", "중앙", "inkind", P.medical_value_per_person * size, "소득인정액 ≤ 중위 40%, 건강보험 전환 시 본인부담 추정 1인당 월 46,450원");
 
-    const jugeoElig = ri <= jugeoLine(size);
-    if (jugeoElig) {
+    // 주거급여: 기준선 이하여도 자기부담분이 기준임대료보다 크면 지급액이 0원 → 수급자로 보지 않는다
+    let jugeoElig = false;
+    if (ri <= jugeoLine(size)) {
       const rent = P.rent[region.rent_grade][Math.min(size, 6)]; // 7인 이상은 6인 기준임대료 적용 (추정)
       const deduct = ri <= sLine ? 0 : P.jugeo_self_share * (ri - sLine);
-      add("jugeo", "주거급여", "중앙", "cash", Math.max(0, rent - deduct),
-        `소득인정액 ≤ 중위 48%, ${region.rent_grade} 기준임대료 (임차 가정)`);
+      const jugeo = Math.max(0, rent - deduct);
+      if (jugeo > 0) {
+        jugeoElig = true;
+        add("jugeo", "주거급여", "중앙", "cash", jugeo, `소득인정액 ≤ 중위 48%, ${region.rent_grade} 기준임대료 (임차 가정)`);
+      }
     }
 
     const eduElig = ri <= 0.5 * m && d.schoolKids > 0;
@@ -180,6 +188,11 @@ export function createEngine(data) {
       const extra = recipient ? DP.additional.recipient : nearPoor ? DP.additional.near_poor : DP.additional.above;
       add("dis_pension", "장애인연금", "중앙", "cash", dpBasic + extra,
         `18~64세 중증장애인, 기초급여 ${dpBasic.toLocaleString("ko-KR")}원 + 부가급여 ${extra.toLocaleString("ko-KR")}원`);
+    } else if (DP && hh.severeDisabled && hh.age > DP.age_max && bp > 0) {
+      // 65세 이상: 기초급여 대신 기초연금을 받고, 부가급여만 계속 받는다 (금액은 18~64세 표를 적용, 추정)
+      const extra = recipient ? DP.additional.recipient : nearPoor ? DP.additional.near_poor : DP.additional.above;
+      add("dis_pension", "장애인연금(부가급여)", "중앙", "cash", extra,
+        `65세 이상 중증장애인 + 기초연금 수급, 부가급여 ${extra.toLocaleString("ko-KR")}원 (65세 이상 금액은 추정)`);
     }
 
     const typ = eitcType(hh, d);
@@ -207,7 +220,12 @@ export function createEngine(data) {
           `월 ${amt.toLocaleString("ko-KR")}원 × ${months}개월 + 출산축하금 ${P.gs_birth_lump.toLocaleString("ko-KR")}원(일시)`);
       }
       if (saeng > 0 || medical || jugeoElig) add("gs_loan", "저소득주민생활안정자금(융자)", "지자체", "access", 0, "생계·의료·주거 수급자, 최대 1,200만 원 융자");
-      if (hh.thirdChild7to18 && hh.residenceMonths >= 36) add("gs_multichild", "다자녀가정 지원", "지자체", "cash", P.gs_multichild_annual["7-15"] / 12, "셋째 이상 + 3년 이상 거주, 연 50만 원(7~15세) 기준 월 환산 (16~18세는 연 100만 원)");
+      if (hh.thirdChild7to18 && hh.residenceMonths >= 36) {
+        // 셋째(막내 쪽)의 나이를 알 수 없어, 초·중학생이 있으면 7~15세, 고등학생만 있으면 16~18세 금액으로 본다
+        const band = hh.elem + hh.middle > 0 ? "7-15" : "16-18";
+        add("gs_multichild", "다자녀가정 지원", "지자체", "cash", P.gs_multichild_annual[band] / 12,
+          `셋째 이상 + 3년 이상 거주, 연 ${(P.gs_multichild_annual[band] / 10000).toLocaleString("ko-KR")}만 원(${band === "7-15" ? "7~15세" : "16~18세"}) 월 환산`);
+      }
     } else if (hh.region === "대구광역시 북구") {
       const qualifying = d.seniors > 0 || d.disabled || hh.singleParent;
       const premium = earned * P.bukgu_nhis_rate;

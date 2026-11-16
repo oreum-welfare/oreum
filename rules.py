@@ -195,6 +195,10 @@ def normalize(hh: Household) -> Household:
     kids = [to_int(hh.infants), to_int(hh.elem), to_int(hh.middle), to_int(hh.high)]
     return replace(hh, age=to_int(hh.age), infants=kids[0], elem=kids[1], middle=kids[2], high=kids[3],
                    birth_order=min(4, max(1, to_int(hh.birth_order) or 1)),
+                   newborn=bool(hh.newborn and kids[0] >= 1),
+                   residence_months=to_int(hh.residence_months),
+                   housing_asset=max(0.0, float(hh.housing_asset or 0)), financial_asset=max(0.0, float(hh.financial_asset or 0)),
+                   debt=max(0.0, float(hh.debt or 0)),
                    third_child_7to18=bool(hh.third_child_7to18 and sum(kids) >= 3 and sum(kids[1:]) >= 1),
                    single_parent=bool(hh.single_parent and not hh.spouse),
                    spouse_65=bool(hh.spouse and hh.spouse_65), dual_earner=bool(hh.spouse and hh.dual_earner))
@@ -251,13 +255,16 @@ def evaluate(hh: Household, earned: float) -> list[Benefit]:
         out.append(Benefit("medical", "의료급여", "중앙", "inkind", MEDICAL_VALUE_PER_PERSON * size,
                            "소득인정액 ≤ 중위 40%, 건강보험 전환 시 본인부담 추정 1인당 월 46,450원"))
 
-    jugeo_elig = ri <= jugeo_line(size)
-    if jugeo_elig:
+    # 주거급여: 기준선 이하여도 지급액이 0원이면 수급자로 보지 않는다 (engine.js와 같음)
+    jugeo_elig = False
+    if ri <= jugeo_line(size):
         rent = RENT[region["rent_grade"]][min(size, 6)]  # 7인 이상은 6인 기준임대료 적용 (추정)
         deduct = 0.0 if ri <= saeng_line else JUGEO_SELF_SHARE * (ri - saeng_line)
         jugeo = max(0.0, rent - deduct)
-        out.append(Benefit("jugeo", "주거급여", "중앙", "cash", jugeo,
-                           f"소득인정액 ≤ 중위 48%, {region['rent_grade']} 기준임대료 (임차 가정)"))
+        if jugeo > 0:
+            jugeo_elig = True
+            out.append(Benefit("jugeo", "주거급여", "중앙", "cash", jugeo,
+                               f"소득인정액 ≤ 중위 48%, {region['rent_grade']} 기준임대료 (임차 가정)"))
 
     edu_elig = ri <= 0.50 * m and hh.school_kids > 0
     if edu_elig:
@@ -297,6 +304,12 @@ def evaluate(hh: Household, earned: float) -> list[Benefit]:
         extra = add["recipient"] if recipient else add["near_poor"] if near_poor else add["above"]
         out.append(Benefit("dis_pension", "장애인연금", "중앙", "cash", dp_basic + extra,
                            f"18~64세 중증장애인, 기초급여 {dp_basic:,.0f}원 + 부가급여 {extra:,}원"))
+    elif DIS_PENSION and hh.severe_disabled and hh.age > DIS_PENSION["age_max"] and bp > 0:
+        # 65세 이상: 기초급여 대신 기초연금, 부가급여만 계속 (금액은 18~64세 표 적용, 추정)
+        add = DIS_PENSION["additional"]
+        extra = add["recipient"] if recipient else add["near_poor"] if near_poor else add["above"]
+        out.append(Benefit("dis_pension", "장애인연금(부가급여)", "중앙", "cash", extra,
+                           f"65세 이상 중증장애인 + 기초연금 수급, 부가급여 {extra:,}원 (65세 이상 금액은 추정)"))
 
     typ = _eitc_type(hh)
     annual = earned * 12
@@ -328,8 +341,11 @@ def evaluate(hh: Household, earned: float) -> list[Benefit]:
             out.append(Benefit("gs_loan", "저소득주민생활안정자금(융자)", "지자체", "access", 0,
                                "생계·의료·주거 수급자, 최대 1,200만 원 융자"))
         if hh.third_child_7to18 and hh.residence_months >= 36:
-            out.append(Benefit("gs_multichild", "다자녀가정 지원", "지자체", "cash", GS_MULTICHILD_ANNUAL["7-15"] / 12,
-                               "셋째 이상 + 3년 이상 거주, 연 50만 원(7~15세) 기준 월 환산 (16~18세는 연 100만 원)"))
+            # 셋째의 나이를 알 수 없어, 초·중학생이 있으면 7~15세, 고등학생만 있으면 16~18세 금액 (engine.js와 같음)
+            band = "7-15" if hh.elem + hh.middle > 0 else "16-18"
+            amt = GS_MULTICHILD_ANNUAL[band]
+            out.append(Benefit("gs_multichild", "다자녀가정 지원", "지자체", "cash", amt / 12,
+                               f"셋째 이상 + 3년 이상 거주, 연 {amt // 10000:,}만 원({'7~15세' if band == '7-15' else '16~18세'}) 월 환산"))
     elif hh.region == "대구광역시 북구":
         qualifying = hh.seniors > 0 or hh.is_disabled or hh.single_parent
         premium = earned * BUKGU_NHIS_RATE

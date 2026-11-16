@@ -98,6 +98,40 @@ const check = (name, ok, detail) => {
   check("근로소득 0원이면 희망저축계좌Ⅱ 추천 없음", !zeroHope2);
 }
 
+// 10. 주거급여가 0원으로 계산되면 목록에 없고 수급자로도 보지 않음 (대가족 경계 소득까지 전 구간 확인)
+{
+  let zero = 0;
+  for (const p of [{ spouse: true, elem: 4, middle: 1, high: 1 }, { spouse: true, elem: 5, middle: 2, high: 1 }, {}]) {
+    const h2 = hh(p);
+    const sim = eng.simulate(h2, Math.round(eng.medianIncome(eng.derive(h2).size) / 10000) * 10000);
+    for (const inc of sim.incomes) if (eng.evaluate(h2, inc).some((b) => b.id === "jugeo" && b.monthly <= 0)) zero++;
+  }
+  check("주거급여 0원 항목이 나오지 않음", zero === 0, `${zero}건`);
+}
+
+// 11. 경산 다자녀: 고등학생만 있으면 16~18세 금액(연 100만 원), 초·중학생이 있으면 7~15세(연 50만 원)
+{
+  const highOnly = amount(hh({ thirdChild7to18: true, high: 3 }), 0, "gs_multichild");
+  const mixed = amount(hh({ thirdChild7to18: true, elem: 1, middle: 1, high: 1 }), 0, "gs_multichild");
+  check("다자녀 지원 연령대별 금액", Math.round(highOnly * 12) === P.gs_multichild_annual["16-18"] && Math.round(mixed * 12) === P.gs_multichild_annual["7-15"], `고등만 ${Math.round(highOnly)}원/월, 혼합 ${Math.round(mixed)}원/월`);
+}
+
+// 12. 65세 이상 중증장애인 + 기초연금 수급: 장애인연금 부가급여 계속
+{
+  const elder = amount(hh({ age: 70, severeDisabled: true }), 0, "dis_pension");
+  const elderMild = amount(hh({ age: 70, disabled: true }), 0, "dis_pension");
+  check("65세 이상 중증장애인은 부가급여, 경증은 없음", elder > 0 && elderMild === 0, `중증 ${elder}원, 경증 ${elderMild}원`);
+}
+
+// 13. 음수 재산·부채, 영유아 0명인데 '올해 출산'은 정리
+{
+  const neg = eng.evaluate(hh({ housingAsset: -50000000, financialAsset: -1, debt: -30000000 }), 0).reduce((s2, b) => s2 + b.monthly, 0);
+  const zero = eng.evaluate(hh({}), 0).reduce((s2, b) => s2 + b.monthly, 0);
+  check("음수 재산·부채는 0원으로 계산", Math.abs(neg - zero) < 1, `${Math.round(neg)} vs ${Math.round(zero)}`);
+  const birthNoKid = eng.evaluate(hh({ newborn: true, infants: 0 }), 0).some((b) => b.id === "gs_birth");
+  check("영유아 0명이면 출산장려금 없음", !birthNoKid);
+}
+
 if (bad) {
   console.error(`${bad}개 검사 실패`);
   process.exit(1);
