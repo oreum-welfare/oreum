@@ -37,7 +37,7 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
             {curLoss.recover != null
               ? <p className="recover">{manwon(curLoss.recover)} 원부터 다시 늘어요</p>
               : <p className="note">계산 범위 안에서는 회복되지 않아요</p>}
-            <p className="reassure">일을 줄이라는 뜻이 아니에요 · <button type="button" className="link-btn" onClick={() => setSheet("path")}>넘는 방법 보기</button></p>
+            <p className="reassure"><button type="button" className="link-btn" onClick={() => setSheet("path")}>줄어드는 동안 도움이 되는 제도 보기 ›</button></p>
           </>
         ) : cliff ? (
           <>
@@ -48,7 +48,7 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
             {cliff.recover != null
               ? <p className="recover">{manwon(cliff.recover)} 원부터 다시 {cliff.recoverBetter ? "늘어요" : "회복돼요"}</p>
               : <p className="note">계산 범위 안에서는 다시 회복되지 않아요</p>}
-            <p className="reassure">일을 줄이라는 뜻이 아니에요 · <button type="button" className="link-btn" onClick={() => setSheet("path")}>넘는 방법 보기</button></p>
+            <p className="reassure"><button type="button" className="link-btn" onClick={() => setSheet("path")}>줄어드는 동안 도움이 되는 제도 보기 ›</button></p>
           </>
         ) : (
           <div className="alert calm">
@@ -82,7 +82,7 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
         <nav className="rows" aria-label="자세히 보기">
           <button type="button" className="row" onClick={() => setSheet("benefits")}><span>받는 혜택 {benefits.length}가지</span><span className="chev">월 {manwon(total)} 원</span></button>
           {cliff && <button type="button" className="row" onClick={() => setSheet("cliff")}><span>왜 줄어드나요?</span><span className="chev">{cliff.lost[0]}</span></button>}
-          <button type="button" className="row" onClick={() => setSheet("path")}><span>생활비 줄지 않게 넘는 방법</span><span className="chev">{pathCount(r.programs, r.gains)}가지</span></button>
+          <button type="button" className="row" onClick={() => setSheet("path")}><span>줄어드는 구간 넘는 방법</span><span className="chev">{pathCount(r.programs, r.gains)}가지</span></button>
           <button type="button" className="row" onClick={() => setSheet("region")}><span>다른 지역이라면?</span><span className="chev" /></button>
           <button type="button" className="row" onClick={() => setSheet("basis")}><span>계산 기준</span><span className="chev" /></button>
         </nav>
@@ -234,7 +234,7 @@ function PathSheet({ programs, cliff, curLoss, gains, close }) {
     </div>
   );
   return (
-    <Sheet title="생활비 줄지 않게 넘는 방법" sub="이 가구의 소득으로 계산했어요" onClose={close}>
+    <Sheet title="줄어드는 구간 넘는 방법" sub="이 가구의 소득으로 계산했어요" onClose={close}>
       <p className="group-title" style={{ marginTop: 4 }}>1. 이 가구의 소득 길</p>
       <ol className="path">
         {curLoss ? <>
