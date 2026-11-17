@@ -15,6 +15,7 @@ export default function UserApp() {
   const engine = useMemo(() => (data ? createEngine(data) : null), [data]);
   const [params, setParams] = useSearchParams();
   const [editing, setEditing] = useState(false); // false 또는 수정을 시작할 질문 번호
+  const [home, setHome] = useState(0); // 로고를 누를 때마다 올려 질문 화면을 시작 화면부터 다시 그린다
   const started = params.has("r");
   const st = useMemo(() => decodeState(params, DEFAULT_HH), [params]);
   const save = (next, push = false) => setParams(encodeState({ ...st, ...next }, DEFAULT_HH), { replace: !push });
@@ -39,17 +40,18 @@ export default function UserApp() {
   const finish = (hh, income) => { setEditing(false); save({ hh, income, compare: null, includeInkind: true, preset: null }, true); };
   const preset = (p) => save({ hh: { ...DEFAULT_HH, ...p.hh }, income: p.income, compare: null, includeInkind: true, preset: p.key }, true);
   const restart = () => { setEditing(false); setParams(new URLSearchParams()); };
+  const goHome = (e) => { e.preventDefault(); if (started) restart(); else setEditing(false); setHome((n) => n + 1); window.scrollTo(0, 0); };
 
   const showQuestions = !started || editing;
   return (
     <>
       <header className="topbar"><div className="col wide">
-        <Link to="/" className="wordmark" onClick={(e) => { if (!started) e.preventDefault(); else { e.preventDefault(); restart(); } }} aria-label="오름 처음 화면"><Logo height={26} /></Link>
+        <Link to="/" className="wordmark" onClick={goHome} aria-label="오름 처음 화면"><Logo height={26} /></Link>
         {started && !editing && <button type="button" className="top-action" onClick={() => setEditing(1)}>수정</button>}
       </div></header>
       <main>
         {showQuestions ? (
-          <Questions key={editing ? `edit-${editing}` : "new"} regions={Object.keys(data.regions)}
+          <Questions key={editing ? `edit-${editing}` : `new-${home}`} regions={Object.keys(data.regions)}
             initial={started ? st.hh : { ...DEFAULT_HH, age: 35 }} initialIncome={started ? st.income : 2000000}
             editing={Boolean(editing)} startStep={editing || 1} example={example} onFinish={finish} onPreset={preset} onCancel={() => setEditing(false)} />
         ) : (
