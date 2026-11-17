@@ -191,6 +191,27 @@ a { color: inherit; }
 @keyframes up { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 
+/* 시작 화면 등장 애니메이션 (--d: 늦게 시작하는 시간) */
+.user .intro { display: inline-block; animation: intro-up 700ms cubic-bezier(.2,.8,.2,1) both; animation-delay: var(--d, 0ms); }
+.user p.intro, .user div.intro { display: block; }
+.user .hero h1 em { background: linear-gradient(transparent 62%, rgba(75,164,104,.22) 62%) no-repeat 0 0 / 0% 100%; animation: intro-mark 700ms ease-out 900ms forwards; }
+.user .cliff-line { display: block; width: 100%; height: auto; margin: -4px 0 12px; overflow: visible; }
+.user .cl-base { stroke: var(--surface-2); stroke-width: 2; fill: none; }
+.user .cl-path { stroke: var(--brand); stroke-width: 4; fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: intro-draw 1100ms ease-in-out 700ms forwards; }
+.user .cl-dot { fill: #e5503c; transform-origin: 164px 64px; transform: scale(0); animation: intro-pop 360ms cubic-bezier(.3,1.6,.5,1) 1350ms forwards; }
+.user .cl-ring { fill: none; stroke: #e5503c; stroke-width: 2; transform-origin: 164px 64px; opacity: 0; animation: intro-ring 1600ms ease-out 1500ms 2; }
+@keyframes intro-up { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes intro-mark { to { background-size: 100% 100%; } }
+@keyframes intro-draw { to { stroke-dashoffset: 0; } }
+@keyframes intro-pop { to { transform: scale(1); } }
+@keyframes intro-ring { 0% { opacity: .7; transform: scale(1); } 100% { opacity: 0; transform: scale(3.2); } }
+@media (prefers-reduced-motion: reduce) {
+  .user .intro, .user .hero h1 em, .user .cl-path, .user .cl-dot, .user .cl-ring { animation: none; }
+  .user .hero h1 em { background-size: 100% 100%; }
+  .user .cl-path { stroke-dashoffset: 0; }
+  .user .cl-dot { transform: none; }
+}
+
 /* 시트 안 목록 */
 .user .list { list-style: none; margin: 0; padding: 0; }
 .user .item { border-bottom: 1px solid var(--surface-2); }

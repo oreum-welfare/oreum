@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ManwonInput, Option, Seg, Stepper } from "../ui/index.jsx";
 import { ORDINAL, PRESETS, iga, manwon, short } from "./data.js";
 
@@ -38,23 +38,24 @@ export default function Questions({ regions, initial, initialIncome, editing, st
           <div className="start-grid">
           <div className="start-main">
           <section className="hero">
-            <span className="badge">오름 · 복지 절벽 시뮬레이터</span>
-            <h1>소득이 오르면,<br />받는 복지는 <em>어떻게 바뀔까요?</em></h1>
-            <p>몇 가지만 알려 주시면 지금 받을 수 있는 복지와, 소득이 늘 때 혜택이 한꺼번에 끊기는 <b>복지 절벽</b>이 어디에 있는지 계산해 드려요.</p>
+            <span className="badge intro" style={{ "--d": "0ms" }}>오름 · 복지 절벽 시뮬레이터</span>
+            <h1><span className="intro" style={{ "--d": "120ms" }}>소득이 오르면,</span><br /><span className="intro" style={{ "--d": "260ms" }}>받는 복지는 <em>어떻게 바뀔까요?</em></span></h1>
+            <p className="intro" style={{ "--d": "420ms" }}>몇 가지만 알려 주시면 지금 받을 수 있는 복지와, 소득이 늘 때 혜택이 한꺼번에 끊기는 <b>복지 절벽</b>이 어디에 있는지 계산해 드려요.</p>
           </section>
-          <button type="button" className="btn primary desk-cta" onClick={() => setStep(1)}>내 상황 계산하기</button>
-          <p className="privacy">입력한 내용은 서버로 보내지 않고, 이 기기 안에서만 계산해요.</p>
+          <button type="button" className="btn primary desk-cta intro" style={{ "--d": "560ms" }} onClick={() => setStep(1)}>내 상황 계산하기</button>
+          <p className="privacy intro" style={{ "--d": "640ms" }}>입력한 내용은 서버로 보내지 않고, 이 기기 안에서만 계산해요.</p>
           </div>
           <div className="start-side">
           {example && (
-            <div className="example">
+            <div className="example intro" style={{ "--d": "520ms" }}>
+              <CliffLine />
               <p className="label">예시 · {example.who}</p>
               <b>월급이 1만 원 오르자</b><br />
-              <span>생활비가 <b className="bad">{manwon(example.drop)} 원</b> 줄었어요</span>
+              <span>생활비가 <b className="bad"><CountUp value={example.drop} delay={1500} /> 원</b> 줄었어요</span>
               {example.lost.length > 0 && <p className="note" style={{ marginTop: 6 }}>{example.lost[0]}{iga(example.lost[0])} 끊겨서</p>}
             </div>
           )}
-          <div className="presets">
+          <div className="presets intro" style={{ "--d": "700ms" }}>
             <p className="label">예시 가구로 먼저 보기</p>
             {PRESETS.map((p) => (
               <button type="button" className="preset" key={p.key} onClick={() => onPreset(p)}>
@@ -169,4 +170,37 @@ export default function Questions({ regions, initial, initialIncome, editing, st
       </div></div>
     </div>
   );
+}
+
+// 시작 화면 그림: 소득이 오르면 생활비도 오르다가 혜택이 끊기는 곳에서 뚝 떨어지고 다시 오른다 (그려지는 애니메이션)
+function CliffLine() {
+  return (
+    <svg className="cliff-line" viewBox="0 0 320 96" aria-hidden="true">
+      <path className="cl-base" d="M8 88H312" />
+      <path className="cl-path" pathLength="1" d="M8 78 L60 66 L112 52 L164 36 L164 64 L216 52 L268 38 L312 26" />
+      <circle className="cl-dot" cx="164" cy="64" r="6" />
+      <circle className="cl-ring" cx="164" cy="64" r="6" />
+    </svg>
+  );
+}
+
+// 숫자가 0에서 목표값까지 올라가는 표시. 움직임 줄이기 설정이면 바로 목표값
+function CountUp({ value, delay = 0, duration = 900 }) {
+  const reduce = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  const [v, setV] = useState(reduce ? value : 0);
+  useEffect(() => {
+    if (reduce) { setV(value); return; }
+    let raf, start;
+    const t = setTimeout(() => {
+      const tick = (now) => {
+        start ??= now;
+        const k = Math.min(1, (now - start) / duration);
+        setV(Math.round(value * (1 - (1 - k) ** 3)));
+        if (k < 1) raf = requestAnimationFrame(tick);
+      };
+      raf = requestAnimationFrame(tick);
+    }, delay);
+    return () => { clearTimeout(t); cancelAnimationFrame(raf); };
+  }, [value, delay, duration, reduce]);
+  return manwon(v);
 }
