@@ -138,7 +138,9 @@ export function createEngine(data) {
     const saeng = Math.max(0, sLine - ri);
     if (saeng > 0) add("saeng", "생계급여", "중앙", "cash", saeng, "중위 32% − 소득인정액 (기초연금은 소득으로 차감됨)");
 
-    const medical = ri <= 0.4 * m;
+    // 의료급여: 일반 근로소득공제 30%는 생계·주거·교육급여에만 적용. 의료급여는 유형별 공제(34세 이하·65세 이상·장애인 등)만 (2026 사업안내)
+    const riMedical = (flat ? evalEarned * (1 - P.earned_deduction_rate) : earned) + asset.basic + bp + dpBasic;
+    const medical = riMedical <= 0.4 * m;
     if (medical) add("medical", "의료급여", "중앙", "inkind", P.medical_value_per_person * size, "소득인정액 ≤ 중위 40%, 건강보험 전환 시 본인부담 추정 1인당 월 46,450원");
 
     // 주거급여: 기준선 이하여도 자기부담분이 기준임대료보다 크면 지급액이 0원 → 수급자로 보지 않는다
