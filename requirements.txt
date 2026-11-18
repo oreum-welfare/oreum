@@ -2,3 +2,4 @@ pandas>=2.2
 anthropic>=2.8
 openai>=1.60
 requests>=2.32
+openpyxl>=3.1
