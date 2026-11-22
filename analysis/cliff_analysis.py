@@ -17,7 +17,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from rules import DATA, REGIONS, Household, find_cliffs, median_income, simulate  # noqa: E402
+from rules import DATA, Household, find_cliffs, median_income, simulate  # noqa: E402
+
+REGIONS = DATA.get("analysis_regions") or list(DATA["regions"])  # 분석 대상 지역 (제안서 분석: 대구 북구·경산시)
 
 STEP = 10_000
 EXTRA = 100_000

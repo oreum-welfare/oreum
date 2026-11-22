@@ -3183,5 +3183,221 @@
       "3급지(광역시·세종·창원)",
       "4급지(그 외 지역)"
     ]
-  }
+  },
+  "local_programs": [
+    {
+      "id": "gs_clinic",
+      "name": "65세 이상 진료비 감면",
+      "region": "경상북도 경산시",
+      "kind": "inkind",
+      "conditions": [
+        {
+          "field": "senior_in_household",
+          "op": "==",
+          "value": "true",
+          "group": "",
+          "evidence": "경산시 주민등록 65세 이상 (보건기관 내과 진료비 감면)"
+        }
+      ],
+      "amount": {
+        "type": "per_senior",
+        "param": "gs_clinic_value"
+      },
+      "note": "경산시 주민등록 65세 이상, 보건기관 내과",
+      "source": "S18",
+      "status": "승인",
+      "reviewed_by": "오름 팀 (조례 원문 대조, 시범 데이터)",
+      "approved_by": "오름 팀 (시범 데이터)",
+      "approved_at": "2026-11-18",
+      "effective_from": "2026-01-01"
+    },
+    {
+      "id": "gs_birth",
+      "name": "출산장려금",
+      "region": "경상북도 경산시",
+      "kind": "cash",
+      "conditions": [
+        {
+          "field": "newborn",
+          "op": "==",
+          "value": "true",
+          "group": "",
+          "evidence": "경산시에 출생신고한 출생아"
+        }
+      ],
+      "amount": {
+        "type": "by_birth_order",
+        "param": "gs_birth_monthly",
+        "lump_param": "gs_birth_lump"
+      },
+      "note": "월 {amount}원 × {months}개월 + 출산축하금 {lump}원(일시)",
+      "source": "S15",
+      "status": "승인",
+      "reviewed_by": "오름 팀 (조례 원문 대조, 시범 데이터)",
+      "approved_by": "오름 팀 (시범 데이터)",
+      "approved_at": "2026-11-18",
+      "effective_from": "2026-01-01"
+    },
+    {
+      "id": "gs_loan",
+      "name": "저소득주민생활안정자금(융자)",
+      "region": "경상북도 경산시",
+      "kind": "access",
+      "conditions": [
+        {
+          "field": "recipient_status",
+          "op": "in",
+          "value": "생계,의료,주거",
+          "group": "",
+          "evidence": "생계·의료·주거급여 수급자"
+        }
+      ],
+      "amount": {
+        "type": "fixed",
+        "monthly": 0
+      },
+      "note": "생계·의료·주거 수급자, 최대 1,200만 원 융자",
+      "source": "S17",
+      "status": "승인",
+      "reviewed_by": "오름 팀 (조례 원문 대조, 시범 데이터)",
+      "approved_by": "오름 팀 (시범 데이터)",
+      "approved_at": "2026-11-18",
+      "effective_from": "2026-01-01"
+    },
+    {
+      "id": "gs_multichild",
+      "name": "다자녀가정 지원",
+      "region": "경상북도 경산시",
+      "kind": "cash",
+      "conditions": [
+        {
+          "field": "third_child_7to18",
+          "op": "==",
+          "value": "true",
+          "group": "",
+          "evidence": "셋째 이상 자녀(7~18세)"
+        },
+        {
+          "field": "residence_months",
+          "op": ">=",
+          "value": "36",
+          "group": "",
+          "evidence": "경산시 3년 이상 거주"
+        }
+      ],
+      "amount": {
+        "type": "child_band_annual",
+        "param": "gs_multichild_annual"
+      },
+      "note": "셋째 이상 + 3년 이상 거주, 연 {annual_man}만 원({band_label}) 월 환산",
+      "source": "S16",
+      "status": "승인",
+      "reviewed_by": "오름 팀 (조례 원문 대조, 시범 데이터)",
+      "approved_by": "오름 팀 (시범 데이터)",
+      "approved_at": "2026-11-18",
+      "effective_from": "2026-01-01"
+    },
+    {
+      "id": "bk_nhis",
+      "name": "건강보험료지원",
+      "region": "대구광역시 북구",
+      "kind": "inkind",
+      "conditions": [
+        {
+          "field": "senior_in_household",
+          "op": "==",
+          "value": "true",
+          "group": "대상",
+          "evidence": "65세 이상 노인"
+        },
+        {
+          "field": "disabled",
+          "op": "==",
+          "value": "true",
+          "group": "대상",
+          "evidence": "장애인"
+        },
+        {
+          "field": "single_parent",
+          "op": "==",
+          "value": "true",
+          "group": "대상",
+          "evidence": "한부모가족"
+        },
+        {
+          "field": "recipient_status",
+          "op": "not_in",
+          "value": "의료",
+          "group": "",
+          "evidence": "의료급여 수급권자가 아닌 사람"
+        },
+        {
+          "field": "nhis_premium",
+          "op": "<=",
+          "value": "@bukgu_min_premium",
+          "group": "",
+          "evidence": "건강보험료가 최저보험료 이하"
+        }
+      ],
+      "facts": {
+        "nhis_premium_rate": "bukgu_nhis_rate"
+      },
+      "amount": {
+        "type": "fixed",
+        "param": "bukgu_nhis_value"
+      },
+      "note": "의료급여 수급권자 아님 + 최저보험료 이하 + 노인·장애인·한부모, 건강·장기요양보험료 전액 (조례)",
+      "source": "S14",
+      "status": "승인",
+      "reviewed_by": "오름 팀 (조례 원문 대조, 시범 데이터)",
+      "approved_by": "오름 팀 (시범 데이터)",
+      "approved_at": "2026-11-18",
+      "effective_from": "2026-01-01"
+    }
+  ],
+  "local_program_spec": {
+    "note": "지자체 제도. 조건은 AI 변환 결과(pipeline/schema.py)와 같은 형식이다. 계산에는 status가 '승인'인 제도만 쓴다.",
+    "group": "group이 빈 조건은 모두 충족해야 하고, 같은 group 이름끼리는 하나 이상 충족하면 된다.",
+    "ops": [
+      "<=",
+      "<",
+      ">=",
+      ">",
+      "==",
+      "in",
+      "not_in",
+      "between"
+    ],
+    "value_param": "값이 @로 시작하면 params의 값을 쓴다 (예: @bukgu_min_premium)",
+    "amount_types": {
+      "fixed": "monthly 또는 param 값",
+      "per_senior": "param × 65세 이상 인원",
+      "by_birth_order": "param[출생순위] = [월 금액, 개월]",
+      "child_band_annual": "param[7-15|16-18] 연액 ÷ 12 (초·중학생이 있으면 7-15)"
+    },
+    "facts": [
+      "age",
+      "household_size",
+      "income_recognized_pct_median",
+      "income_recognized_won",
+      "total_income_annual",
+      "assets",
+      "recipient_status",
+      "basic_pension_recipient",
+      "residence_months",
+      "child_count",
+      "newborn",
+      "school_enrolled",
+      "disabled",
+      "single_parent",
+      "senior_in_household",
+      "nhis_premium",
+      "third_child_7to18",
+      "child_birth_order"
+    ]
+  },
+  "analysis_regions": [
+    "대구광역시 북구",
+    "경상북도 경산시"
+  ]
 }

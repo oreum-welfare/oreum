@@ -140,6 +140,65 @@ const check = (name, ok, detail) => {
   check("출생 순위 > 자녀 수면 자녀 수에 맞춰 계산, 자녀 3명이면 셋째 금액", third1 === first1 && third3 > first1, `자녀1·셋째 ${third1}, 자녀3·셋째 ${third3}`);
 }
 
+// 9. 전국 지역 구분: 급지·기본재산액·기초연금 공제가 고시 기준으로 붙었는지
+{
+  const R = data.regions;
+  const expect = {
+    "서울특별시 관악구": ["1급지(서울)", 99000000, 172000000, 135000000],
+    "인천광역시 검단구": ["2급지(경기·인천)", 77000000, 146000000, 135000000],
+    "경기도 수원시": ["2급지(경기·인천)", 80000000, 151000000, 135000000],  // 특례시 = 기초연금 대도시
+    "경기도 남양주시": ["2급지(경기·인천)", 80000000, 151000000, 85000000],
+    "경기도 가평군": ["2급지(경기·인천)", 80000000, 151000000, 72500000],
+    "대구광역시 군위군": ["3급지(광역시·세종·창원)", 77000000, 146000000, 135000000],  // 광역시의 군도 대도시
+    "경상남도 창원시": ["3급지(광역시·세종·창원)", 77000000, 146000000, 135000000],  // 수도권 밖 특례시
+    "세종특별자치시": ["3급지(광역시·세종·창원)", 77000000, 146000000, 85000000],
+    "경상북도 경산시": ["4급지(그 외 지역)", 53000000, 112000000, 85000000],
+    "전라남도 신안군": ["4급지(그 외 지역)", 53000000, 112000000, 72500000],
+    "제주특별자치도 제주시": ["4급지(그 외 지역)", 53000000, 112000000, 85000000],
+  };
+  const wrong = Object.entries(expect).filter(([k, [g, b, l, p]]) => {
+    const r = R[k];
+    return !r || r.rent_grade !== g || r.asset_base !== b || r.housing_limit !== l || r.pension_asset_deduction !== p;
+  }).map(([k]) => k);
+  check("전국 지역 구분 (급지·기본재산액·주거용재산 한도·기초연금 공제)", wrong.length === 0 && Object.keys(R).length === 230, wrong.join(", ") || `${Object.keys(R).length}곳`);
+}
+
+// 10. 서울 1인 가구 주거급여 = 1급지 1인 기준임대료, 8인 가구는 6인 기준의 10% 가산
+{
+  const seoul = amount(hh({ region: "서울특별시 관악구", age: 29 }), 0, "jugeo");
+  const eight = amount(hh({ spouse: true, infants: 2, elem: 2, middle: 1, high: 1 }), 0, "jugeo");
+  check("주거급여 - 서울 1급지 1인 36만9천 원", seoul === 369000, `${seoul}`);
+  check("주거급여 - 8인 가구는 6인 기준임대료 + 10%", eight === P.rent["4급지(그 외 지역)"][6] + P.rent["4급지(그 외 지역)"][6] / 10, `${eight}`);
+}
+
+// 11. 기본재산액: 서울은 주거용재산 9,900만 원까지 소득으로 보지 않는다
+{
+  const seoul = amount(hh({ region: "서울특별시 관악구", housingAsset: 99000000 }), 0, "saeng");
+  const gs = amount(hh({ housingAsset: 99000000 }), 0, "saeng");
+  check("기본재산액 - 서울 9,900만 원 공제 (경산은 5,300만 원)", seoul > gs, `서울 ${Math.round(seoul)}원, 경산 ${Math.round(gs)}원`);
+}
+
+// 12. 지자체 제도: 해당 지역에서만, '승인'된 것만, 같은 group은 하나 이상 충족
+{
+  const senior = hh({ age: 70 });
+  const inSeoul = eng.evaluate({ ...senior, region: "서울특별시 관악구" }, 0).filter((b) => b.level === "지자체");
+  check("지자체 제도 - 다른 지역 제도는 계산하지 않음 (서울에는 경산 제도 없음)", inSeoul.length === 0, inSeoul.map((b) => b.name).join(", "));
+  const extra = (patch) => createEngine({ ...data, local_programs: [...data.local_programs, {
+    id: "t1", name: "시험 제도", region: "서울특별시 관악구", kind: "cash", status: "승인",
+    conditions: [{ field: "senior_in_household", op: "==", value: "true", group: "대상" }, { field: "disabled", op: "==", value: "true", group: "대상" },
+      { field: "income_recognized_pct_median", op: "<=", value: "50", group: "" }],
+    amount: { type: "fixed", monthly: 50000 }, note: "", ...patch }] });
+  const has = (e, h) => e.evaluate(h, 0).some((b) => b.id === "t1");
+  const seoulSenior = { ...senior, region: "서울특별시 관악구" };
+  check("지자체 제도 - 승인된 제도는 조건이 맞으면 계산", has(extra({}), seoulSenior));
+  check("지자체 제도 - 같은 group은 하나만 맞아도 됨 (장애인)", has(extra({}), { ...seoulSenior, age: 40, disabled: true }));
+  check("지자체 제도 - group 조건이 하나도 안 맞으면 제외", !has(extra({}), { ...seoulSenior, age: 40 }));
+  check("지자체 제도 - '검토 대기'는 계산하지 않음", !has(extra({ status: "검토 대기" }), seoulSenior));
+  check("지자체 제도 - 시·도 단위 제도는 그 시·도 모든 시군구에 적용", has(extra({ region: undefined, sido: "서울특별시" }), { ...senior, region: "서울특별시 노원구" }));
+  check("지자체 제도 - 판정할 수 없는 조건(other)이 있으면 계산하지 않음",
+    !has(extra({ conditions: [{ field: "other", op: "==", value: "x", group: "" }] }), seoulSenior));
+}
+
 if (bad) {
   console.error(`${bad}개 검사 실패`);
   process.exit(1);

@@ -41,16 +41,9 @@ EITC = {k: tuple(v) for k, v in _P["eitc"].items()}
 CTC_MAX_PER_CHILD = _P["ctc_max_per_child"]
 CTC_LIMIT = _P["ctc_limit"]
 CTC_FULL_UNTIL = _P["ctc_full_until"]
-GS_BIRTH_MONTHLY = {int(k): tuple(v) for k, v in _P["gs_birth_monthly"].items()}
-GS_BIRTH_LUMP = _P["gs_birth_lump"]
-GS_CLINIC_VALUE = _P["gs_clinic_value"]
-GS_MULTICHILD_ANNUAL = _P["gs_multichild_annual"]
 SP_CHILD = _P.get("sp_child")
 MUNHWA = _P.get("munhwa")
 DIS_PENSION = _P.get("dis_pension")
-BUKGU_NHIS_RATE = _P["bukgu_nhis_rate"]
-BUKGU_MIN_PREMIUM = _P["bukgu_min_premium"]
-BUKGU_NHIS_VALUE = _P["bukgu_nhis_value"]
 REGIONS = DATA["regions"]
 ASSETS = _P.get("assets")
 
@@ -64,6 +57,14 @@ def line_at(table: dict, size: int) -> float:
 def median_income(size: int) -> int:
     """기준중위소득 100% (월). 생계급여 32% 기준표에서 역산 (주거급여 48% 표와 일치 확인)."""
     return round(line_at(SAENG_LINE, size) / 0.32)
+
+
+def rent_for(grade: str, size: int) -> float:
+    """기준임대료 (고시): 7인은 6인과 같고, 8인부터 2인 늘 때마다 6인 기준의 10%를 더한다 (engine.js rentFor와 같음)."""
+    row = RENT[grade]
+    if size <= 7:
+        return row[min(max(1, size), 6)]
+    return row[6] + row[6] * ((size - 6) // 2) / 10
 
 
 def jugeo_line(size: int) -> int:
@@ -260,7 +261,7 @@ def evaluate(hh: Household, earned: float) -> list[Benefit]:
     # 주거급여: 기준선 이하여도 지급액이 0원이면 수급자로 보지 않는다 (engine.js와 같음)
     jugeo_elig = False
     if ri <= jugeo_line(size):
-        rent = RENT[region["rent_grade"]][min(size, 6)]  # 7인 이상은 6인 기준임대료 적용 (추정)
+        rent = rent_for(region["rent_grade"], size)
         deduct = 0.0 if ri <= saeng_line else JUGEO_SELF_SHARE * (ri - saeng_line)
         jugeo = max(0.0, rent - deduct)
         if jugeo > 0:
@@ -330,31 +331,96 @@ def evaluate(hh: Household, earned: float) -> list[Benefit]:
             out.append(Benefit("sp_child", "한부모 아동양육비", "중앙", "cash", SP_CHILD["monthly_per_child"] * hh.children,
                                f"한부모 + 소득인정액 ≤ 중위 {SP_CHILD['pct_median']}%, 자녀 {hh.children}명 × 월 {SP_CHILD['monthly_per_child']:,}원"))
 
-    # ---- 지자체 ----
-    if hh.region == "경상북도 경산시":
-        if hh.seniors > 0:
-            out.append(Benefit("gs_clinic", "65세 이상 진료비 감면", "지자체", "inkind",
-                               GS_CLINIC_VALUE * hh.seniors, "경산시 주민등록 65세 이상, 보건기관 내과"))
-        if hh.newborn:
-            amt, months = GS_BIRTH_MONTHLY[min(hh.birth_order, 4)]
-            out.append(Benefit("gs_birth", "출산장려금", "지자체", "cash", amt,
-                               f"월 {amt:,}원 × {months}개월 + 출산축하금 {GS_BIRTH_LUMP:,}원(일시)"))
-        if saeng > 0 or medical or jugeo_elig:
-            out.append(Benefit("gs_loan", "저소득주민생활안정자금(융자)", "지자체", "access", 0,
-                               "생계·의료·주거 수급자, 최대 1,200만 원 융자"))
-        if hh.third_child_7to18 and hh.residence_months >= 36:
-            # 셋째의 나이를 알 수 없어, 초·중학생이 있으면 7~15세, 고등학생만 있으면 16~18세 금액 (engine.js와 같음)
-            band = "7-15" if hh.elem + hh.middle > 0 else "16-18"
-            amt = GS_MULTICHILD_ANNUAL[band]
-            out.append(Benefit("gs_multichild", "다자녀가정 지원", "지자체", "cash", amt / 12,
-                               f"셋째 이상 + 3년 이상 거주, 연 {amt // 10000:,}만 원({'7~15세' if band == '7-15' else '16~18세'}) 월 환산"))
-    elif hh.region == "대구광역시 북구":
-        qualifying = hh.seniors > 0 or hh.is_disabled or hh.single_parent
-        premium = earned * BUKGU_NHIS_RATE
-        if qualifying and not medical and premium <= BUKGU_MIN_PREMIUM:
-            out.append(Benefit("bk_nhis", "건강보험료지원", "지자체", "inkind", BUKGU_NHIS_VALUE,
-                               "의료급여 수급권자 아님 + 최저보험료 이하 + 노인·장애인·한부모, 건강·장기요양보험료 전액 (조례)"))
+    # ---- 지자체 (rules.json local_programs 중 이 지역의 '승인' 제도만, engine.js와 같음) ----
+    recipient_status = [s for s, ok in (("생계", saeng > 0), ("의료", medical), ("주거", jugeo_elig),
+                                         ("교육", edu_elig), ("차상위", near_poor)) if ok]
+    facts = {
+        "age": hh.age, "household_size": size, "income_recognized_pct_median": ri / m * 100, "income_recognized_won": ri,
+        "total_income_annual": earned * 12, "assets": hh.housing_asset + hh.financial_asset, "recipient_status": recipient_status,
+        "basic_pension_recipient": bp > 0, "residence_months": hh.residence_months, "child_count": hh.children,
+        "newborn": hh.newborn, "school_enrolled": hh.school_kids > 0, "disabled": hh.is_disabled,
+        "single_parent": hh.single_parent, "senior_in_household": hh.seniors > 0,
+        "third_child_7to18": hh.third_child_7to18, "child_birth_order": hh.birth_order,
+    }
+    for prog in local_programs_for(hh.region):
+        f = dict(facts)
+        rate_key = (prog.get("facts") or {}).get("nhis_premium_rate")
+        if rate_key:
+            f["nhis_premium"] = earned * _P[rate_key]
+        if not conditions_met(prog.get("conditions"), f):
+            continue
+        monthly, vars_ = _program_amount(prog["amount"], hh)
+        out.append(Benefit(prog["id"], prog["name"], "지자체", prog["kind"], monthly, _fill_note(prog.get("note", ""), vars_)))
     return out
+
+
+# ---------------------------------------------------------------------------
+# 지자체 제도 (데이터). engine.js의 localProgramsFor·conditionsMet과 같다.
+# ---------------------------------------------------------------------------
+LOCAL_PROGRAMS = DATA.get("local_programs", [])
+
+
+def _param_value(v):
+    return _P[v[1:]] if isinstance(v, str) and v.startswith("@") else v
+
+
+def local_programs_for(region_key: str) -> list[dict]:
+    region = REGIONS.get(region_key)
+    return [p for p in LOCAL_PROGRAMS if p.get("status") == "승인"
+            and (p["region"] == region_key if p.get("region") else bool(p.get("sido") and region and p["sido"] == region["sido"]))]
+
+
+def _condition_ok(c: dict, facts: dict) -> bool:
+    if c["field"] not in facts or facts[c["field"]] is None:
+        return False  # 판정할 수 없는 항목(other 등)
+    fact = facts[c["field"]]
+    raw = _param_value(c["value"])
+    items = [s.strip() for s in str(raw).split(",")]
+    if c["op"] in ("in", "not_in"):
+        hit = any(str(x) in items for x in fact) if isinstance(fact, (list, set, tuple)) else str(fact) in items
+        return hit if c["op"] == "in" else not hit
+    if isinstance(fact, bool):
+        return c["op"] == "==" and fact == (str(raw) == "true")
+    x = float(fact)
+    if c["op"] == "between":
+        return float(items[0]) <= x <= float(items[1])
+    v = float(raw)
+    return {"<=": x <= v, "<": x < v, ">=": x >= v, ">": x > v, "==": x == v}.get(c["op"], False)
+
+
+def conditions_met(conds, facts: dict) -> bool:
+    groups: dict[str, list] = {}
+    for c in conds or []:
+        if not c.get("group"):
+            if not _condition_ok(c, facts):
+                return False
+        else:
+            groups.setdefault(c["group"], []).append(c)
+    return all(any(_condition_ok(c, facts) for c in g) for g in groups.values())
+
+
+def _won(n) -> str:
+    n = float(n)
+    return f"{int(n):,}" if n == int(n) else f"{n:,}"
+
+
+def _program_amount(a: dict, hh: Household) -> tuple[float, dict]:
+    if a["type"] == "per_senior":
+        return _P[a["param"]] * hh.seniors, {}
+    if a["type"] == "by_birth_order":
+        amt, months = _P[a["param"]][str(min(hh.birth_order, 4))]
+        return amt, {"amount": _won(amt), "months": months, "lump": _won(_P.get(a.get("lump_param"), 0))}
+    if a["type"] == "child_band_annual":
+        # 셋째의 나이를 알 수 없어, 초·중학생이 있으면 7~15세, 고등학생만 있으면 16~18세 금액 (engine.js와 같음)
+        band = "7-15" if hh.elem + hh.middle > 0 else "16-18"
+        annual = _P[a["param"]][band]
+        return annual / 12, {"annual_man": _won(annual / 10000), "band_label": "7~15세" if band == "7-15" else "16~18세"}
+    return (_P[a["param"]] if a.get("param") else a.get("monthly", 0)), {}  # fixed
+
+
+def _fill_note(note: str, vars_: dict) -> str:
+    import re
+    return re.sub(r"\{(\w+)\}", lambda mt: str(vars_.get(mt.group(1), "{" + mt.group(1) + "}")), note or "")
 
 
 def simulate(hh: Household, max_income: int, step: int = 10_000,
