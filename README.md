@@ -28,8 +28,8 @@
 ## 파일 구조
 | 파일 | 설명 |
 |---|---|
-| `oreum-app/` | **React 웹 앱**: 시뮬레이터 + 데이터 분석 + AI 검수 화면 ([안내](oreum-app/README.md)) |
-| `oreum-app/src/lib/engine.js` | 판정 엔진 (JavaScript, 브라우저에서 계산) |
+| `oreum-web/` | **React 웹 앱**: 국민용 계산기(`/`) + 관리자 화면(`/admin`: 데이터 분석, AI 성능, 지자체 제도 검토) |
+| `oreum-web/src/lib/engine.js` | 판정 엔진 (JavaScript, 브라우저에서 계산) |
 | `data/rules.json` | **규칙·금액·근거 데이터. 앱과 분석이 함께 읽는 단 하나의 파일** |
 | `rules.py` | 판정 엔진 (파이썬, 데이터 분석용). `data/rules.json`을 읽음 |
 | `analysis/` | 가구 유형별 절벽 분석 (CSV 출력) |
@@ -38,24 +38,24 @@
 | `assets/logo.html` | 로고 미리보기와 PNG 다운로드 |
 
 > **금액을 바꿀 때:** `data/rules.json`만 고치면 앱과 분석에 함께 반영됩니다. 같은 항목의 `verification`(근거·확인 상태)도 고쳐 주세요.
-> **계산 방식을 바꿀 때:** `oreum-app/src/lib/engine.js`와 `rules.py`를 똑같이 고친 뒤 `python tests/parity_py.py && node tests/parity.mjs`(일치 검사)와 `node tests/engine_checks.mjs`(기대값 검사)로 확인합니다.
+> **계산 방식을 바꿀 때:** `oreum-web/src/lib/engine.js`와 `rules.py`를 똑같이 고친 뒤 `python tests/parity_py.py && node tests/parity.mjs`(일치 검사)와 `node tests/engine_checks.mjs`(기대값 검사)로 확인합니다.
 > **AI 채점기를 바꿀 때:** `python tests/grader_checks.py`로 틀린 답을 오답으로 잡는지 확인합니다.
 
 ## 내 컴퓨터에서 실행
 ```bash
-cd oreum-app
+cd oreum-web
 npm install
 npm run dev
 ```
-브라우저에서 http://localhost:5173 접속
+브라우저에서 http://localhost:5173 (관리자 화면: /admin) 접속
 
 ## Vercel 배포
 1. GitHub 팀 저장소에 이 폴더 전체를 push
 2. Vercel → **Add New → Project** → 저장소 Import
-3. **Root Directory: `oreum-app`** (Framework Preset은 Vite로 자동 인식, Build `npm run build`, Output `dist`)
+3. **Root Directory: `oreum-web`** (Framework Preset은 Vite로 자동 인식, Build `npm run build`, Output `dist`)
 4. Deploy → `프로젝트이름.vercel.app`
 
-> 규칙·AI 결과를 바꿨다면 push 전에 `oreum-app` 폴더에서 `npm run sync-data`를 실행해 `public/data/`를 최신으로 만드세요.
+> 규칙·AI 결과를 바꿨다면 push 전에 `oreum-web` 폴더에서 `npm run sync-data`를 실행해 `public/data/`를 최신으로 만드세요.
 
 ## 데이터 분석
 - **웹:** 관리자 화면의 '데이터 분석' 페이지 (`/admin/analysis`) — 핵심 발견, 가구 유형 × 지역 절벽 요약표, 곡선 비교, 혜택 종료 구간 분포, '10만 원 더 벌면' 분석

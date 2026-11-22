@@ -6,8 +6,8 @@ import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const { createEngine } = await import(pathToFileURL(join(root, "oreum-app/src/lib/engine.js")));
-const { analyzeCurrentLoss, recommendPrograms } = await import(pathToFileURL(join(root, "oreum-app/src/lib/guide.js")));
+const { createEngine } = await import(pathToFileURL(join(root, "oreum-web/src/lib/engine.js")));
+const { analyzeCurrentLoss, recommendPrograms } = await import(pathToFileURL(join(root, "oreum-web/src/lib/guide.js")));
 const data = JSON.parse(readFileSync(join(root, "data/rules.json"), "utf8"));
 const eng = createEngine(data);
 const P = data.params;

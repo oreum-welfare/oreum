@@ -2,7 +2,7 @@
 
 규칙과 금액은 data/rules.json 한 곳에서 읽는다 (React 앱의 JS 엔진과 같은 파일).
 금액을 바꿀 때는 rules.json만 고치면 웹과 분석에 함께 반영된다.
-계산 로직을 바꾸면 oreum-app/src/lib/engine.js도 똑같이 바꿔야 한다.
+계산 로직을 바꾸면 oreum-web/src/lib/engine.js도 똑같이 바꿔야 한다.
 """
 from __future__ import annotations
 

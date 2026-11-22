@@ -60,12 +60,12 @@ docs: 데이터 분석 문서 링크 추가
 
 ## 4. 영역별 규칙
 
-### 화면 (`oreum-app/src/pages`, `components`, `styles.css`)
+### 화면 (`oreum-web/src/user`, `src/admin`, `src/ui`, `styles.css`)
 - 계산은 `src/lib/engine.js`가 합니다. 화면 작업에서는 엔진을 고치지 않습니다.
-- `oreum-app/public/data/`는 빌드할 때 자동으로 덮어써지므로 직접 고치지 않습니다.
+- `oreum-web/public/data/`는 빌드할 때 자동으로 덮어써지므로 직접 고치지 않습니다.
 
 ### 계산 엔진
-- **두 곳을 항상 똑같이 고칩니다:** `oreum-app/src/lib/engine.js`(JS), `rules.py`(파이썬)
+- **두 곳을 항상 똑같이 고칩니다:** `oreum-web/src/lib/engine.js`(JS), `rules.py`(파이썬)
 - 고친 뒤 일치 검사와 기대값 검사를 실행합니다. PR을 올리면 CI가 같은 검사를 다시 합니다.
   ```bash
   python tests/parity_py.py
