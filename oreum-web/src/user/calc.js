@@ -2,7 +2,7 @@
 import { analyzeCliffCause } from "../lib/analytics.js";
 import { createEngine } from "../lib/engine.js";
 import { analyzeCurrentLoss, analyzeNextCliff, recommendPrograms } from "../lib/guide.js";
-import { MAX_MEDIAN_MULTIPLE, NAMES, RANGE_MEDIAN_MULTIPLE, STEP } from "./data.js";
+import { COMPARE_REGIONS, MAX_MEDIAN_MULTIPLE, NAMES, RANGE_MEDIAN_MULTIPLE, STEP } from "./data.js";
 
 // 근로소득공제가 없다고 가정한 엔진 (공제 덕분에 얼마를 더 받는지 보여 주기 위해). 데이터마다 한 번만 만든다
 const noDeductionEngines = new WeakMap();
@@ -69,7 +69,8 @@ export function calculate({ engine, data, hh, income, compare, includeInkind }) 
   const gains = { deductionGain, afterIncome, creditAfter };
 
   // 지역 비교
-  const regions = Object.keys(data.regions).map((r) => {
+  const compareKeys = [hh.region, ...COMPARE_REGIONS.filter((k) => k !== hh.region && data.regions[k])];
+  const regions = compareKeys.map((r) => {
     const h2 = { ...hh, region: r };
     const bs = engine.evaluate(h2, inc);
     const s2 = engine.simulate(h2, maxIncome, STEP, includeInkind);

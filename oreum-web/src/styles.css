@@ -300,3 +300,9 @@ a { color: inherit; }
   .user .start-grid .hero p { font-size: 19px; max-width: 520px; }
   .user .desk-cta { display: block; width: 100%; max-width: 360px; margin-top: 32px; }
 }
+
+/* 지역 선택 (시·도 → 시·군·구) */
+.select { width: 100%; max-width: 280px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--text); font-size: 16px; }
+.screen .field .select { margin-left: auto; }
+.screen .field label.field-name { white-space: nowrap; margin-right: 12px; }
+.kv .tag { display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 6px; background: var(--brand-soft); color: var(--brand-ink); font-size: 11px; font-weight: 600; vertical-align: middle; }

@@ -4,7 +4,7 @@ import { createEngine } from "../lib/engine.js";
 import { decodeState, encodeState } from "../lib/urlState.js";
 import { useJson } from "../lib/useJson.js";
 import { calculate } from "./calc.js";
-import { DEFAULT_HH, PRESETS, STEP } from "./data.js";
+import { DEFAULT_HH, PRESETS, STEP, localReady } from "./data.js";
 import Logo from "../ui/Logo.jsx";
 import Questions from "./Questions.jsx";
 import Result from "./Result.jsx";
@@ -17,7 +17,11 @@ export default function UserApp() {
   const [editing, setEditing] = useState(false); // false 또는 수정을 시작할 질문 번호
   const [home, setHome] = useState(0); // 로고를 누를 때마다 올려 질문 화면을 시작 화면부터 다시 그린다
   const started = params.has("r");
-  const st = useMemo(() => decodeState(params, DEFAULT_HH), [params]);
+  const st0 = useMemo(() => decodeState(params, DEFAULT_HH), [params]);
+  // 모르는 지역 코드(오래된 링크 등)는 기본 지역으로
+  const st = useMemo(() => (data && !data.regions[st0.hh.region] ? { ...st0, hh: { ...st0.hh, region: DEFAULT_HH.region } } : st0), [data, st0]);
+  const pilotRegions = useMemo(() => (data ? Object.keys(data.regions).filter((k) => localReady(data, k)) : []), [data]);
+  const residenceRegions = useMemo(() => (engine ? pilotRegions.filter((k) => engine.localProgramsFor(k).some((p) => p.conditions.some((c) => c.field === "residence_months"))) : []), [engine, pilotRegions]);
   const save = (next, push = false) => setParams(encodeState({ ...st, ...next }, DEFAULT_HH), { replace: !push });
 
   useEffect(() => { window.scrollTo(0, 0); }, [started, editing]);
@@ -51,7 +55,7 @@ export default function UserApp() {
       </div></header>
       <main>
         {showQuestions ? (
-          <Questions key={editing ? `edit-${editing}` : `new-${home}`} regions={Object.keys(data.regions)}
+          <Questions key={editing ? `edit-${editing}` : `new-${home}`} regions={data.regions} pilotRegions={pilotRegions} residenceRegions={residenceRegions}
             initial={started ? st.hh : { ...DEFAULT_HH, age: 35 }} initialIncome={started ? st.income : 2000000}
             editing={Boolean(editing)} startStep={editing || 1} example={example} onFinish={finish} onPreset={preset} onCancel={() => setEditing(false)} />
         ) : (

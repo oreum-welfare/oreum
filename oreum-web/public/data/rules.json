@@ -22,7 +22,23 @@
   "params": {
     "earned_deduction_rate": 0.3,
     "rent": {
-      "3급지(광역시·세종)": {
+      "1급지(서울)": {
+        "1": 369000,
+        "2": 414000,
+        "3": 492000,
+        "4": 571000,
+        "5": 591000,
+        "6": 699000
+      },
+      "2급지(경기·인천)": {
+        "1": 300000,
+        "2": 335000,
+        "3": 401000,
+        "4": 463000,
+        "5": 479000,
+        "6": 568000
+      },
+      "3급지(광역시·세종·창원)": {
         "1": 247000,
         "2": 275000,
         "3": 327000,
@@ -172,20 +188,2534 @@
     "asset_pension(장애인연금 적용)"
   ],
   "regions": {
-    "대구광역시 북구": {
-      "rent_grade": "3급지(광역시·세종)",
-      "sido": "대구광역시",
+    "서울특별시 종로구": {
+      "sido": "서울특별시",
+      "sigungu": "종로구",
+      "type": "자치구",
+      "rent_grade": "1급지(서울)",
+      "asset_class": "서울",
+      "asset_base": 99000000,
+      "housing_limit": 172000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "서울특별시 중구": {
+      "sido": "서울특별시",
+      "sigungu": "중구",
+      "type": "자치구",
+      "rent_grade": "1급지(서울)",
+      "asset_class": "서울",
+      "asset_base": 99000000,
+      "housing_limit": 172000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "서울특별시 용산구": {
+      "sido": "서울특별시",
+      "sigungu": "용산구",
+      "type": "자치구",
+      "rent_grade": "1급지(서울)",
+      "asset_class": "서울",
+      "asset_base": 99000000,
+      "housing_limit": 172000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "서울특별시 성동구": {
+      "sido": "서울특별시",
+      "sigungu": "성동구",
+      "type": "자치구",
+      "rent_grade": "1급지(서울)",
+      "asset_class": "서울",
+      "asset_base": 99000000,
+      "housing_limit": 172000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "서울특별시 광진구": {
+      "sido": "서울특별시",
+      "sigungu": "광진구",
+      "type": "자치구",
+      "rent_grade": "1급지(서울)",
+      "asset_class": "서울",
+      "asset_base": 99000000,
+      "housing_limit": 172000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "서울특별시 동대문구": {
+      "sido": "서울특별시",
+      "sigungu": "동대문구",
+      "type": "자치구",
+      "rent_grade": "1급지(서울)",
+      "asset_class": "서울",
+      "asset_base": 99000000,
+      "housing_limit": 172000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "서울특별시 중랑구": {
+      "sido": "서울특별시",
+      "sigungu": "중랑구",
+      "type": "자치구",
+      "rent_grade": "1급지(서울)",
+      "asset_class": "서울",
+      "asset_base": 99000000,
+      "housing_limit": 172000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "서울특별시 성북구": {
+      "sido": "서울특별시",
+      "sigungu": "성북구",
+      "type": "자치구",
+      "rent_grade": "1급지(서울)",
+      "asset_class": "서울",
+      "asset_base": 99000000,
+      "housing_limit": 172000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "서울특별시 강북구": {
+      "sido": "서울특별시",
+      "sigungu": "강북구",
+      "type": "자치구",
+      "rent_grade": "1급지(서울)",
+      "asset_class": "서울",
+      "asset_base": 99000000,
+      "housing_limit": 172000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "서울특별시 도봉구": {
+      "sido": "서울특별시",
+      "sigungu": "도봉구",
+      "type": "자치구",
+      "rent_grade": "1급지(서울)",
+      "asset_class": "서울",
+      "asset_base": 99000000,
+      "housing_limit": 172000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "서울특별시 노원구": {
+      "sido": "서울특별시",
+      "sigungu": "노원구",
+      "type": "자치구",
+      "rent_grade": "1급지(서울)",
+      "asset_class": "서울",
+      "asset_base": 99000000,
+      "housing_limit": 172000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "서울특별시 은평구": {
+      "sido": "서울특별시",
+      "sigungu": "은평구",
+      "type": "자치구",
+      "rent_grade": "1급지(서울)",
+      "asset_class": "서울",
+      "asset_base": 99000000,
+      "housing_limit": 172000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "서울특별시 서대문구": {
+      "sido": "서울특별시",
+      "sigungu": "서대문구",
+      "type": "자치구",
+      "rent_grade": "1급지(서울)",
+      "asset_class": "서울",
+      "asset_base": 99000000,
+      "housing_limit": 172000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "서울특별시 마포구": {
+      "sido": "서울특별시",
+      "sigungu": "마포구",
+      "type": "자치구",
+      "rent_grade": "1급지(서울)",
+      "asset_class": "서울",
+      "asset_base": 99000000,
+      "housing_limit": 172000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "서울특별시 양천구": {
+      "sido": "서울특별시",
+      "sigungu": "양천구",
+      "type": "자치구",
+      "rent_grade": "1급지(서울)",
+      "asset_class": "서울",
+      "asset_base": 99000000,
+      "housing_limit": 172000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "서울특별시 강서구": {
+      "sido": "서울특별시",
+      "sigungu": "강서구",
+      "type": "자치구",
+      "rent_grade": "1급지(서울)",
+      "asset_class": "서울",
+      "asset_base": 99000000,
+      "housing_limit": 172000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "서울특별시 구로구": {
+      "sido": "서울특별시",
+      "sigungu": "구로구",
+      "type": "자치구",
+      "rent_grade": "1급지(서울)",
+      "asset_class": "서울",
+      "asset_base": 99000000,
+      "housing_limit": 172000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "서울특별시 금천구": {
+      "sido": "서울특별시",
+      "sigungu": "금천구",
+      "type": "자치구",
+      "rent_grade": "1급지(서울)",
+      "asset_class": "서울",
+      "asset_base": 99000000,
+      "housing_limit": 172000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "서울특별시 영등포구": {
+      "sido": "서울특별시",
+      "sigungu": "영등포구",
+      "type": "자치구",
+      "rent_grade": "1급지(서울)",
+      "asset_class": "서울",
+      "asset_base": 99000000,
+      "housing_limit": 172000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "서울특별시 동작구": {
+      "sido": "서울특별시",
+      "sigungu": "동작구",
+      "type": "자치구",
+      "rent_grade": "1급지(서울)",
+      "asset_class": "서울",
+      "asset_base": 99000000,
+      "housing_limit": 172000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "서울특별시 관악구": {
+      "sido": "서울특별시",
+      "sigungu": "관악구",
+      "type": "자치구",
+      "rent_grade": "1급지(서울)",
+      "asset_class": "서울",
+      "asset_base": 99000000,
+      "housing_limit": 172000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "서울특별시 서초구": {
+      "sido": "서울특별시",
+      "sigungu": "서초구",
+      "type": "자치구",
+      "rent_grade": "1급지(서울)",
+      "asset_class": "서울",
+      "asset_base": 99000000,
+      "housing_limit": 172000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "서울특별시 강남구": {
+      "sido": "서울특별시",
+      "sigungu": "강남구",
+      "type": "자치구",
+      "rent_grade": "1급지(서울)",
+      "asset_class": "서울",
+      "asset_base": 99000000,
+      "housing_limit": 172000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "서울특별시 송파구": {
+      "sido": "서울특별시",
+      "sigungu": "송파구",
+      "type": "자치구",
+      "rent_grade": "1급지(서울)",
+      "asset_class": "서울",
+      "asset_base": 99000000,
+      "housing_limit": 172000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "서울특별시 강동구": {
+      "sido": "서울특별시",
+      "sigungu": "강동구",
+      "type": "자치구",
+      "rent_grade": "1급지(서울)",
+      "asset_class": "서울",
+      "asset_base": 99000000,
+      "housing_limit": 172000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "부산광역시 중구": {
+      "sido": "부산광역시",
+      "sigungu": "중구",
+      "type": "자치구",
+      "rent_grade": "3급지(광역시·세종·창원)",
       "asset_class": "광역시",
       "asset_base": 77000000,
       "housing_limit": 146000000,
+      "pension_class": "대도시",
       "pension_asset_deduction": 135000000
     },
-    "경상북도 경산시": {
+    "부산광역시 서구": {
+      "sido": "부산광역시",
+      "sigungu": "서구",
+      "type": "자치구",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "부산광역시 동구": {
+      "sido": "부산광역시",
+      "sigungu": "동구",
+      "type": "자치구",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "부산광역시 영도구": {
+      "sido": "부산광역시",
+      "sigungu": "영도구",
+      "type": "자치구",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "부산광역시 부산진구": {
+      "sido": "부산광역시",
+      "sigungu": "부산진구",
+      "type": "자치구",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "부산광역시 동래구": {
+      "sido": "부산광역시",
+      "sigungu": "동래구",
+      "type": "자치구",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "부산광역시 남구": {
+      "sido": "부산광역시",
+      "sigungu": "남구",
+      "type": "자치구",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "부산광역시 북구": {
+      "sido": "부산광역시",
+      "sigungu": "북구",
+      "type": "자치구",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "부산광역시 해운대구": {
+      "sido": "부산광역시",
+      "sigungu": "해운대구",
+      "type": "자치구",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "부산광역시 사하구": {
+      "sido": "부산광역시",
+      "sigungu": "사하구",
+      "type": "자치구",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "부산광역시 금정구": {
+      "sido": "부산광역시",
+      "sigungu": "금정구",
+      "type": "자치구",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "부산광역시 강서구": {
+      "sido": "부산광역시",
+      "sigungu": "강서구",
+      "type": "자치구",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "부산광역시 연제구": {
+      "sido": "부산광역시",
+      "sigungu": "연제구",
+      "type": "자치구",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "부산광역시 수영구": {
+      "sido": "부산광역시",
+      "sigungu": "수영구",
+      "type": "자치구",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "부산광역시 사상구": {
+      "sido": "부산광역시",
+      "sigungu": "사상구",
+      "type": "자치구",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "부산광역시 기장군": {
+      "sido": "부산광역시",
+      "sigungu": "기장군",
+      "type": "광역시군",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "대구광역시 중구": {
+      "sido": "대구광역시",
+      "sigungu": "중구",
+      "type": "자치구",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "대구광역시 동구": {
+      "sido": "대구광역시",
+      "sigungu": "동구",
+      "type": "자치구",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "대구광역시 서구": {
+      "sido": "대구광역시",
+      "sigungu": "서구",
+      "type": "자치구",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "대구광역시 남구": {
+      "sido": "대구광역시",
+      "sigungu": "남구",
+      "type": "자치구",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "대구광역시 북구": {
+      "sido": "대구광역시",
+      "sigungu": "북구",
+      "type": "자치구",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "대구광역시 수성구": {
+      "sido": "대구광역시",
+      "sigungu": "수성구",
+      "type": "자치구",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "대구광역시 달서구": {
+      "sido": "대구광역시",
+      "sigungu": "달서구",
+      "type": "자치구",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "대구광역시 달성군": {
+      "sido": "대구광역시",
+      "sigungu": "달성군",
+      "type": "광역시군",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "대구광역시 군위군": {
+      "sido": "대구광역시",
+      "sigungu": "군위군",
+      "type": "광역시군",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "인천광역시 제물포구": {
+      "sido": "인천광역시",
+      "sigungu": "제물포구",
+      "type": "자치구",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "인천광역시 영종구": {
+      "sido": "인천광역시",
+      "sigungu": "영종구",
+      "type": "자치구",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "인천광역시 미추홀구": {
+      "sido": "인천광역시",
+      "sigungu": "미추홀구",
+      "type": "자치구",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "인천광역시 연수구": {
+      "sido": "인천광역시",
+      "sigungu": "연수구",
+      "type": "자치구",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "인천광역시 남동구": {
+      "sido": "인천광역시",
+      "sigungu": "남동구",
+      "type": "자치구",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "인천광역시 부평구": {
+      "sido": "인천광역시",
+      "sigungu": "부평구",
+      "type": "자치구",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "인천광역시 계양구": {
+      "sido": "인천광역시",
+      "sigungu": "계양구",
+      "type": "자치구",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "인천광역시 서구": {
+      "sido": "인천광역시",
+      "sigungu": "서구",
+      "type": "자치구",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "인천광역시 검단구": {
+      "sido": "인천광역시",
+      "sigungu": "검단구",
+      "type": "자치구",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "인천광역시 강화군": {
+      "sido": "인천광역시",
+      "sigungu": "강화군",
+      "type": "광역시군",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "인천광역시 옹진군": {
+      "sido": "인천광역시",
+      "sigungu": "옹진군",
+      "type": "광역시군",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "광주광역시 동구": {
+      "sido": "광주광역시",
+      "sigungu": "동구",
+      "type": "자치구",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "광주광역시 서구": {
+      "sido": "광주광역시",
+      "sigungu": "서구",
+      "type": "자치구",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "광주광역시 남구": {
+      "sido": "광주광역시",
+      "sigungu": "남구",
+      "type": "자치구",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "광주광역시 북구": {
+      "sido": "광주광역시",
+      "sigungu": "북구",
+      "type": "자치구",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "광주광역시 광산구": {
+      "sido": "광주광역시",
+      "sigungu": "광산구",
+      "type": "자치구",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "대전광역시 동구": {
+      "sido": "대전광역시",
+      "sigungu": "동구",
+      "type": "자치구",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "대전광역시 중구": {
+      "sido": "대전광역시",
+      "sigungu": "중구",
+      "type": "자치구",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "대전광역시 서구": {
+      "sido": "대전광역시",
+      "sigungu": "서구",
+      "type": "자치구",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "대전광역시 유성구": {
+      "sido": "대전광역시",
+      "sigungu": "유성구",
+      "type": "자치구",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "대전광역시 대덕구": {
+      "sido": "대전광역시",
+      "sigungu": "대덕구",
+      "type": "자치구",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "울산광역시 중구": {
+      "sido": "울산광역시",
+      "sigungu": "중구",
+      "type": "자치구",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "울산광역시 남구": {
+      "sido": "울산광역시",
+      "sigungu": "남구",
+      "type": "자치구",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "울산광역시 동구": {
+      "sido": "울산광역시",
+      "sigungu": "동구",
+      "type": "자치구",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "울산광역시 북구": {
+      "sido": "울산광역시",
+      "sigungu": "북구",
+      "type": "자치구",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "울산광역시 울주군": {
+      "sido": "울산광역시",
+      "sigungu": "울주군",
+      "type": "광역시군",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "세종특별자치시": {
+      "sido": "세종특별자치시",
+      "sigungu": "세종특별자치시",
+      "type": "특별자치시",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경기도 수원시": {
+      "sido": "경기도",
+      "sigungu": "수원시",
+      "type": "특례시",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "경기",
+      "asset_base": 80000000,
+      "housing_limit": 151000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "경기도 성남시": {
+      "sido": "경기도",
+      "sigungu": "성남시",
+      "type": "시",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "경기",
+      "asset_base": 80000000,
+      "housing_limit": 151000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경기도 의정부시": {
+      "sido": "경기도",
+      "sigungu": "의정부시",
+      "type": "시",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "경기",
+      "asset_base": 80000000,
+      "housing_limit": 151000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경기도 안양시": {
+      "sido": "경기도",
+      "sigungu": "안양시",
+      "type": "시",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "경기",
+      "asset_base": 80000000,
+      "housing_limit": 151000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경기도 부천시": {
+      "sido": "경기도",
+      "sigungu": "부천시",
+      "type": "시",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "경기",
+      "asset_base": 80000000,
+      "housing_limit": 151000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경기도 광명시": {
+      "sido": "경기도",
+      "sigungu": "광명시",
+      "type": "시",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "경기",
+      "asset_base": 80000000,
+      "housing_limit": 151000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경기도 평택시": {
+      "sido": "경기도",
+      "sigungu": "평택시",
+      "type": "시",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "경기",
+      "asset_base": 80000000,
+      "housing_limit": 151000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경기도 동두천시": {
+      "sido": "경기도",
+      "sigungu": "동두천시",
+      "type": "시",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "경기",
+      "asset_base": 80000000,
+      "housing_limit": 151000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경기도 안산시": {
+      "sido": "경기도",
+      "sigungu": "안산시",
+      "type": "시",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "경기",
+      "asset_base": 80000000,
+      "housing_limit": 151000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경기도 고양시": {
+      "sido": "경기도",
+      "sigungu": "고양시",
+      "type": "특례시",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "경기",
+      "asset_base": 80000000,
+      "housing_limit": 151000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "경기도 과천시": {
+      "sido": "경기도",
+      "sigungu": "과천시",
+      "type": "시",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "경기",
+      "asset_base": 80000000,
+      "housing_limit": 151000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경기도 구리시": {
+      "sido": "경기도",
+      "sigungu": "구리시",
+      "type": "시",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "경기",
+      "asset_base": 80000000,
+      "housing_limit": 151000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경기도 남양주시": {
+      "sido": "경기도",
+      "sigungu": "남양주시",
+      "type": "시",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "경기",
+      "asset_base": 80000000,
+      "housing_limit": 151000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경기도 오산시": {
+      "sido": "경기도",
+      "sigungu": "오산시",
+      "type": "시",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "경기",
+      "asset_base": 80000000,
+      "housing_limit": 151000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경기도 시흥시": {
+      "sido": "경기도",
+      "sigungu": "시흥시",
+      "type": "시",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "경기",
+      "asset_base": 80000000,
+      "housing_limit": 151000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경기도 군포시": {
+      "sido": "경기도",
+      "sigungu": "군포시",
+      "type": "시",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "경기",
+      "asset_base": 80000000,
+      "housing_limit": 151000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경기도 의왕시": {
+      "sido": "경기도",
+      "sigungu": "의왕시",
+      "type": "시",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "경기",
+      "asset_base": 80000000,
+      "housing_limit": 151000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경기도 하남시": {
+      "sido": "경기도",
+      "sigungu": "하남시",
+      "type": "시",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "경기",
+      "asset_base": 80000000,
+      "housing_limit": 151000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경기도 용인시": {
+      "sido": "경기도",
+      "sigungu": "용인시",
+      "type": "특례시",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "경기",
+      "asset_base": 80000000,
+      "housing_limit": 151000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "경기도 파주시": {
+      "sido": "경기도",
+      "sigungu": "파주시",
+      "type": "시",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "경기",
+      "asset_base": 80000000,
+      "housing_limit": 151000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경기도 이천시": {
+      "sido": "경기도",
+      "sigungu": "이천시",
+      "type": "시",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "경기",
+      "asset_base": 80000000,
+      "housing_limit": 151000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경기도 안성시": {
+      "sido": "경기도",
+      "sigungu": "안성시",
+      "type": "시",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "경기",
+      "asset_base": 80000000,
+      "housing_limit": 151000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경기도 김포시": {
+      "sido": "경기도",
+      "sigungu": "김포시",
+      "type": "시",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "경기",
+      "asset_base": 80000000,
+      "housing_limit": 151000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경기도 화성시": {
+      "sido": "경기도",
+      "sigungu": "화성시",
+      "type": "특례시",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "경기",
+      "asset_base": 80000000,
+      "housing_limit": 151000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "경기도 광주시": {
+      "sido": "경기도",
+      "sigungu": "광주시",
+      "type": "시",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "경기",
+      "asset_base": 80000000,
+      "housing_limit": 151000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경기도 양주시": {
+      "sido": "경기도",
+      "sigungu": "양주시",
+      "type": "시",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "경기",
+      "asset_base": 80000000,
+      "housing_limit": 151000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경기도 포천시": {
+      "sido": "경기도",
+      "sigungu": "포천시",
+      "type": "시",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "경기",
+      "asset_base": 80000000,
+      "housing_limit": 151000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경기도 여주시": {
+      "sido": "경기도",
+      "sigungu": "여주시",
+      "type": "시",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "경기",
+      "asset_base": 80000000,
+      "housing_limit": 151000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경기도 연천군": {
+      "sido": "경기도",
+      "sigungu": "연천군",
+      "type": "군",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "경기",
+      "asset_base": 80000000,
+      "housing_limit": 151000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "경기도 가평군": {
+      "sido": "경기도",
+      "sigungu": "가평군",
+      "type": "군",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "경기",
+      "asset_base": 80000000,
+      "housing_limit": 151000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "경기도 양평군": {
+      "sido": "경기도",
+      "sigungu": "양평군",
+      "type": "군",
+      "rent_grade": "2급지(경기·인천)",
+      "asset_class": "경기",
+      "asset_base": 80000000,
+      "housing_limit": 151000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "강원특별자치도 춘천시": {
+      "sido": "강원특별자치도",
+      "sigungu": "춘천시",
+      "type": "시",
       "rent_grade": "4급지(그 외 지역)",
-      "sido": "경상북도",
       "asset_class": "그 외 지역",
       "asset_base": 53000000,
       "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "강원특별자치도 원주시": {
+      "sido": "강원특별자치도",
+      "sigungu": "원주시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "강원특별자치도 강릉시": {
+      "sido": "강원특별자치도",
+      "sigungu": "강릉시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "강원특별자치도 동해시": {
+      "sido": "강원특별자치도",
+      "sigungu": "동해시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "강원특별자치도 태백시": {
+      "sido": "강원특별자치도",
+      "sigungu": "태백시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "강원특별자치도 속초시": {
+      "sido": "강원특별자치도",
+      "sigungu": "속초시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "강원특별자치도 삼척시": {
+      "sido": "강원특별자치도",
+      "sigungu": "삼척시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "강원특별자치도 홍천군": {
+      "sido": "강원특별자치도",
+      "sigungu": "홍천군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "강원특별자치도 횡성군": {
+      "sido": "강원특별자치도",
+      "sigungu": "횡성군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "강원특별자치도 영월군": {
+      "sido": "강원특별자치도",
+      "sigungu": "영월군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "강원특별자치도 평창군": {
+      "sido": "강원특별자치도",
+      "sigungu": "평창군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "강원특별자치도 정선군": {
+      "sido": "강원특별자치도",
+      "sigungu": "정선군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "강원특별자치도 철원군": {
+      "sido": "강원특별자치도",
+      "sigungu": "철원군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "강원특별자치도 화천군": {
+      "sido": "강원특별자치도",
+      "sigungu": "화천군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "강원특별자치도 양구군": {
+      "sido": "강원특별자치도",
+      "sigungu": "양구군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "강원특별자치도 인제군": {
+      "sido": "강원특별자치도",
+      "sigungu": "인제군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "강원특별자치도 고성군": {
+      "sido": "강원특별자치도",
+      "sigungu": "고성군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "강원특별자치도 양양군": {
+      "sido": "강원특별자치도",
+      "sigungu": "양양군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "충청북도 청주시": {
+      "sido": "충청북도",
+      "sigungu": "청주시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "충청북도 충주시": {
+      "sido": "충청북도",
+      "sigungu": "충주시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "충청북도 제천시": {
+      "sido": "충청북도",
+      "sigungu": "제천시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "충청북도 보은군": {
+      "sido": "충청북도",
+      "sigungu": "보은군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "충청북도 옥천군": {
+      "sido": "충청북도",
+      "sigungu": "옥천군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "충청북도 영동군": {
+      "sido": "충청북도",
+      "sigungu": "영동군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "충청북도 증평군": {
+      "sido": "충청북도",
+      "sigungu": "증평군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "충청북도 진천군": {
+      "sido": "충청북도",
+      "sigungu": "진천군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "충청북도 괴산군": {
+      "sido": "충청북도",
+      "sigungu": "괴산군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "충청북도 음성군": {
+      "sido": "충청북도",
+      "sigungu": "음성군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "충청북도 단양군": {
+      "sido": "충청북도",
+      "sigungu": "단양군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "충청남도 천안시": {
+      "sido": "충청남도",
+      "sigungu": "천안시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "충청남도 공주시": {
+      "sido": "충청남도",
+      "sigungu": "공주시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "충청남도 보령시": {
+      "sido": "충청남도",
+      "sigungu": "보령시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "충청남도 아산시": {
+      "sido": "충청남도",
+      "sigungu": "아산시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "충청남도 서산시": {
+      "sido": "충청남도",
+      "sigungu": "서산시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "충청남도 논산시": {
+      "sido": "충청남도",
+      "sigungu": "논산시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "충청남도 계룡시": {
+      "sido": "충청남도",
+      "sigungu": "계룡시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "충청남도 당진시": {
+      "sido": "충청남도",
+      "sigungu": "당진시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "충청남도 금산군": {
+      "sido": "충청남도",
+      "sigungu": "금산군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "충청남도 부여군": {
+      "sido": "충청남도",
+      "sigungu": "부여군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "충청남도 서천군": {
+      "sido": "충청남도",
+      "sigungu": "서천군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "충청남도 청양군": {
+      "sido": "충청남도",
+      "sigungu": "청양군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "충청남도 홍성군": {
+      "sido": "충청남도",
+      "sigungu": "홍성군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "충청남도 예산군": {
+      "sido": "충청남도",
+      "sigungu": "예산군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "충청남도 태안군": {
+      "sido": "충청남도",
+      "sigungu": "태안군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "전북특별자치도 전주시": {
+      "sido": "전북특별자치도",
+      "sigungu": "전주시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "전북특별자치도 군산시": {
+      "sido": "전북특별자치도",
+      "sigungu": "군산시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "전북특별자치도 익산시": {
+      "sido": "전북특별자치도",
+      "sigungu": "익산시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "전북특별자치도 정읍시": {
+      "sido": "전북특별자치도",
+      "sigungu": "정읍시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "전북특별자치도 남원시": {
+      "sido": "전북특별자치도",
+      "sigungu": "남원시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "전북특별자치도 김제시": {
+      "sido": "전북특별자치도",
+      "sigungu": "김제시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "전북특별자치도 완주군": {
+      "sido": "전북특별자치도",
+      "sigungu": "완주군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "전북특별자치도 진안군": {
+      "sido": "전북특별자치도",
+      "sigungu": "진안군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "전북특별자치도 무주군": {
+      "sido": "전북특별자치도",
+      "sigungu": "무주군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "전북특별자치도 장수군": {
+      "sido": "전북특별자치도",
+      "sigungu": "장수군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "전북특별자치도 임실군": {
+      "sido": "전북특별자치도",
+      "sigungu": "임실군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "전북특별자치도 순창군": {
+      "sido": "전북특별자치도",
+      "sigungu": "순창군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "전북특별자치도 고창군": {
+      "sido": "전북특별자치도",
+      "sigungu": "고창군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "전북특별자치도 부안군": {
+      "sido": "전북특별자치도",
+      "sigungu": "부안군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "전라남도 목포시": {
+      "sido": "전라남도",
+      "sigungu": "목포시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "전라남도 여수시": {
+      "sido": "전라남도",
+      "sigungu": "여수시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "전라남도 순천시": {
+      "sido": "전라남도",
+      "sigungu": "순천시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "전라남도 나주시": {
+      "sido": "전라남도",
+      "sigungu": "나주시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "전라남도 광양시": {
+      "sido": "전라남도",
+      "sigungu": "광양시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "전라남도 담양군": {
+      "sido": "전라남도",
+      "sigungu": "담양군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "전라남도 곡성군": {
+      "sido": "전라남도",
+      "sigungu": "곡성군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "전라남도 구례군": {
+      "sido": "전라남도",
+      "sigungu": "구례군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "전라남도 고흥군": {
+      "sido": "전라남도",
+      "sigungu": "고흥군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "전라남도 보성군": {
+      "sido": "전라남도",
+      "sigungu": "보성군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "전라남도 화순군": {
+      "sido": "전라남도",
+      "sigungu": "화순군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "전라남도 장흥군": {
+      "sido": "전라남도",
+      "sigungu": "장흥군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "전라남도 강진군": {
+      "sido": "전라남도",
+      "sigungu": "강진군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "전라남도 해남군": {
+      "sido": "전라남도",
+      "sigungu": "해남군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "전라남도 영암군": {
+      "sido": "전라남도",
+      "sigungu": "영암군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "전라남도 무안군": {
+      "sido": "전라남도",
+      "sigungu": "무안군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "전라남도 함평군": {
+      "sido": "전라남도",
+      "sigungu": "함평군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "전라남도 영광군": {
+      "sido": "전라남도",
+      "sigungu": "영광군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "전라남도 장성군": {
+      "sido": "전라남도",
+      "sigungu": "장성군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "전라남도 완도군": {
+      "sido": "전라남도",
+      "sigungu": "완도군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "전라남도 진도군": {
+      "sido": "전라남도",
+      "sigungu": "진도군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "전라남도 신안군": {
+      "sido": "전라남도",
+      "sigungu": "신안군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "경상북도 포항시": {
+      "sido": "경상북도",
+      "sigungu": "포항시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경상북도 경주시": {
+      "sido": "경상북도",
+      "sigungu": "경주시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경상북도 김천시": {
+      "sido": "경상북도",
+      "sigungu": "김천시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경상북도 안동시": {
+      "sido": "경상북도",
+      "sigungu": "안동시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경상북도 구미시": {
+      "sido": "경상북도",
+      "sigungu": "구미시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경상북도 영주시": {
+      "sido": "경상북도",
+      "sigungu": "영주시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경상북도 영천시": {
+      "sido": "경상북도",
+      "sigungu": "영천시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경상북도 상주시": {
+      "sido": "경상북도",
+      "sigungu": "상주시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경상북도 문경시": {
+      "sido": "경상북도",
+      "sigungu": "문경시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경상북도 경산시": {
+      "sido": "경상북도",
+      "sigungu": "경산시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경상북도 의성군": {
+      "sido": "경상북도",
+      "sigungu": "의성군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "경상북도 청송군": {
+      "sido": "경상북도",
+      "sigungu": "청송군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "경상북도 영양군": {
+      "sido": "경상북도",
+      "sigungu": "영양군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "경상북도 영덕군": {
+      "sido": "경상북도",
+      "sigungu": "영덕군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "경상북도 청도군": {
+      "sido": "경상북도",
+      "sigungu": "청도군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "경상북도 고령군": {
+      "sido": "경상북도",
+      "sigungu": "고령군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "경상북도 성주군": {
+      "sido": "경상북도",
+      "sigungu": "성주군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "경상북도 칠곡군": {
+      "sido": "경상북도",
+      "sigungu": "칠곡군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "경상북도 예천군": {
+      "sido": "경상북도",
+      "sigungu": "예천군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "경상북도 봉화군": {
+      "sido": "경상북도",
+      "sigungu": "봉화군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "경상북도 울진군": {
+      "sido": "경상북도",
+      "sigungu": "울진군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "경상북도 울릉군": {
+      "sido": "경상북도",
+      "sigungu": "울릉군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "경상남도 창원시": {
+      "sido": "경상남도",
+      "sigungu": "창원시",
+      "type": "특례시",
+      "rent_grade": "3급지(광역시·세종·창원)",
+      "asset_class": "광역시",
+      "asset_base": 77000000,
+      "housing_limit": 146000000,
+      "pension_class": "대도시",
+      "pension_asset_deduction": 135000000
+    },
+    "경상남도 진주시": {
+      "sido": "경상남도",
+      "sigungu": "진주시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경상남도 통영시": {
+      "sido": "경상남도",
+      "sigungu": "통영시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경상남도 사천시": {
+      "sido": "경상남도",
+      "sigungu": "사천시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경상남도 김해시": {
+      "sido": "경상남도",
+      "sigungu": "김해시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경상남도 밀양시": {
+      "sido": "경상남도",
+      "sigungu": "밀양시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경상남도 거제시": {
+      "sido": "경상남도",
+      "sigungu": "거제시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경상남도 양산시": {
+      "sido": "경상남도",
+      "sigungu": "양산시",
+      "type": "시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "경상남도 의령군": {
+      "sido": "경상남도",
+      "sigungu": "의령군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "경상남도 함안군": {
+      "sido": "경상남도",
+      "sigungu": "함안군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "경상남도 창녕군": {
+      "sido": "경상남도",
+      "sigungu": "창녕군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "경상남도 고성군": {
+      "sido": "경상남도",
+      "sigungu": "고성군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "경상남도 남해군": {
+      "sido": "경상남도",
+      "sigungu": "남해군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "경상남도 하동군": {
+      "sido": "경상남도",
+      "sigungu": "하동군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "경상남도 산청군": {
+      "sido": "경상남도",
+      "sigungu": "산청군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "경상남도 함양군": {
+      "sido": "경상남도",
+      "sigungu": "함양군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "경상남도 거창군": {
+      "sido": "경상남도",
+      "sigungu": "거창군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "경상남도 합천군": {
+      "sido": "경상남도",
+      "sigungu": "합천군",
+      "type": "군",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "농어촌",
+      "pension_asset_deduction": 72500000
+    },
+    "제주특별자치도 제주시": {
+      "sido": "제주특별자치도",
+      "sigungu": "제주시",
+      "type": "행정시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
+      "pension_asset_deduction": 85000000
+    },
+    "제주특별자치도 서귀포시": {
+      "sido": "제주특별자치도",
+      "sigungu": "서귀포시",
+      "type": "행정시",
+      "rent_grade": "4급지(그 외 지역)",
+      "asset_class": "그 외 지역",
+      "asset_base": 53000000,
+      "housing_limit": 112000000,
+      "pension_class": "중소도시",
       "pension_asset_deduction": 85000000
     }
   },
@@ -398,9 +2928,9 @@
       "basis": "보건복지부 보도자료(2026-01-01) '수급자의 근로·사업소득은 30%를 공제', 해운대구청 안내(2026-02-12, 2026 사업안내 p.106~107 인용)"
     },
     "rent": {
-      "value": "3급지 24.7~46.3만 / 4급지 21.2~40.2만 원",
+      "value": "1급지(서울) 36.9~69.9만 / 2급지(경기·인천) 30.0~56.8만 / 3급지(광역시·세종·창원) 24.7~46.3만 / 4급지(그 외) 21.2~40.2만 원",
       "status": "확인",
-      "basis": "국토교통부고시 제2025-506호 2026년 주거급여 선정기준 및 최저보장수준 (2차 자료 여러 곳 일치, 3인·5~6인은 LH·법령정보 정리본)"
+      "basis": "국토교통부고시 제2025-506호 기준임대료 표(이미지)를 2026-11-23 국가법령정보센터 원문에서 판독. 3급지는 '광역시·세종시·수도권 외 특례시', 7인은 6인과 같고 8~9인은 6인의 10% 가산"
     },
     "jugeo_self_share": {
       "value": "30%",
@@ -488,19 +3018,24 @@
       "basis": "인천광역시 장애인연금 안내(2026): 선정기준액 단독 1,400,000원·부부 2,240,000원, 기초급여 최대 349,700원, 부가급여 소득계층별 3만~9만 원. 추정: 근로소득 공제(기초연금과 같은 0.7×(근로소득−116만 원)), 계층별 부가급여(수급자 9만·차상위 7만·초과 3만), 기초급여를 생계급여 소득인정액에 포함"
     },
     "asset_basic": {
-      "value": "기본재산액 광역시 7,700만·그 외 5,300만 원 / 주거용재산 한도 광역시 1억4,600만·그 외 1억1,200만 원 / 환산율 주거용 월 1.04%·일반 4.17%·금융 6.26% / 금융재산 생활준비금 500만 원",
+      "value": "기본재산액 서울 9,900만·경기 8,000만·광역·세종·창원 7,700만·그 외 5,300만 원 / 주거용재산 한도 서울 1억7,200만·경기 1억5,100만·광역·세종·창원 1억4,600만·그 외 1억1,200만 원 / 환산율 주거용 월 1.04%·일반 4.17%·금융 6.26% / 금융재산 생활준비금 500만 원",
       "status": "확인(공식) + 일부 추정",
-      "basis": "찾기쉬운 생활법령(보건복지부 『2026년 국민기초생활보장사업안내』 165쪽 인용): 광역·세종 주거용재산 한도 1억4,600만 원, 기본재산액 7,700만 원, 주거용 월 1.04%·일반 4.17%. 그 외 지역 기본재산액 5,300만 원과 금융 6.26%·생활준비금 500만 원은 여러 지자체 안내 일치. 그 외 지역 주거용재산 한도(1억1,200만 원)는 자료마다 달라 추정. 공제 순서(주거용 → 초과분 → 금융)는 사업안내 예시 기준 근사. 한부모 아동양육비에도 같은 방식을 적용(추정)"
+      "basis": "기본재산액: 복지로 모의계산 '거주지별 기본공제 재산액'(생계·의료·주거·교육급여). 주거용재산 한도: 찾기쉬운 생활법령(2026 사업안내 인용). 공제 순서(주거용 → 초과분 → 금융)는 사업안내 예시 기준 근사. 한부모 아동양육비에도 같은 방식을 적용(추정)"
     },
     "asset_pension": {
-      "value": "기본재산 공제 대도시 1억3,500만·중소도시 8,500만 원, 금융재산 2,000만 원 공제, 연 4% 환산",
-      "status": "확인(2차 자료) + 장애인연금은 추정",
-      "basis": "2026 기초연금 재산 기준(복수 안내 자료 일치). 대구 북구는 대도시, 경산시는 중소도시. 장애인연금도 같은 방식이라고 가정(추정)"
+      "value": "기본재산 공제 대도시 1억3,500만·중소도시 8,500만·농어촌 7,250만 원, 금융재산 2,000만 원 공제, 연 4% 환산",
+      "status": "확인 + 장애인연금은 추정",
+      "basis": "기초연금 선정기준 고시(제2026-156호) 제8조 표와 적용지역(대도시: 특별시·광역시의 구(군 포함)·특례시 / 중소도시: 도의 시·세종 / 농어촌: 도의 군), 제9조 금융재산 2,000만 원. 장애인연금도 같은 방식이라고 가정(추정)"
     },
     "asset_eitc": {
       "value": "가구 재산 합계 2억4천만 원 미만, 1억7천만 원 이상이면 50% 지급 (부채 차감 없음)",
       "status": "확인(2차 자료)",
       "basis": "국세청 근로·자녀장려금 재산 요건 (2026년 신청분), 복수 안내 자료 일치"
+    },
+    "regions": {
+      "value": "전국 시군구 230곳 (자치구·시·군·행정시·세종)",
+      "status": "확인 필요",
+      "basis": "data/sources/regions.csv. 2026-11 기준 행정구역(인천 제물포구·영종구·검단구 2026-07-01 개편, 군위군 대구 편입, 화성시 특례시 반영). 행정안전부 행정구역 현황으로 팀 확인 필요"
     }
   },
   "benefit_sources": {
@@ -616,5 +3151,253 @@
         "bukgu_nhis_value"
       ]
     }
-  }
+  },
+  "region_classes": {
+    "note": "지역별로 달라지는 중앙 제도 값. data/build_regions.py가 data/sources/regions.csv로 만든다.",
+    "asset": {
+      "서울": {
+        "asset_base": 99000000,
+        "housing_limit": 172000000
+      },
+      "경기": {
+        "asset_base": 80000000,
+        "housing_limit": 151000000
+      },
+      "광역시": {
+        "asset_base": 77000000,
+        "housing_limit": 146000000
+      },
+      "그 외 지역": {
+        "asset_base": 53000000,
+        "housing_limit": 112000000
+      }
+    },
+    "pension_asset_deduction": {
+      "대도시": 135000000,
+      "중소도시": 85000000,
+      "농어촌": 72500000
+    },
+    "rent_grades": [
+      "1급지(서울)",
+      "2급지(경기·인천)",
+      "3급지(광역시·세종·창원)",
+      "4급지(그 외 지역)"
+    ]
+  },
+  "local_programs": [
+    {
+      "id": "gs_clinic",
+      "name": "65세 이상 진료비 감면",
+      "region": "경상북도 경산시",
+      "kind": "inkind",
+      "conditions": [
+        {
+          "field": "senior_in_household",
+          "op": "==",
+          "value": "true",
+          "group": "",
+          "evidence": "경산시 주민등록 65세 이상 (보건기관 내과 진료비 감면)"
+        }
+      ],
+      "amount": {
+        "type": "per_senior",
+        "param": "gs_clinic_value"
+      },
+      "note": "경산시 주민등록 65세 이상, 보건기관 내과",
+      "source": "S18",
+      "status": "승인",
+      "reviewed_by": "오름 팀 (조례 원문 대조, 시범 데이터)",
+      "approved_by": "오름 팀 (시범 데이터)",
+      "approved_at": "2026-11-18",
+      "effective_from": "2026-01-01"
+    },
+    {
+      "id": "gs_birth",
+      "name": "출산장려금",
+      "region": "경상북도 경산시",
+      "kind": "cash",
+      "conditions": [
+        {
+          "field": "newborn",
+          "op": "==",
+          "value": "true",
+          "group": "",
+          "evidence": "경산시에 출생신고한 출생아"
+        }
+      ],
+      "amount": {
+        "type": "by_birth_order",
+        "param": "gs_birth_monthly",
+        "lump_param": "gs_birth_lump"
+      },
+      "note": "월 {amount}원 × {months}개월 + 출산축하금 {lump}원(일시)",
+      "source": "S15",
+      "status": "승인",
+      "reviewed_by": "오름 팀 (조례 원문 대조, 시범 데이터)",
+      "approved_by": "오름 팀 (시범 데이터)",
+      "approved_at": "2026-11-18",
+      "effective_from": "2026-01-01"
+    },
+    {
+      "id": "gs_loan",
+      "name": "저소득주민생활안정자금(융자)",
+      "region": "경상북도 경산시",
+      "kind": "access",
+      "conditions": [
+        {
+          "field": "recipient_status",
+          "op": "in",
+          "value": "생계,의료,주거",
+          "group": "",
+          "evidence": "생계·의료·주거급여 수급자"
+        }
+      ],
+      "amount": {
+        "type": "fixed",
+        "monthly": 0
+      },
+      "note": "생계·의료·주거 수급자, 최대 1,200만 원 융자",
+      "source": "S17",
+      "status": "승인",
+      "reviewed_by": "오름 팀 (조례 원문 대조, 시범 데이터)",
+      "approved_by": "오름 팀 (시범 데이터)",
+      "approved_at": "2026-11-18",
+      "effective_from": "2026-01-01"
+    },
+    {
+      "id": "gs_multichild",
+      "name": "다자녀가정 지원",
+      "region": "경상북도 경산시",
+      "kind": "cash",
+      "conditions": [
+        {
+          "field": "third_child_7to18",
+          "op": "==",
+          "value": "true",
+          "group": "",
+          "evidence": "셋째 이상 자녀(7~18세)"
+        },
+        {
+          "field": "residence_months",
+          "op": ">=",
+          "value": "36",
+          "group": "",
+          "evidence": "경산시 3년 이상 거주"
+        }
+      ],
+      "amount": {
+        "type": "child_band_annual",
+        "param": "gs_multichild_annual"
+      },
+      "note": "셋째 이상 + 3년 이상 거주, 연 {annual_man}만 원({band_label}) 월 환산",
+      "source": "S16",
+      "status": "승인",
+      "reviewed_by": "오름 팀 (조례 원문 대조, 시범 데이터)",
+      "approved_by": "오름 팀 (시범 데이터)",
+      "approved_at": "2026-11-18",
+      "effective_from": "2026-01-01"
+    },
+    {
+      "id": "bk_nhis",
+      "name": "건강보험료지원",
+      "region": "대구광역시 북구",
+      "kind": "inkind",
+      "conditions": [
+        {
+          "field": "senior_in_household",
+          "op": "==",
+          "value": "true",
+          "group": "대상",
+          "evidence": "65세 이상 노인"
+        },
+        {
+          "field": "disabled",
+          "op": "==",
+          "value": "true",
+          "group": "대상",
+          "evidence": "장애인"
+        },
+        {
+          "field": "single_parent",
+          "op": "==",
+          "value": "true",
+          "group": "대상",
+          "evidence": "한부모가족"
+        },
+        {
+          "field": "recipient_status",
+          "op": "not_in",
+          "value": "의료",
+          "group": "",
+          "evidence": "의료급여 수급권자가 아닌 사람"
+        },
+        {
+          "field": "nhis_premium",
+          "op": "<=",
+          "value": "@bukgu_min_premium",
+          "group": "",
+          "evidence": "건강보험료가 최저보험료 이하"
+        }
+      ],
+      "facts": {
+        "nhis_premium_rate": "bukgu_nhis_rate"
+      },
+      "amount": {
+        "type": "fixed",
+        "param": "bukgu_nhis_value"
+      },
+      "note": "의료급여 수급권자 아님 + 최저보험료 이하 + 노인·장애인·한부모, 건강·장기요양보험료 전액 (조례)",
+      "source": "S14",
+      "status": "승인",
+      "reviewed_by": "오름 팀 (조례 원문 대조, 시범 데이터)",
+      "approved_by": "오름 팀 (시범 데이터)",
+      "approved_at": "2026-11-18",
+      "effective_from": "2026-01-01"
+    }
+  ],
+  "local_program_spec": {
+    "note": "지자체 제도. 조건은 AI 변환 결과(pipeline/schema.py)와 같은 형식이다. 계산에는 status가 '승인'인 제도만 쓴다.",
+    "group": "group이 빈 조건은 모두 충족해야 하고, 같은 group 이름끼리는 하나 이상 충족하면 된다.",
+    "ops": [
+      "<=",
+      "<",
+      ">=",
+      ">",
+      "==",
+      "in",
+      "not_in",
+      "between"
+    ],
+    "value_param": "값이 @로 시작하면 params의 값을 쓴다 (예: @bukgu_min_premium)",
+    "amount_types": {
+      "fixed": "monthly 또는 param 값",
+      "per_senior": "param × 65세 이상 인원",
+      "by_birth_order": "param[출생순위] = [월 금액, 개월]",
+      "child_band_annual": "param[7-15|16-18] 연액 ÷ 12 (초·중학생이 있으면 7-15)"
+    },
+    "facts": [
+      "age",
+      "household_size",
+      "income_recognized_pct_median",
+      "income_recognized_won",
+      "total_income_annual",
+      "assets",
+      "recipient_status",
+      "basic_pension_recipient",
+      "residence_months",
+      "child_count",
+      "newborn",
+      "school_enrolled",
+      "disabled",
+      "single_parent",
+      "senior_in_household",
+      "nhis_premium",
+      "third_child_7to18",
+      "child_birth_order"
+    ]
+  },
+  "analysis_regions": [
+    "대구광역시 북구",
+    "경상북도 경산시"
+  ]
 }

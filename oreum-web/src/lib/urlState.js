@@ -1,6 +1,7 @@
 // 시뮬레이터 입력값 ↔ 주소(쿼리)
 // 새로고침해도 결과가 남고, 주소를 복사하면 같은 화면을 공유할 수 있다. 개인 식별 정보는 담지 않는다.
 
+// 예전 링크와 호환: 시범 지역 2곳은 짧은 코드, 그 밖의 지역은 "시도 시군구" 이름을 그대로 쓴다
 const REGION_CODE = { "경상북도 경산시": "gs", "대구광역시 북구": "bk" };
 const CODE_REGION = Object.fromEntries(Object.entries(REGION_CODE).map(([k, v]) => [v, k]));
 
@@ -15,7 +16,7 @@ const FIELDS = [
 
 export function encodeState({ hh, income, compare, includeInkind, preset }, defaults) {
   const q = new URLSearchParams();
-  q.set("r", REGION_CODE[hh.region] || "gs");
+  q.set("r", REGION_CODE[hh.region] || hh.region || "gs");
   for (const [k, key, type] of FIELDS) {
     if (hh[k] === defaults[k]) continue;
     if (type === "bool") q.set(key, hh[k] ? "1" : "0");
@@ -30,7 +31,8 @@ export function encodeState({ hh, income, compare, includeInkind, preset }, defa
 }
 
 export function decodeState(params, defaults) {
-  const hh = { ...defaults, region: CODE_REGION[params.get("r")] || defaults.region };
+  const r = params.get("r");
+  const hh = { ...defaults, region: CODE_REGION[r] || r || defaults.region };
   for (const [k, key, type] of FIELDS) {
     if (!params.has(key)) continue;
     const raw = params.get(key);
