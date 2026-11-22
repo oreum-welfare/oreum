@@ -9,6 +9,7 @@ const pairs = [
   ["../../data/rules.json", "../public/data/rules.json"],
   ["../../pipeline/review_export.json", "../public/data/review.json"],
   ["../../pipeline/ai_results.json", "../public/data/ai_results.json"],
+  ["../../pipeline/local_drafts.json", "../public/data/local_drafts.json"],
 ];
 mkdirSync(resolve(here, "../public/data"), { recursive: true });
 for (const [from, to] of pairs) {

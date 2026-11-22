@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { createEngine } from "../lib/engine.js";
+import { publishedPrograms } from "../lib/programs.js";
 import { decodeState, encodeState } from "../lib/urlState.js";
 import { useJson } from "../lib/useJson.js";
 import { calculate } from "./calc.js";
@@ -11,7 +12,11 @@ import Result from "./Result.jsx";
 
 // 사용자 화면: 주소(쿼리)에 입력값이 있으면 결과, 없으면 시작·질문. 새로고침·공유해도 같은 화면.
 export default function UserApp() {
-  const { data, error } = useJson("/data/rules.json");
+  const { data: rules, error } = useJson("/data/rules.json");
+  // 지자체 제도는 담당자가 '승인'한 것만 (데모: 이 브라우저의 승인 결정, Supabase: DB의 승인 제도)
+  const [programs, setPrograms] = useState(null);
+  useEffect(() => { if (rules) publishedPrograms(rules).then(setPrograms); }, [rules]);
+  const data = useMemo(() => (rules ? { ...rules, local_programs: programs || rules.local_programs } : null), [rules, programs]);
   const engine = useMemo(() => (data ? createEngine(data) : null), [data]);
   const [params, setParams] = useSearchParams();
   const [editing, setEditing] = useState(false); // false 또는 수정을 시작할 질문 번호

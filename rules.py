@@ -341,16 +341,20 @@ def evaluate(hh: Household, earned: float) -> list[Benefit]:
         "newborn": hh.newborn, "school_enrolled": hh.school_kids > 0, "disabled": hh.is_disabled,
         "single_parent": hh.single_parent, "senior_in_household": hh.seniors > 0,
         "third_child_7to18": hh.third_child_7to18, "child_birth_order": hh.birth_order,
+        "residence_region": [x for x in (hh.region, region.get("sido"), region.get("sigungu")) if x],
     }
     for prog in local_programs_for(hh.region):
         f = dict(facts)
         rate_key = (prog.get("facts") or {}).get("nhis_premium_rate")
         if rate_key:
             f["nhis_premium"] = earned * _P[rate_key]
-        if not conditions_met(prog.get("conditions"), f):
+        skip = set(prog.get("apply_checks") or [])  # 담당자가 '신청할 때 확인'으로 둔 조건 (계산에서 제외, 안내만)
+        if not conditions_met(prog.get("conditions"), f, skip):
             continue
         monthly, vars_ = _program_amount(prog["amount"], hh)
-        out.append(Benefit(prog["id"], prog["name"], "지자체", prog["kind"], monthly, _fill_note(prog.get("note", ""), vars_)))
+        later = [c["value"] for i, c in enumerate(prog.get("conditions") or []) if i in skip]
+        note = _fill_note(prog.get("note", ""), vars_) + (f" · 신청할 때 확인: {', '.join(later)}" if later else "")
+        out.append(Benefit(prog["id"], prog["name"], "지자체", prog["kind"], monthly, note))
     return out
 
 
@@ -379,6 +383,8 @@ def _condition_ok(c: dict, facts: dict) -> bool:
     if c["op"] in ("in", "not_in"):
         hit = any(str(x) in items for x in fact) if isinstance(fact, (list, set, tuple)) else str(fact) in items
         return hit if c["op"] == "in" else not hit
+    if isinstance(fact, (list, set, tuple)):  # 거주 지역 등 이름 목록
+        return c["op"] == "==" and any(str(x) in items for x in fact)
     if isinstance(fact, bool):
         return c["op"] == "==" and fact == (str(raw) == "true")
     x = float(fact)
@@ -388,9 +394,11 @@ def _condition_ok(c: dict, facts: dict) -> bool:
     return {"<=": x <= v, "<": x < v, ">=": x >= v, ">": x > v, "==": x == v}.get(c["op"], False)
 
 
-def conditions_met(conds, facts: dict) -> bool:
+def conditions_met(conds, facts: dict, skip: set | None = None) -> bool:
     groups: dict[str, list] = {}
-    for c in conds or []:
+    for i, c in enumerate(conds or []):
+        if skip and i in skip:
+            continue
         if not c.get("group"):
             if not _condition_ok(c, facts):
                 return False

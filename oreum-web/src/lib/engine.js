@@ -227,13 +227,16 @@ export function createEngine(data) {
       basic_pension_recipient: bp > 0, residence_months: hh.residenceMonths, child_count: d.children, newborn: hh.newborn,
       school_enrolled: d.schoolKids > 0, disabled: d.disabled, single_parent: hh.singleParent, senior_in_household: d.seniors > 0,
       third_child_7to18: hh.thirdChild7to18, child_birth_order: hh.birthOrder,
+      residence_region: [hh.region, region.sido, region.sigungu].filter(Boolean),
     };
     for (const prog of localProgramsFor(hh.region)) {
       const f = { ...facts };
       if (prog.facts?.nhis_premium_rate) f.nhis_premium = earned * P[prog.facts.nhis_premium_rate];
-      if (!conditionsMet(prog.conditions, f)) continue;
+      const skip = new Set(prog.apply_checks || []); // 담당자가 '신청할 때 확인'으로 둔 조건 (계산에서 제외, 안내만)
+      if (!conditionsMet(prog.conditions, f, skip)) continue;
       const { monthly, vars } = programAmount(prog.amount, hh, d);
-      add(prog.id, prog.name, "지자체", prog.kind, monthly, fillNote(prog.note, vars));
+      const later = (prog.conditions || []).filter((_, i) => skip.has(i)).map((c) => c.value);
+      add(prog.id, prog.name, "지자체", prog.kind, monthly, fillNote(prog.note, vars) + (later.length ? ` · 신청할 때 확인: ${later.join(", ")}` : ""));
     }
     return out;
   }
@@ -256,6 +259,7 @@ export function createEngine(data) {
       const hit = Array.isArray(fact) ? fact.some((x) => list.includes(String(x))) : list.includes(String(fact));
       return c.op === "in" ? hit : !hit;
     }
+    if (Array.isArray(fact)) return c.op === "==" && fact.some((x) => list.includes(String(x))); // 거주 지역 등 이름 목록
     if (typeof fact === "boolean") return c.op === "==" && fact === (String(raw) === "true");
     const x = Number(fact);
     if (c.op === "between") return x >= Number(list[0]) && x <= Number(list[1]);
@@ -263,9 +267,10 @@ export function createEngine(data) {
     return c.op === "<=" ? x <= v : c.op === "<" ? x < v : c.op === ">=" ? x >= v : c.op === ">" ? x > v : c.op === "==" ? x === v : false;
   }
   // group이 빈 조건은 모두 충족, 같은 group끼리는 하나 이상 충족
-  function conditionsMet(conds, facts) {
+  function conditionsMet(conds, facts, skip = new Set()) {
     const groups = {};
-    for (const c of conds || []) {
+    for (const [i, c] of (conds || []).entries()) {
+      if (skip.has(i)) continue;
       if (!c.group) { if (!conditionOk(c, facts)) return false; }
       else (groups[c.group] ||= []).push(c);
     }
