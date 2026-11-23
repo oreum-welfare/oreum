@@ -291,16 +291,14 @@ a { color: inherit; }
   .user .mobile-bottom { display: none; }
   .user .footer { padding-bottom: 48px; }
 
-  /* 왼쪽 그래프 ↔ 오른쪽 요약·변화 지점·넘는 방법을 비슷한 높이로, 아래 전체 너비에 혜택·이유, 지역·기준 */
-  .user .r-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); grid-template-areas: "chart main" "side side" "more more"; column-gap: 48px; align-items: start; padding-top: 16px; }
+  /* 왼쪽 그래프는 스크롤해도 따라 내려오게 고정, 오른쪽에 요약·넘는 방법·카드를 차례로 */
+  .user .r-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); grid-template-rows: auto auto 1fr; grid-template-areas: "chart main" "chart side" "chart more"; column-gap: 48px; align-items: start; padding-top: 16px; }
   .user .r-main { grid-area: main; }
-  .user .r-side { grid-area: side; margin-top: 24px; }
-  .user .cards.r-side > .card-link.wide { grid-column: auto; }
-  .user .r-chart { grid-area: chart; align-self: stretch; background: var(--surface); border-radius: 24px; padding: 28px 28px 24px; }
-  .user .r-more { grid-area: more; margin-top: 8px; }
-  .user .r-more { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 10px; align-items: stretch; }
-  .user .r-more .cards { margin-top: 0; }
-  .user .r-more .share { margin-top: 0; }
+  .user .r-side { grid-area: side; margin-top: 16px; }
+  .user .r-chart { grid-area: chart; position: sticky; top: 72px; background: var(--surface); border-radius: 24px; padding: 28px 28px 24px; }
+  .user .r-more { grid-area: more; }
+  .user .r-more .cards { margin-top: 10px; }
+  .user .r-more .share { margin-top: 10px; }
   .user .r-chart .chart { margin-top: 0 !important; }
   .user .r-chart .compare { background: var(--bg); }
   .user .desk-actions { display: flex; gap: 8px; margin-top: 24px; }
