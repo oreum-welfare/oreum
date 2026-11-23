@@ -42,7 +42,10 @@ a { color: inherit; }
 .user .topbar { position: sticky; top: 0; z-index: 20; background: rgba(255, 255, 255, 0.94); backdrop-filter: saturate(1.4) blur(8px); }
 .user .topbar .col { display: flex; align-items: center; justify-content: space-between; height: 56px; }
 .user .wordmark { display: block; position: relative; top: 6px; text-decoration: none; color: var(--text); line-height: 0; }
-.user .top-action { background: none; border: 0; color: var(--text-2); font-size: 15px; padding: 8px 4px; }
+.user .top-action { display: inline-flex; align-items: center; gap: 6px; background: var(--brand-soft, #eef7f1); border: 1px solid var(--brand, #6aa36f); color: var(--brand-ink, #2f7a49);
+  font-size: 14px; font-weight: 700; padding: 8px 14px; border-radius: 999px; cursor: pointer; }
+.user .top-action:hover { background: var(--brand, #6aa36f); color: #fff; }
+.user .top-action::before { content: "✎"; font-size: 14px; }
 .user .back { background: none; border: 0; padding: 8px 8px 8px 0; color: var(--text); font-size: 22px; line-height: 1; }
 .user .screen { min-height: calc(100vh - 56px); display: flex; flex-direction: column; }
 .user .screen-body { flex: 1; padding-bottom: 120px; }
@@ -172,7 +175,7 @@ a { color: inherit; }
 .user .share .btn { flex: none; background: #fff; border: 1px solid var(--line); color: var(--text); }
 .user .membership { margin: 0 0 12px; font-size: 13px; color: var(--text-2); background: var(--surface); border-radius: 12px; padding: 12px 14px; }
 .user .membership a, .user .footer .membership a { color: var(--brand-ink); font-weight: 700; }
-.user .footer { padding: 32px 0 140px; font-size: 13px; color: var(--text-3); }
+.user .footer { padding: 32px 0 calc(48px + env(safe-area-inset-bottom)); font-size: 13px; color: var(--text-3); } /* 아래 고정 버튼 줄이 없어져 여백을 줄임 */
 .user .footer a, .user .footer button { color: var(--text-3); }
 
 /* ===== 시트 (아래에서 올라옴, PC에서는 가운데 창) ===== */
@@ -343,4 +346,7 @@ a { color: inherit; }
 .user .card-link.path { background: var(--brand-soft, #eef7f1); border-color: transparent; }
 .user .card-link.path .cl-value { color: var(--brand-ink, #2f7a49); }
 @media (max-width: 340px) { .user .cards { grid-template-columns: 1fr; } }
-.user .cards > .card-link:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.user .cards > .card-link.wide { grid-column: 1 / -1; }
+
+.user .card-link.wide { padding: 18px 40px 18px 18px; }
+.user .card-link.wide .cl-value { font-size: 24px; }

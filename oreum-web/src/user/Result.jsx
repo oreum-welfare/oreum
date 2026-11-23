@@ -70,10 +70,6 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
           </div>
         )}
 
-        <div className="desk-actions">
-          <button type="button" className="btn primary" onClick={() => setSheet("path")}>넘는 방법 {pathCount(r.programs, r.gains) || ""}{pathCount(r.programs, r.gains) ? "가지 " : ""}보기</button>
-          <button type="button" className="btn ghost" onClick={onEdit}>정보 수정</button>
-        </div>
         </div>
 
         <div className="r-chart">
@@ -110,6 +106,10 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
           {cliff && <button type="button" className="card-link cliff" onClick={() => setSheet("cliff")}>
             <span className="cl-title">왜 줄어드나요?</span><b className="cl-value">{cliff.lost[0]}{cliff.lost.length > 1 ? ` 외 ${cliff.lost.length - 1}` : ""}</b><span className="cl-sub">끊기는 혜택과 이유</span>
           </button>}
+          {/* 넘는 방법: 절벽이 있으면 한 줄 전체로 크게 (이 화면의 핵심 행동) */}
+          <button type="button" className={`card-link path${cliff ? " wide" : ""}`} onClick={() => setSheet("path")}>
+            <span className="cl-title">줄어드는 구간 넘는 방법</span><b className="cl-value">{pathCount(r.programs, r.gains) ? `${pathCount(r.programs, r.gains)}가지` : "확인하기"}</b><span className="cl-sub">도움이 되는 제도와 소득을 늘리는 방법</span>
+          </button>
           <button type="button" className="card-link" onClick={() => setSheet("region")}>
             <span className="cl-title">다른 지역이라면?</span><b className="cl-value">지역 비교</b><span className="cl-sub">같은 가족·같은 소득일 때</span>
           </button>
@@ -134,10 +134,6 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
         </footer>
       </div>
 
-      <div className="bottom mobile-bottom"><div className="col">
-        <button type="button" className="btn ghost" onClick={onEdit}>정보 수정</button>
-        <button type="button" className="btn primary" onClick={() => setSheet("path")}>넘는 방법 {pathCount(r.programs, r.gains) || ""}{pathCount(r.programs, r.gains) ? "가지 " : ""}보기</button>
-      </div></div>
 
       {sheet === "benefits" && <BenefitsSheet {...{ data, benefits, total, inc, soonLost, hasAssets, includeInkind, setIncludeInkind, close }} />}
       {sheet === "cliff" && cliff && <CliffSheet cliff={cliff} cliffs={r.cliffs} m={r.m} close={close} />}
