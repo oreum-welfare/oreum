@@ -10,7 +10,7 @@ propose_notice.py가 AI로 바뀐 값을 제안한다. 반영은 사람이 PR에
 실행 예 (PowerShell):
   $env:LAW_OC = "open.law.go.kr에서 신청한 API 인증값(OC)"
   python pipeline/watch_notices.py            # 처음 실행은 지금 고시를 기준으로만 기록
-  python pipeline/watch_notices.py --init     # 기준 다시 기록
+  python pipeline/watch_notices.py --init     # 기준 다시 기록 (오늘 시행 중인 고시 기준 → 시행 전 다음 연도 고시는 다음 실행 때 '새 고시')
 
 결과:
   pipeline/notices/<고시>_<발령일자>_<일련번호>.txt   새 고시 본문·별표 (AI 제안 입력)
@@ -98,12 +98,17 @@ def collect(node, keys: set[str]) -> dict[str, list[str]]:
     return got
 
 
-def latest_version(oc: str, notice: dict) -> dict | None:
+def latest_version(oc: str, notice: dict, in_force_only: bool = False) -> dict | None:
+    """가장 최근 고시. in_force_only면 오늘 이미 시행 중인 것 중 가장 최근 (기준 기록용:
+    계산기 값은 지금 시행 중인 고시 기준이라, 시행 전인 다음 연도 고시는 '새 고시'로 잡혀야 한다)"""
     rows = []
     for nw in (1, 2):  # 현행 + 연혁 (아직 시행 전인 다음 연도 고시를 놓치지 않도록 둘 다 본다)
         data = get_json(SEARCH_URL, oc, query=notice["query"], nw=nw, knd=3, display=50, sort="ddes")
         rows += find_rows(data, "행정규칙명")
     rows = [r for r in rows if all(m in str(r.get("행정규칙명", "")) for m in notice["match"])]
+    if in_force_only:
+        now = int(today().replace("-", ""))
+        rows = [r for r in rows if int(r.get("시행일자") or 0) <= now]
     if not rows:
         return None
     best = max(rows, key=lambda r: (int(r.get("발령일자") or 0), str(r.get("행정규칙일련번호") or "")))
@@ -149,7 +154,7 @@ def main() -> None:
     new, failed, missing = [], [], []
     for n in notices:
         try:
-            ver = latest_version(oc, n)
+            ver = latest_version(oc, n, in_force_only=init)
         except RuntimeError as e:
             failed.append(f"{n['key']} ({e})")
             continue
