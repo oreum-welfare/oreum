@@ -33,10 +33,11 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
         <div className="r-main">
         {/* 1. 지금 받는 복지 */}
         <section className="result-head">
-          <p className="label">{inc > 0 ? `지금 월 ${manwon(inc)} 원을 벌면` : "지금 근로소득이 없으면"}</p>
+          <p className="label">현재 받을 수 있는 복지 혜택</p>
           {total > 0
-            ? <><p className="big">월 {manwon(total)} 원</p><p className="desc" style={{ margin: 0 }}>복지 혜택을 받을 수 있어요</p></>
-            : <><p className="big" style={{ fontSize: 30 }}>받을 수 있는 복지가 없어요</p><p className="desc" style={{ margin: 0 }}>이 소득에서는 계산되는 혜택이 없어요</p></>}
+            ? <p className="big">월 {manwon(total)} 원</p>
+            : <p className="big" style={{ fontSize: 30 }}>받을 수 있는 복지가 없어요</p>}
+          <p className="desc" style={{ margin: 0 }}>{inc > 0 ? `월급 ${manwon(inc)} 원 기준` : "근로소득 0원 기준"}</p>
           {!hasAssets && total > 0 && <p className="asset-hint">재산 0원으로 계산했어요 · <button type="button" className="link-btn" onClick={() => onEdit(4)}>재산 넣기</button></p>}
           {!localReady(data, hh.region) && <p className="notice">{short(hh.region)}의 지자체 자체 혜택은 아직 반영되지 않았어요. 전국 공통인 중앙 제도만 계산했어요.</p>}
           {r.capped && <p className="notice">입력한 소득(월 {manwon(income)} 원)이 너무 커서, 계산할 수 있는 가장 큰 소득(월 {manwon(maxIncome)} 원) 기준으로 보여 드려요.</p>}
@@ -49,7 +50,7 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
         <button type="button" className={`path-cta${cliff || curLoss ? "" : " calm"}`} onClick={() => setSheet("path")}>
           <span className="pc-text"><span className="pc-title">복지 절벽 넘는 방법</span>
             <b>{pathCount(r.programs, r.gains) ? `${pathCount(r.programs, r.gains)}가지 방법` : "확인하기"}</b>
-            <span className="pc-sub">줄어드는 동안 도움이 되는 제도와 소득을 늘리는 방법</span></span>
+            <span className="pc-sub">도움이 되는 제도와 소득을 늘리는 방법을 확인하세요.</span></span>
           <span className="pc-go" aria-hidden="true">자세히 보기 →</span>
         </button>
         </div>
@@ -61,7 +62,7 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
 
         {/* 5. 비교: 슬라이더는 트랙만 초록, 바꾼 소득과 생활비 변화를 크게 */}
         <section className="compare" aria-label="소득을 바꿔 보기">
-          <div className="compare-top"><span className="label">소득을 바꿔 보세요</span><b>월 {manwon(cmp)} 원</b></div>
+          <div className="compare-top"><span className="label">소득을 변경해 보세요</span><b>월 {manwon(cmp)} 원</b></div>
           <input className="range" type="range" min="0" max={maxIncome} step={STEP} value={cmp} style={{ "--p": `${pct}%` }}
             aria-label="비교할 월 근로소득" aria-valuetext={`월 ${manwon(cmp)} 원`} onChange={(e) => setCompare(Number(e.target.value))} />
           {cmp === inc
@@ -85,12 +86,12 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
             <span className="cl-title">받는 혜택 {benefits.length}가지</span><b className="cl-value">월 {manwon(total)} 원</b>
             {top.length > 0 && <span className="cl-preview">{top.map((b) => <span key={b.id}><span>{b.name}</span><b>{manwon(b.monthly)} 원</b></span>)}
               {benefits.length > top.length && <small>외 {benefits.length - top.length}가지</small>}</span>}
-            <span className="cl-sub">금액 근거 보기</span>
+            <span className="cl-sub">금액 근거 및 상세 내역 보기 →</span>
           </button>
           {cliff && <button type="button" className="card-link cliff wide" onClick={() => setSheet("cliff")}>
             <span className="cl-title">왜 줄어드나요?</span><b className="cl-value">{cliff.lost[0]}{cliff.lost.length > 1 ? ` 외 ${cliff.lost.length - 1}` : ""}</b>
             {cliff.causes.length > 0 && <span className="cl-preview">{cliff.causes.slice(0, 3).map((c) => <span key={c.id}><span>{c.name}</span><b className="bad">−{manwon(c.reduction)} 원</b></span>)}</span>}
-            <span className="cl-sub">끊기는 혜택과 이유</span>
+            <span className="cl-sub">혜택 중단 조건과 이유 확인 →</span>
           </button>}
         </nav>
 
@@ -98,10 +99,10 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
         {/* 7. 지역 비교·계산 기준 — PC에서는 아래 한 줄 전체 */}
         <nav className="cards" aria-label="자세히 보기">
           <button type="button" className="card-link" onClick={() => setSheet("region")}>
-            <span className="cl-title">다른 지역이라면?</span><b className="cl-value">지역 비교</b><span className="cl-sub">같은 가족·같은 소득일 때</span>
+            <b className="cl-value">지역 비교</b><span className="cl-sub">다른 지역과 비교하기 →</span>
           </button>
           <button type="button" className="card-link" onClick={() => setSheet("basis")}>
-            <span className="cl-title">계산 기준</span><b className="cl-value">출처·확인</b><span className="cl-sub">고시·조례와 확인 상태</span>
+            <b className="cl-value">계산 기준</b><span className="cl-sub">출처 및 기준 확인 →</span>
           </button>
         </nav>
 

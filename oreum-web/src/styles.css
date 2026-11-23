@@ -400,3 +400,6 @@ a { color: inherit; }
 .user .path-cta .pc-go { flex: none; font-size: 14px; font-weight: 700; background: rgba(255, 255, 255, 0.2); padding: 8px 12px; border-radius: 999px; white-space: nowrap; }
 .user .path-cta.calm { background: var(--brand-soft); color: var(--brand-ink); box-shadow: none; }
 .user .path-cta.calm .pc-go { background: #fff; }
+.user .card-link .cl-sub { font-size: 13px; }
+.user .card-link::after { content: none; }
+.user .card-link .cl-preview > span { padding-right: 0; }

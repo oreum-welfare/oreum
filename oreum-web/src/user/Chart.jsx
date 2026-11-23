@@ -76,7 +76,7 @@ export default function Chart({ sim, inc, cmp, cliffs, focus }) {
 
   // 이름표 위치: 왼쪽부터 놓고, 앞 이름표와 겹치면 한 줄 아래로
   const pins = [
-    { key: "now", text: "현재 월급", i: nowI, color: PIN.now },
+    { key: "now", text: "현재", i: nowI, color: PIN.now },
     cliffI != null && { key: "cliff", text: "감소 시작", i: cliffI, color: PIN.cliff },
     recI != null && { key: "recover", text: "회복", i: recI, color: PIN.recover },
   ].filter((p) => p && inView(p.i)).map((p) => {
@@ -101,10 +101,10 @@ export default function Chart({ sim, inc, cmp, cliffs, focus }) {
   return (
     <figure className="chart" ref={ref} style={{ margin: "28px 0 0" }}>
       <div className="chart-head">
-        <h2 className="chart-title">소득에 따른 생활비 변화</h2>
+        <h2 className="chart-title">소득별 생활비 변화</h2>
         {zoom && <button type="button" className="link-btn" onClick={() => setFull((f) => !f)} aria-pressed={full}>{full ? "내 구간 크게 보기" : "전체 보기 →"}</button>}
       </div>
-      <p className="chart-sub">생활비 = 월급 + 받는 혜택</p>
+      <p className="chart-sub">월급 {x0 > 0 ? `${manwon(x0)}~` : "0원~"}{manwon(x1)} 원</p>
       <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} role="img" aria-label={label}>
         {/* 생활비가 줄어든 구간 */}
         {cliffI != null && recI != null && inView(cliffI) && <rect x={x(xs[cliffI]) - 1} y={T} width={Math.max(2, x(xs[Math.min(recI, i1)]) - x(xs[cliffI]))} height={BASE - T} fill="#fdf3f1" />}
@@ -160,9 +160,9 @@ export function ChangePoints({ sim, inc, cmp, cliffs, focus, curLoss }) {
   const nextDrop = next && next.index > 0 ? ys[next.index - 1] - ys[next.index] : 0;
   const nearNext = next && nextDrop > 0 && next.income - after <= maxX * 0.25;
   const rows = [
-    { key: "now", at: inc, el: <li key="now"><i style={{ background: PIN.now }} /><b>현재 월급</b><span>월 {manwon(inc)} 원 · 생활비 {manwon(ys[nowI])} 원{curLoss ? <> · <em className="bad">줄기 전보다 {manwon(curLoss.shortfall)} 원 적어요</em></> : null}</span></li> },
-    focus && { key: "cliff", at: focus.income, el: <li key="cliff"><i style={{ background: PIN.cliff }} /><b>감소 시작</b><span>월 {manwon(focus.income)} 원 · 생활비 <em className="bad">{drop > 0 ? `${manwon(drop)} 원 ` : ""}감소</em></span></li> },
-    focus?.recover != null && { key: "rec", at: focus.recover, el: <li key="rec"><i style={{ background: PIN.recover }} /><b>회복</b><span>월 {manwon(focus.recover)} 원 · 줄기 전만큼 돌아와요</span></li> },
+    { key: "now", at: inc, el: <li key="now"><i style={{ background: PIN.now }} /><b>현재 소득</b><span>월 {manwon(inc)} 원 · 생활비 {manwon(ys[nowI])} 원{curLoss ? <> · <em className="bad">줄기 전보다 {manwon(curLoss.shortfall)} 원 적어요</em></> : null}</span></li> },
+    focus && { key: "cliff", at: focus.income, el: <li key="cliff"><i style={{ background: PIN.cliff }} /><b>혜택 감소</b><span>월 {manwon(focus.income)} 원 · 생활비 <em className="bad">{drop > 0 ? `${manwon(drop)} 원 ` : ""}감소</em></span></li> },
+    focus?.recover != null && { key: "rec", at: focus.recover, el: <li key="rec"><i style={{ background: PIN.recover }} /><b>회복 구간</b><span>월 {manwon(focus.recover)} 원 · 줄기 전만큼 돌아와요</span></li> },
   ].filter(Boolean).sort((a, b) => a.at - b.at);
   return (
     <section className="chart-points" aria-label="주요 변화 지점">
