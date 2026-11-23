@@ -22,6 +22,7 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
   const hasAssets = hh.housingAsset + hh.financialAsset + hh.debt > 0;
   const soonLost = new Set(cliff?.lost || []);
   const pct = maxIncome ? (cmp / maxIncome) * 100 : 0;
+  const top = benefits.filter((b) => b.kind !== "access" && b.monthly > 0).sort((a, b) => b.monthly - a.monthly).slice(0, 3); // 혜택 미리보기 (큰 금액 3개)
 
   return (
     <div className="screen">
@@ -77,37 +78,44 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
         <Chart sim={r.sim} inc={inc} cmp={cmp} cliffs={r.cliffs}
           focus={curLoss ? { income: curLoss.cliff.income, recover: curLoss.recover } : cliff ? { income: cliff.income, recover: cliff.recover } : null} />
 
-        {/* 5. 비교 */}
+        {/* 5. 비교: 슬라이더는 트랙만 초록, 바꾼 소득과 생활비 변화를 크게 */}
         <section className="compare" aria-label="소득을 바꿔 보기">
-          <div className="compare-top"><span className="label">소득을 바꿔 보면</span><b>월 {manwon(cmp)} 원</b></div>
+          <div className="compare-top"><span className="label">소득을 바꿔 보세요</span><b>월 {manwon(cmp)} 원</b></div>
           <input className="range" type="range" min="0" max={maxIncome} step={STEP} value={cmp} style={{ "--p": `${pct}%` }}
             aria-label="비교할 월 근로소득" aria-valuetext={`월 ${manwon(cmp)} 원`} onChange={(e) => setCompare(Number(e.target.value))} />
           {cmp === inc
             ? <p className="compare-result">슬라이더를 움직이면 생활비가 어떻게 바뀌는지 보여 드려요</p>
             : <>
-                <p className="compare-result">생활비 <b className={diff.disp >= 0 ? "up" : "bad"}>{diff.disp >= 0 ? "+" : "−"}{manwon(Math.abs(diff.disp))} 원</b> · 지금과 비교
-                  {diff.lost.length > 0 && <><br />{diff.lost.slice(0, 2).join(", ")}{diff.lost.length > 2 ? ` 외 ${diff.lost.length - 2}개` : ""} 끊김</>}
-                  {diff.gained.length > 0 && <><br />{diff.gained.slice(0, 2).join(", ")} 새로 받음</>}</p>
-                <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                <div className="compare-diff"><span>지금보다 생활비</span><b className={diff.disp >= 0 ? "up" : "bad"}>{diff.disp >= 0 ? "+" : "−"}{manwon(Math.abs(diff.disp))} 원</b></div>
+                {(diff.lost.length > 0 || diff.gained.length > 0) && <p className="compare-result">
+                  {diff.lost.length > 0 && <>{diff.lost.slice(0, 2).join(", ")}{diff.lost.length > 2 ? ` 외 ${diff.lost.length - 2}개` : ""} 끊김</>}
+                  {diff.lost.length > 0 && diff.gained.length > 0 && <br />}
+                  {diff.gained.length > 0 && <>{diff.gained.slice(0, 2).join(", ")} 새로 받음</>}</p>}
+                <div className="compare-actions">
                   <button type="button" className="btn ghost small" onClick={() => setCompare(inc)}>내 소득으로</button>
-                  <button type="button" className="btn ghost small" onClick={adoptCompare}>이 소득으로 다시 계산</button>
+                  <button type="button" className="btn primary small" onClick={adoptCompare}>이 소득으로 다시 계산</button>
                 </div>
               </>}
         </section>
         </div>
 
-        <div className="r-more">
-        {/* 6. 자세히 */}
-        {/* 자세히 보기: 카드로 크게 (핵심 숫자를 먼저 보이게) */}
-        <nav className="cards" aria-label="자세히 보기">
-          <button type="button" className="card-link benefit" onClick={() => setSheet("benefits")}>
-            <span className="cl-title">받는 혜택 {benefits.length}가지</span><b className="cl-value">월 {manwon(total)} 원</b><span className="cl-sub">금액 근거 보기</span>
+        {/* 6. 자세히: 받는 혜택(미리보기)·왜 줄어드나요 — PC에서는 오른쪽 요약 아래 */}
+        <nav className="cards r-side" aria-label="혜택과 줄어드는 이유">
+          <button type="button" className="card-link benefit wide" onClick={() => setSheet("benefits")}>
+            <span className="cl-title">받는 혜택 {benefits.length}가지</span><b className="cl-value">월 {manwon(total)} 원</b>
+            {top.length > 0 && <span className="cl-preview">{top.map((b) => <span key={b.id}><span>{b.name}</span><b>{manwon(b.monthly)} 원</b></span>)}
+              {benefits.length > top.length && <small>외 {benefits.length - top.length}가지</small>}</span>}
+            <span className="cl-sub">금액 근거 보기</span>
           </button>
-          {cliff && <button type="button" className="card-link cliff" onClick={() => setSheet("cliff")}>
+          {cliff && <button type="button" className="card-link cliff wide" onClick={() => setSheet("cliff")}>
             <span className="cl-title">왜 줄어드나요?</span><b className="cl-value">{cliff.lost[0]}{cliff.lost.length > 1 ? ` 외 ${cliff.lost.length - 1}` : ""}</b><span className="cl-sub">끊기는 혜택과 이유</span>
           </button>}
-          {/* 넘는 방법: 절벽이 있으면 한 줄 전체로 크게 (이 화면의 핵심 행동) */}
-          <button type="button" className={`card-link path${cliff ? " wide" : ""}`} onClick={() => setSheet("path")}>
+        </nav>
+
+        <div className="r-more">
+        {/* 7. 넘는 방법(핵심 행동)·지역 비교·계산 기준 — PC에서는 아래 한 줄 전체 */}
+        <nav className="cards" aria-label="자세히 보기">
+          <button type="button" className={`card-link path${cliff ? " wide key" : ""}`} onClick={() => setSheet("path")}>
             <span className="cl-title">줄어드는 구간 넘는 방법</span><b className="cl-value">{pathCount(r.programs, r.gains) ? `${pathCount(r.programs, r.gains)}가지` : "확인하기"}</b><span className="cl-sub">도움이 되는 제도와 소득을 늘리는 방법</span>
           </button>
           <button type="button" className="card-link" onClick={() => setSheet("region")}>
