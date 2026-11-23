@@ -64,7 +64,10 @@ a { color: inherit; }
 .user .step.done .num { background: var(--brand-soft); color: var(--brand-ink); }
 .user .step.on { border-bottom-color: var(--brand-strong); color: var(--text); font-weight: 700; }
 .user .step.on .num { background: var(--brand-strong); color: #fff; }
-@media (max-width: 479px) { .user .step:not(.on) .name { display: none; } .user .step.on { flex-grow: 3; } }
+/* 지금 단계만 넓고 굵은 막대 + 번호·이름, 나머지는 막대만 (높이는 같게 맞춰 줄이 흔들리지 않게) */
+.user .step { min-height: 40px; }
+.user .step.on { flex-grow: 3; border-bottom-width: 6px; }
+.user .step:not(.on) { padding-bottom: 12px; }
 .user .progress { height: 4px; background: var(--surface-2); border-radius: 2px; overflow: hidden; margin-top: 4px; }
 .user .progress i { display: block; height: 100%; background: var(--brand); border-radius: 2px; transition: width 0.25s ease; }
 
