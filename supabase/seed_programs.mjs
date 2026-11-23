@@ -21,7 +21,8 @@ const rows = [...rules.local_programs.map((p) => ({ ...p, origin: p.origin || { 
 
 const res = await fetch(`${url}/rest/v1/local_programs?on_conflict=id`, {
   method: "POST",
-  headers: { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json", Prefer: "resolution=ignore-duplicates,return=minimal" },
+  // 새 형식 비밀 키(sb_secret_...)는 apikey 헤더로만, 예전 service_role 키(JWT)는 Authorization에도 넣는다
+  headers: { apikey: key, ...(key.startsWith("sb_") ? {} : { Authorization: `Bearer ${key}` }), "Content-Type": "application/json", Prefer: "resolution=ignore-duplicates,return=minimal" },
   body: JSON.stringify(rows),
 });
 if (!res.ok) {
