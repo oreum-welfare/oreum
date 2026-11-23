@@ -70,7 +70,7 @@ export default function CentralValues() {
     if (mode === "supabase") {
       try {
         const sb = await supabaseClient();
-        const { error } = await sb.from("central_values").update({ status: res.row.status, value: res.row.value, reason: res.row.reason ?? null }).eq("id", row.id);
+        const { error } = await sb.from("central_values").update({ status: res.row.status, value: res.row.value, effective_from: res.row.effective_from, reason: res.row.reason ?? null }).eq("id", row.id);
         if (error) { setMsg(`저장하지 못했어요: ${error.message}`); return; }
       } catch {
         setMsg("서버에 연결하지 못했어요. 잠시 뒤 다시 해 주세요."); return;
@@ -82,7 +82,7 @@ export default function CentralValues() {
     }
     setRows((all) => all.map((r) => (r.id === row.id ? res.row : r)));
     setMsg(to === "승인"
-      ? `승인했어요. ${row.effective_from > today ? `${row.effective_from}부터` : "지금부터"} 계산기에 반영돼요${mode === "demo" ? " (데모: 이 브라우저만)" : ""}.`
+      ? `승인했어요. ${res.row.effective_from > today ? `${res.row.effective_from}부터` : "지금부터"} 계산기에 반영돼요${mode === "demo" ? " (데모: 이 브라우저만)" : ""}.`
       : `'${to}'(으)로 바꿨어요.`);
   };
 
@@ -144,6 +144,7 @@ function setLeaf(v, path, x) {
 
 function Detail({ r, current, today, onAct }) {
   const [value, setValue] = useState(r.value);
+  const [eff, setEff] = useState(r.effective_from);
   const [reason, setReason] = useState("");
   const [showSame, setShowSame] = useState(false);
   const pending = r.status === "검토 대기";
@@ -164,6 +165,10 @@ function Detail({ r, current, today, onAct }) {
         {n.name} · {n.number ? `제${String(n.number).replace(/^제|호$/g, "")}호` : ""} · 발령 {ymd(n.issued)} · <b>시행 {r.effective_from}</b>
         {n.serial && <> · <a href={`https://www.law.go.kr/LSW/admRulInfoP.do?admRulSeq=${encodeURIComponent(n.serial)}`} target="_blank" rel="noreferrer">원문 보기 (국가법령정보센터)</a></>}
       </p>
+      {pending && (
+        <label className="field cv-eff"><span>시행일 <small className="hint">부칙에서 이 값의 시행일이 따로 정해져 있으면 원문대로 고쳐 주세요</small></span>
+          <input type="date" value={eff} onChange={(e) => setEff(e.target.value)} /></label>
+      )}
       <p className="hint">제안: {r.proposed_by || "—"} · 근거 {r.location || "—"}{r.evidence ? `: “${r.evidence}”` : ""}</p>
       {r.status === "승인" && <p className={r.effective_from > today ? "warn" : "hint"}>{r.effective_from > today ? `시행 예정: ${r.effective_from}이 되면 계산기에 자동으로 반영돼요. 그 전까지는 지금 값으로 계산해요.` : "시행 중인 값이에요."}</p>}
 
@@ -184,7 +189,7 @@ function Detail({ r, current, today, onAct }) {
         </tbody>
       </table>
       <button type="button" className="link-btn" onClick={() => setShowSame((s) => !s)}>{showSame ? "바뀐 칸만 보기" : `같은 칸까지 모두 보기 (${all.length}칸)`}</button>
-      {edited && <p className="warn">AI 제안에서 고친 칸이 있어요. 승인하면 고친 값이 저장돼요.</p>}
+      {(edited || eff !== r.effective_from) && <p className="warn">AI 제안에서 고친 {edited ? "칸" : ""}{edited && eff !== r.effective_from ? "과 " : ""}{eff !== r.effective_from ? "시행일" : ""}이 있어요. 승인하면 고친 내용이 저장돼요.</p>}
 
       {next.length > 0 && (
         <div className="lp-actions">
@@ -194,7 +199,7 @@ function Detail({ r, current, today, onAct }) {
           <div className="lp-buttons">
             {next.map((t) => (
               <button key={t} type="button" className={`btn ${t === "승인" ? "primary" : ""}`}
-                onClick={() => onAct(r, t, { reason, value: pending ? value : undefined })}>{ACTION_LABEL[t]}</button>
+                onClick={() => onAct(r, t, { reason, value: pending ? value : undefined, effectiveFrom: pending ? eff : undefined })}>{ACTION_LABEL[t]}</button>
             ))}
           </div>
         </div>

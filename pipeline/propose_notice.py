@@ -48,7 +48,10 @@ SYSTEM = """당신은 한국 사회보장 고시에서 계산 기준값을 옮�
 3. 원문에서 확실히 읽을 수 없는 값(이미지·HWP만 있고 PDF에도 없는 표 등)은 그 키를 items에 넣지 말고 unreadable에 적습니다.
 4. evidence에는 근거 구절이나 표의 행·열을 그대로, location에는 조·별표 번호를 적습니다.
 5. 이 고시가 주어진 값과 관련이 없으면 related=false로 하고 items는 비웁니다.
-6. effective_date에는 원문의 시행일(YYYY-MM-DD)을 적습니다."""
+6. effective_date에는 **이 값들이 실제로 적용되는 날**(YYYY-MM-DD)을 적습니다. 부칙에서 값에 따라 시행일이 따로 정해져 있으면
+   (예: 최저보장수준은 3월 1일부터) 그 날짜를 적고, 그런 규정이 없으면 고시 시행일을 적습니다.
+7. 표의 칸 이름이 지금 값의 키와 조금 달라도(예: '3급지(광역·세종시·수도권 외 특례시)') 지금 값의 키 이름을 그대로 쓰고,
+   지금 값에 없는 칸(예: 7인 가구)은 넣지 않습니다."""
 
 
 def get_path(d: dict, path: str):
@@ -57,6 +60,40 @@ def get_path(d: dict, path: str):
     return d
 
 
+
+
+def label_head(k: str) -> str:
+    """'3급지(광역시·세종·창원)' → '3급지', '1인 가구' → '1인' (고시 표의 칸 이름이 우리 키와 조금 달라도 맞추기)"""
+    return re.split(r"[(\s]", str(k).strip(), maxsplit=1)[0]
+
+
+def fit_shape(cur, new):
+    """AI 값을 지금 값의 모양에 맞춘다: 같은 키가 없으면 앞머리('1급지', '1인')가 같은 키로, 지금 값에 없는 칸(7인 등)은 버린다.
+    맞출 수 없으면 None. 숫자·개수 검사는 same_shape가 다시 한다"""
+    if isinstance(cur, dict):
+        if not isinstance(new, dict):
+            return None
+        out = {}
+        for k, v in cur.items():
+            if k in new:
+                src = new[k]
+            else:
+                hits = [nk for nk in new if label_head(nk) == label_head(k)
+                        or (str(k).isdigit() and re.match(r"\d+", str(nk).strip()) and re.match(r"\d+", str(nk).strip()).group() == str(k))]
+                if len(hits) != 1:
+                    return None
+                src = new[hits[0]]
+            fitted = fit_shape(v, src)
+            if fitted is None:
+                return None
+            out[k] = fitted
+        return out
+    if isinstance(cur, list):
+        if not isinstance(new, list) or len(new) < len(cur):
+            return None
+        out = [fit_shape(x, y) for x, y in zip(cur, new)]
+        return None if any(x is None for x in out) else out
+    return new
 
 
 def same_shape(a, b) -> bool:
@@ -169,21 +206,24 @@ def propose(client, stem: str, rules: dict, hints: dict, ask=ask_claude) -> dict
     out, model = ask(client, msg, pdfs, meta["keys"], images)
 
     # AI 제안을 그대로 믿지 않는다: 모양이 같고 숫자인 것만, 지금 값과 다른 칸만 뽑는다
-    checked, rejected = [], []
+    checked, rejected, raw_rejected = [], [], {}
     for it in out["items"]:
         try:
             new = json.loads(it["value_json"])
         except json.JSONDecodeError:
             rejected.append(f"{it['key']}: JSON 형식 오류")
+            raw_rejected[it["key"]] = it["value_json"][:2000]
             continue
         cur = current[it["key"]]
-        if not same_shape(cur, new):
+        fitted = fit_shape(cur, new)  # 표의 칸 이름 차이·지금 값에 없는 칸(7인 등)만 맞춘다
+        if fitted is None or not same_shape(cur, fitted):
             rejected.append(f"{it['key']}: 지금 값과 모양이 다름")
+            raw_rejected[it["key"]] = it["value_json"][:2000]  # 사람이 보고 판단할 수 있게 남긴다
             continue
-        changes = diff(cur, new, it["key"])
-        checked.append({"key": it["key"], "value": new, "changes": changes, "evidence": it["evidence"], "location": it["location"]})
+        changes = diff(cur, fitted, it["key"])
+        checked.append({"key": it["key"], "value": fitted, "changes": changes, "evidence": it["evidence"], "location": it["location"]})
     result = {"stem": stem, "notice": meta, "model": model, "related": out["related"],
-              "effective_date": out["effective_date"], "items": checked, "rejected": rejected,
+              "effective_date": out["effective_date"], "items": checked, "rejected": rejected, "rejected_raw": raw_rejected,
               "unreadable": out["unreadable"], "notes": out["notes"]}
     PROPOSAL_DIR.mkdir(parents=True, exist_ok=True)
     (PROPOSAL_DIR / f"{stem}.json").write_text(json.dumps(result, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")

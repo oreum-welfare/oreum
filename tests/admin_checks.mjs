@@ -80,6 +80,9 @@ check("AI 초안은 모두 '검토 대기'로 들어옴", drafts.every((d) => d.
   check("중앙 기준값: 검토 대기·모양 다른 값은 반영 안 함", applyCentral(data, [row], "2027-06-01") === data && applyCentral(data, [{ ...ok.row, value: { 1: 1 } }], "2027-06-01") === data);
   const older = { ...ok.row, id: "x", value: { ...v27, 1: 850000 }, effective_from: "2026-08-01" };
   check("중앙 기준값: 같은 키는 시행일이 가장 최근인 것", inForce([older, ok.row], "2027-02-01")["lines.saeng_32"].id === ok.row.id && inForce([older, ok.row], "2026-09-01")["lines.saeng_32"].id === "x");
+  const fixedDate = decideCentral(admin, row, "승인", { effectiveFrom: "2027-03-01" });
+  check("중앙 기준값: 검토 대기 결정 때 시행일 고치기", fixedDate.row?.effective_from === "2027-03-01" && applyCentral(data, [fixedDate.row], "2027-02-28") === data);
+  check("중앙 기준값: 승인 뒤·잘못된 형식의 시행일 수정은 거절", Boolean(decideCentral(admin, ok.row, "중지", { reason: "x", effectiveFrom: "2027-05-01" }).error) && Boolean(decideCentral(admin, row, "승인", { effectiveFrom: "2027/03/01" }).error));
   const eng = createEngine(after);
   check("중앙 기준값: 계산 엔진이 새 기준선을 씀", Math.round(eng.medianIncome(1)) === Math.round(900000 / 0.32));
 }

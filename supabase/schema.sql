@@ -220,9 +220,13 @@ begin
     new.updated_at := now();
     return new;
   end if;
-  if new.key is distinct from old.key or new.effective_from is distinct from old.effective_from or new.notice is distinct from old.notice
+  if new.key is distinct from old.key or new.notice is distinct from old.notice
      or new.evidence is distinct from old.evidence or new.proposed_by is distinct from old.proposed_by then
-    raise exception '고시·시행일·근거는 바꿀 수 없어요';
+    raise exception '고시·근거는 바꿀 수 없어요';
+  end if;
+  -- 시행일도 값처럼 검토 대기 상태에서 결정할 때만 고칠 수 있다 (부칙에서 값별 시행일이 다른 경우 등)
+  if new.effective_from is distinct from old.effective_from and not (old.status = '검토 대기' and new.status is distinct from old.status) then
+    raise exception '시행일은 검토 대기 기준값을 결정할 때만 고칠 수 있어요';
   end if;
   -- 값은 검토 대기 상태에서 결정할 때만 고칠 수 있다 (AI가 잘못 읽은 칸을 원문대로 바로잡기). 모양(최상위 형식)은 그대로
   if new.value is distinct from old.value then

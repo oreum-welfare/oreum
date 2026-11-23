@@ -64,7 +64,7 @@ export function decide(user, program, to, { reason = "", monthly, applyChecks, f
 export const canReviewCentral = (user) => user?.role === "admin";
 
 // value: 검토 대기 값을 승인·반려할 때만, AI가 잘못 읽은 칸을 원문대로 고친 값 (모양은 그대로여야 함)
-export function decideCentral(user, row, to, { reason = "", value, sameShape } = {}, now = new Date()) {
+export function decideCentral(user, row, to, { reason = "", value, effectiveFrom, sameShape } = {}, now = new Date()) {
   if (!canReviewCentral(user)) return { error: "중앙 기준값은 시스템 관리자만 결정할 수 있어요" };
   if (!canTransition(row.status, to)) return { error: `'${row.status}'에서 '${to}'(으)로 바꿀 수 없어요` };
   if ((to === "반려" || to === "중지") && !reason.trim()) return { error: "사유를 적어 주세요" };
@@ -72,6 +72,12 @@ export function decideCentral(user, row, to, { reason = "", value, sameShape } =
   if (value !== undefined && row.status === "검토 대기") {
     if (sameShape && !sameShape(row.value, value)) return { error: "값의 모양이 지금 값과 달라요 (항목·개수를 그대로 두고 숫자만 고쳐 주세요)" };
     next.value = value;
+  }
+  // 시행일: 검토 대기 결정 때만 (부칙에서 값별 시행일이 다른 경우 원문대로 바로잡기)
+  if (effectiveFrom !== undefined && effectiveFrom !== row.effective_from) {
+    if (row.status !== "검토 대기") return { error: "시행일은 검토 대기 기준값을 결정할 때만 고칠 수 있어요" };
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(effectiveFrom)) return { error: "시행일을 YYYY-MM-DD 형식으로 적어 주세요" };
+    next.effective_from = effectiveFrom;
   }
   if (to === "승인") {
     next.approved_by = user.name;
