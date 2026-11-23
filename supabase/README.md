@@ -38,3 +38,4 @@
 8. **중앙 기준값**(기준 중위소득·기준임대료 등 고시 값): `schema.sql` 6절의 `central_values`. 새 고시를 AI가 읽어 제안한 값을
    시스템 관리자(`admin`)만 관리자 화면 **중앙 기준값**에서 승인합니다. 승인한 값은 시행일(`effective_from`)부터 계산기가 `rules.json` 위에 덮어 씁니다.
    매일 고시 확인(`.github/workflows/notice-watch.yml`)이 `seed_central.mjs`로 '검토 대기'를 넣습니다.
+9. **개발자 없이 운영**: 계정 관리(7절)·감시 지역(8절)·감시 고시(9절)·기준값 직접 입력(10절)은 모두 관리자 화면에서 합니다. 전체 안내는 저장소 맨 위 `OPERATIONS.md`.
