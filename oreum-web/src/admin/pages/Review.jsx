@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { won } from "../../lib/format.js";
 import { useJson } from "../../lib/useJson.js";
 import { PageHead } from "../adminUi.jsx";
@@ -136,7 +136,9 @@ export default function Review() {
   const [draft, setDraft] = useState("");
 
   useEffect(() => { saveStore(store); }, [store]);
-  useEffect(() => { if (data && !sel) setSel(data.services[0].id); }, [data, sel]);
+  const [params] = useSearchParams();
+  // ?s=서비스id 로 들어오면 그 서비스를 먼저 연다 (AI 성능 화면에서 바로 이동)
+  useEffect(() => { if (data && !sel) { const want = params.get("s"); setSel(data.services.some((x) => x.id === want) ? want : data.services[0].id); } }, [data, sel, params]);
 
   const svc = useMemo(() => data?.services.find((s) => s.id === sel), [data, sel]);
   const conds = useMemo(() => (svc ? conditionStatus(svc) : []), [svc]);

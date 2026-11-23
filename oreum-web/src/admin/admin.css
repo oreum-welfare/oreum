@@ -280,3 +280,28 @@
 .admin .rv-linked-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 14px; }
 .admin .rv-linked-value { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; margin: 4px 0 2px; word-break: keep-all; }
 @media (max-width: 640px) { .admin .rv-status { grid-template-columns: 1fr; } }
+
+/* AI 성능: 핵심 성과 · 오류 유형 표 · 서비스 표 필터 · 역할 카드 */
+.admin .box.seen { background: #c4cad2; }
+.admin .stat .stat-sub b { font-weight: 700; }
+.admin .stat.accent .stat-sub { color: rgba(255, 255, 255, 0.9); }
+.admin .ai-key { margin-top: 16px; background: var(--brand-soft); border-radius: 14px; padding: 16px 20px; }
+.admin .ai-key span { font-size: 13px; font-weight: 700; color: var(--green); }
+.admin .ai-key b { display: block; font-size: 34px; font-weight: 800; letter-spacing: -0.03em; color: var(--green); margin: 2px 0; }
+.admin .ai-key p { margin: 0; font-size: 13px; color: var(--sub); }
+.admin tr.click { cursor: pointer; }
+.admin tr.click:hover td { background: var(--soft); }
+.admin .err-table tr.on td { background: var(--brand-soft); font-weight: 700; }
+.admin .err-table td.top { color: var(--red-ink); }
+.admin .svc-filter { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-top: 20px; }
+.admin .svc-filter .status-tabs { margin: 0; }
+.admin .svc-name { font-weight: 600; }
+.admin .svc-detail td { background: var(--soft); font-size: 13px; color: var(--sub); }
+.admin .svc-detail p { margin: 0 0 8px; }
+.admin .svc-detail code { display: inline-block; margin: 4px 4px 0 0; background: #fff; }
+.admin .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0; }
+.admin .role { background: var(--soft); border-radius: 14px; padding: 18px 20px; color: var(--green); }
+.admin .role b { display: block; color: var(--ink); font-size: 16px; margin: 8px 0 6px; }
+.admin .role ul { list-style: none; padding: 0; margin: 0; color: var(--sub); font-size: 14px; line-height: 1.9; }
+.admin .role-cta { display: block; text-align: center; padding: 14px; font-size: 15px; text-decoration: none; }
+@media (max-width: 640px) { .admin .role-grid { grid-template-columns: 1fr; } }
