@@ -319,3 +319,26 @@ create trigger guard_profile_change before update or delete on public.profiles
 grant select, insert, update, delete on public.profiles to authenticated;   -- 관리자만 (RLS·트리거)
 grant select, insert, update on public.access_requests to authenticated;
 grant all on public.access_requests to service_role;
+
+-- 8. 감시 지역 (매일 지자체 제도 변경 확인할 시군구). 시스템 관리자가 관리자 화면 '운영 설정'에서 더하고 뺀다
+-- 매일 확인(.github/workflows/policy-watch.yml)이 서비스 키로 읽는다. 새로 더한 지역은 다음 날부터 제도가 '검토 대기'로 들어온다
+create table if not exists public.watch_regions (
+  region text primary key,         -- rules.json 지역 키 (예: 경상북도 경산시)
+  active boolean not null default true,
+  added_by text,
+  created_at timestamptz not null default now()
+);
+alter table public.watch_regions enable row level security;
+drop policy if exists "관리자 감시 지역 읽기" on public.watch_regions;
+create policy "관리자 감시 지역 읽기" on public.watch_regions for select using (public.is_admin());
+drop policy if exists "관리자 감시 지역 추가" on public.watch_regions;
+create policy "관리자 감시 지역 추가" on public.watch_regions for insert with check (public.is_admin());
+drop policy if exists "관리자 감시 지역 변경" on public.watch_regions;
+create policy "관리자 감시 지역 변경" on public.watch_regions for update using (public.is_admin()) with check (public.is_admin());
+drop policy if exists "관리자 감시 지역 삭제" on public.watch_regions;
+create policy "관리자 감시 지역 삭제" on public.watch_regions for delete using (public.is_admin());
+insert into public.watch_regions (region, added_by) values
+  ('경상북도 경산시', '처음 설정'), ('대구광역시 북구', '처음 설정'), ('경상북도 영천시', '처음 설정')
+on conflict (region) do nothing;
+grant select, insert, update, delete on public.watch_regions to authenticated;
+grant all on public.watch_regions to service_role;

@@ -36,13 +36,14 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from fetch_bokjiro import ENDPOINTS, ApiTimeout, call, format_body, leaves, parse_detail  # noqa: E402
+from supabase_rest import select  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 RAW_DIR, RULES_DIR = HERE / "raw", HERE / "runs_watch_rules"
 STATE_DIR = HERE / "state"
 STATE, SUMMARY, GONE = STATE_DIR / "watch_state.json", STATE_DIR / "summary.md", STATE_DIR / "gone.json"
 TRIES = STATE_DIR / "convert_tries.json"  # 원문별 AI 변환 시도 횟수
-DEFAULT_REGIONS = ["경상북도 경산시", "대구광역시 북구", "경상북도 영천시"]
+DEFAULT_REGIONS = ["경상북도 경산시", "대구광역시 북구", "경상북도 영천시"]  # 관리자 화면 설정(Supabase watch_regions)이 없을 때
 SAFE = re.compile(r"[^A-Za-z0-9_]")  # 파일 이름·명령 인자에 들어가므로 API 값에서 안전한 글자만 남긴다
 KST = timezone(timedelta(hours=9))
 
@@ -89,6 +90,14 @@ def check_missing(state: dict, region: str, seen: set[str], day: str) -> tuple[l
             e["gone_since"] = day
             gone.append({"sid": sid, **e})
     return gone, back
+
+
+def watched_regions() -> tuple[list[str], str]:
+    """감시 지역: 관리자 화면 '운영 설정'(Supabase watch_regions, 사용 중인 것) → 없으면 기본 3곳"""
+    rows = select("watch_regions", "select=region&active=eq.true&order=region")
+    if rows:
+        return [r["region"] for r in rows if r.get("region")], "관리자 화면 설정"
+    return DEFAULT_REGIONS, "기본값"
 
 
 def core_hash(body: list[str]) -> str:
@@ -144,7 +153,9 @@ def main() -> None:
     STATE_DIR.mkdir(exist_ok=True)
 
     changes, skipped, deferred, gone, back = [], [], 0, [], []
-    for region in args.region or DEFAULT_REGIONS:
+    regions, origin = (args.region, "명령 인자") if args.region else watched_regions()
+    print(f"감시 지역 {len(regions)}곳 ({origin}): {', '.join(regions)}")
+    for region in regions:
         try:
             items, complete = list_region(key, region)
         except ApiTimeout as e:

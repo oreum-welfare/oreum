@@ -8,6 +8,7 @@ import Analysis from "./pages/Analysis.jsx";
 import CentralValues from "./pages/CentralValues.jsx";
 import LocalPrograms from "./pages/LocalPrograms.jsx";
 import Review from "./pages/Review.jsx";
+import Settings from "./pages/Settings.jsx";
 import { SessionProvider, useSession } from "./session.jsx";
 
 const TABS = [
@@ -17,6 +18,7 @@ const TABS = [
   ["local", "지자체 제도 검토"],
   ["central", "중앙 기준값"],
   ["accounts", "계정 관리"],
+  ["settings", "운영 설정"],
 ];
 
 // 관리자(운영자) 화면: 정책 분석·AI 추출 성능·사람 검수
@@ -49,6 +51,7 @@ function AdminShell() {
           <Route path="local" element={<LocalPrograms />} />
           <Route path="central" element={<CentralValues />} />
           <Route path="accounts" element={<Accounts />} />
+          <Route path="settings" element={<Settings />} />
           <Route path="*" element={<Navigate to="analysis" replace />} />
         </Routes>
       </div>
