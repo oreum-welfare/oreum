@@ -12,7 +12,7 @@ export_local_drafts.py가 '검토 대기' 초안으로 내보낸다 (.github/wor
   python pipeline/watch_updates.py                 # 기본 지역(경산시·대구 북구·영천시) 확인
   python pipeline/watch_updates.py --region "경상북도 경산시"
   python pipeline/watch_updates.py --init          # 지금 상태를 기준으로만 기록 (AI 변환할 원문을 만들지 않음)
-  python pipeline/watch_updates.py --pending       # AI 초안이 아직 없는 원문 이름 출력 (API 키 불필요)
+  python pipeline/watch_updates.py --pending       # AI 초안이 아직 없는 원문 이름 출력 (API 키 불필요, 시도 횟수 기록 · 3번 실패하면 제외)
 
 처음 실행(기록 파일 없음)은 자동으로 --init처럼 동작한다. 이미 있는 제도 수십 건을 한꺼번에 AI로 변환하지 않기 위해서다.
 결과:
@@ -41,6 +41,7 @@ HERE = Path(__file__).resolve().parent
 RAW_DIR, RULES_DIR = HERE / "raw", HERE / "runs_watch_rules"
 STATE_DIR = HERE / "state"
 STATE, SUMMARY, GONE = STATE_DIR / "watch_state.json", STATE_DIR / "summary.md", STATE_DIR / "gone.json"
+TRIES = STATE_DIR / "convert_tries.json"  # 원문별 AI 변환 시도 횟수
 DEFAULT_REGIONS = ["경상북도 경산시", "대구광역시 북구", "경상북도 영천시"]
 SAFE = re.compile(r"[^A-Za-z0-9_]")  # 파일 이름·명령 인자에 들어가므로 API 값에서 안전한 글자만 남긴다
 KST = timezone(timedelta(hours=9))
@@ -95,9 +96,27 @@ def core_hash(body: list[str]) -> str:
     return hashlib.sha256(core.encode("utf-8")).hexdigest()[:16]
 
 
-def pending() -> list[str]:
-    """원문은 있는데 AI 초안이 아직 없는 것 (변환이 실패했거나 키가 없던 날 것도 다음 날 다시 시도)"""
-    return [p.stem for p in sorted(RAW_DIR.glob("u_*.txt")) if not (RULES_DIR / f"{p.stem}.json").exists()]
+MAX_TRIES = 3  # AI 변환을 이만큼 시도해도 초안이 안 생기면 (거절·형식 오류 등) 더 부르지 않는다 → 요약에 '직접 확인'
+
+
+def pending(count: bool = False) -> list[str]:
+    """원문은 있는데 AI 초안이 아직 없는 것 (변환이 실패했거나 키가 없던 날 것도 다음 날 다시 시도).
+    count=True면 이번 시도를 기록하고, MAX_TRIES번 넘게 실패한 것은 빼고 돌려준다"""
+    todo = [p.stem for p in sorted(RAW_DIR.glob("u_*.txt")) if not (RULES_DIR / f"{p.stem}.json").exists()]
+    if not count:
+        return todo
+    tries = json.loads(TRIES.read_text(encoding="utf-8")) if TRIES.exists() else {}
+    out = [s for s in todo if tries.get(s, 0) < MAX_TRIES]
+    for s in out:
+        tries[s] = tries.get(s, 0) + 1
+    STATE_DIR.mkdir(exist_ok=True)
+    TRIES.write_text(json.dumps({s: n for s, n in tries.items() if s in todo}, indent=1, sort_keys=True) + "\n", encoding="utf-8")
+    return out
+
+
+def given_up() -> list[str]:
+    tries = json.loads(TRIES.read_text(encoding="utf-8")) if TRIES.exists() else {}
+    return [s for s in pending() if tries.get(s, 0) >= MAX_TRIES]
 
 
 def main() -> None:
@@ -110,7 +129,7 @@ def main() -> None:
     sys.stdout.reconfigure(encoding="utf-8")
 
     if args.pending:
-        print(" ".join(pending()))
+        print(" ".join(pending(count=True)))
         return
 
     key = os.environ.get("DATA_GO_KR_KEY")
@@ -192,6 +211,8 @@ def main() -> None:
         lines += [f"| {g['region']} | {g['name']} | {g['sid']} | {g['gone_since']} |" for g in gone]
     if back:
         lines += ["", "다시 보이는 제도 (사라짐 표시 해제): " + ", ".join(f"{b['name']} ({b['region']})" for b in back)]
+    if given_up():
+        lines += ["", f"AI 변환을 {MAX_TRIES}번 시도해도 초안이 생기지 않은 원문 (직접 확인 필요, `pipeline/raw/`): " + ", ".join(given_up())]
     if deferred:
         lines += ["", f"하루 최대 건수를 넘은 {deferred}건은 다음 실행 때 처리해요."]
     if skipped:

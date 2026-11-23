@@ -128,7 +128,7 @@ begin
       if exists (
         select 1 from jsonb_array_elements(new.conditions) with ordinality as c(cond, n)
         where not (new.apply_checks @> to_jsonb(c.n - 1))
-          and not (c.cond->>'field' = any (array['age','household_size','income_recognized_pct_median','income_recognized_won',
+          and not (coalesce(c.cond->>'field', '') = any (array['age','household_size','income_recognized_pct_median','income_recognized_won',
             'total_income_annual','assets','recipient_status','basic_pension_recipient','residence_months','child_count','newborn',
             'school_enrolled','disabled','single_parent','senior_in_household','nhis_premium','third_child_7to18','child_birth_order','residence_region']))
       ) then

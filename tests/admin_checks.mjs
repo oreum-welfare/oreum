@@ -6,7 +6,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const { canReview, decide, computable } = await import(pathToFileURL(join(root, "oreum-web/src/lib/permissions.js")));
-const { mergePrograms } = await import(pathToFileURL(join(root, "oreum-web/src/lib/programs.js")));
+const { mergePrograms, newerVersionOf } = await import(pathToFileURL(join(root, "oreum-web/src/lib/programs.js")));
 const { createEngine } = await import(pathToFileURL(join(root, "oreum-web/src/lib/engine.js")));
 const data = JSON.parse(readFileSync(join(root, "data/rules.json"), "utf8"));
 const drafts = JSON.parse(readFileSync(join(root, "pipeline/local_drafts.json"), "utf8")).drafts;
@@ -52,6 +52,17 @@ check("AI 초안은 모두 '검토 대기'로 들어옴", drafts.every((d) => d.
   check("승인한 제도는 그 지역에서만 계산 대상", eng.localProgramsFor("경상북도 경산시").some((p) => p.id === gsDraft.id) && !eng.localProgramsFor("대구광역시 북구").some((p) => p.id === gsDraft.id), gsDraft.name);
   const engDraft = createEngine({ ...data, local_programs: [...data.local_programs, gsDraft] });
   check("검토 대기 초안은 계산하지 않음", !engDraft.localProgramsFor("경상북도 경산시").some((p) => p.id === gsDraft.id));
+}
+
+// 매일 변경 확인: 같은 서비스의 새 버전 초안이 있으면 옛 초안은 승인 대상이 아니다
+{
+  const oldDraft = { id: "ai_t12_WLF00004906", origin: { service_id: "t12_WLF00004906" } };
+  const v1 = { id: "ai_u_WLF00004906_20261201", status: "검토 대기", origin: { service_id: "u_WLF00004906_20261201" } };
+  const v2 = { id: "ai_u_WLF00004906_20261215", status: "검토 대기", origin: { service_id: "u_WLF00004906_20261215" } };
+  const other = { id: "ai_u_WLF00000001_20261220", origin: { service_id: "u_WLF00000001_20261220" } };
+  const all = [oldDraft, v1, v2, other];
+  check("새 버전 초안: 가장 새 것을 가리킴", newerVersionOf(oldDraft, all)?.id === v2.id && newerVersionOf(v1, all)?.id === v2.id);
+  check("새 버전 초안: 가장 새 버전·다른 서비스는 해당 없음", !newerVersionOf(v2, all) && !newerVersionOf(other, all));
 }
 
 if (bad) { console.error(`${bad}개 검사 실패`); process.exit(1); }

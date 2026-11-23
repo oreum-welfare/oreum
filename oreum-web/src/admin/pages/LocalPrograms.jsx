@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { won } from "../../lib/format.js";
 import { ROLE_LABEL, STATUS, TRANSITIONS, canReview, computable, decide } from "../../lib/permissions.js";
-import { goneInfo, loadOverlay, mergePrograms, resetOverlay, saveOverlay, supabaseClient } from "../../lib/programs.js";
+import { goneInfo, loadOverlay, newerVersionOf, mergePrograms, resetOverlay, saveOverlay, supabaseClient } from "../../lib/programs.js";
 import { useJson } from "../../lib/useJson.js";
 import { PageHead } from "../adminUi.jsx";
 import { SignIn, useSession } from "../session.jsx";
@@ -138,17 +138,18 @@ export default function LocalPrograms() {
             {shown.map((p) => {
               const c = computable(p, facts);
               const gone = goneInfo(p, goneMap);
+              const newer = p.status === "검토 대기" && newerVersionOf(p, mine);
               return (
                 <li key={p.id}>
                   <button type="button" className={`lp-item ${picked?.id === p.id ? "on" : ""}`} onClick={() => setPickedId(p.id)}>
-                    <b>{p.name}{gone && <span className="pill s-warn lp-gone">폐지 의심</span>}</b>
+                    <b>{p.name}{gone && <span className="pill s-warn lp-gone">폐지 의심</span>}{newer && <span className="pill s-warn lp-gone">새 버전 있음</span>}</b>
                     <small>{user.role === "admin" ? `${p.region || p.sido} · ` : ""}{p.origin?.type === "ai" ? `AI 초안 (${p.origin.prompt} 프롬프트)` : "기존 규칙"}{c.ok ? "" : " · 계산 불가 조건 있음"}</small>
                   </button>
                 </li>
               );
             })}
           </ul>
-          {picked && <Detail key={picked.id} p={picked} facts={facts} gone={goneInfo(picked, goneMap)} onAct={apply} />}
+          {picked && <Detail key={picked.id} p={picked} facts={facts} gone={goneInfo(picked, goneMap)} newer={newerVersionOf(picked, mine)} onPick={setPickedId} onAct={apply} />}
         </div>
       )}
       <p className="hint" style={{ marginTop: 16 }}>승인된 제도는 <Link to="/">계산기</Link>에서 그 지역을 고르면 '지자체' 혜택으로 계산돼요.</p>
@@ -156,11 +157,12 @@ export default function LocalPrograms() {
   );
 }
 
-function Detail({ p, facts, gone, onAct }) {
+function Detail({ p, facts, gone, newer, onPick, onAct }) {
   const [monthly, setMonthly] = useState(p.amount?.monthly ?? 0);
   const [reason, setReason] = useState("");
   const [later, setLater] = useState(() => new Set(p.apply_checks || []));
   const pending = p.status === "검토 대기";
+  const outdated = pending && newer; // 같은 서비스의 더 새 버전이 있으면 이 초안은 승인하지 않는다
   const c = computable({ ...p, amount: { ...p.amount, monthly }, apply_checks: [...later] }, facts);
   const toggle = (i) => setLater((s) => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n; });
   const editableAmount = p.status === "검토 대기" && p.amount?.type === "fixed" && !p.amount.param;
@@ -172,6 +174,10 @@ function Detail({ p, facts, gone, onAct }) {
         <span className={`pill ${STATUS_CLASS[p.status]}`}>{p.status}</span>
       </div>
       <p className="hint">{p.region || p.sido} · {KIND_LABEL[p.kind] || p.kind} · 출처: {p.source || "—"}</p>
+      {outdated && (
+        <p className="warn">이 제도의 더 새 버전 초안이 있어요 ({newer.status}). 원문이 바뀌기 전 내용이라 승인할 수 없어요. 반려하고 새 버전을 검토해 주세요 ·{" "}
+          <button type="button" className="link-btn" onClick={() => onPick(newer.id)}>새 버전 보기</button></p>
+      )}
       {gone && (
         <p className="warn">복지로 목록에서 {gone.since}부터 보이지 않아요 (3일 연속). 폐지됐거나, 이름·서비스 번호가 바뀌었을 수 있어요.
           {p.status === "승인" ? " 폐지가 맞으면 사유를 적고 '계산에서 빼기(중지)'를 눌러 주세요." : " 승인하기 전에 제도가 아직 있는지 확인해 주세요."}</p>
@@ -222,7 +228,7 @@ function Detail({ p, facts, gone, onAct }) {
           <div className="lp-buttons">
             {next.map((t) => (
               <button key={t} type="button" className={`btn ${t === "승인" ? "primary" : ""}`}
-                disabled={t === "승인" && !c.ok} title={t === "승인" && !c.ok ? "계산할 수 없는 조건이 있어요" : ""}
+                disabled={t === "승인" && (!c.ok || outdated)} title={t === "승인" && outdated ? "더 새 버전 초안이 있어요" : t === "승인" && !c.ok ? "계산할 수 없는 조건이 있어요" : ""}
                 onClick={() => onAct(t, { reason, monthly: editableAmount ? monthly : undefined, applyChecks: pending ? [...later] : undefined })}>{ACTION_LABEL[t]}</button>
             ))}
           </div>

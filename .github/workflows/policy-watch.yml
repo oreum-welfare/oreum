@@ -39,8 +39,12 @@ jobs:
       - name: 이전 확인 기록 이어받기
         run: |
           # 아직 합치지 않은 자동 수집 PR이 있으면 그 브랜치의 기록에서 이어서 확인한다
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           if git ls-remote --exit-code --heads origin "$BRANCH" > /dev/null; then
             git checkout -B "$BRANCH" "origin/$BRANCH"
+            # develop에 새로 들어온 규칙·초안을 먼저 받아 와서, 오래된 파일로 초안을 다시 만들지 않게 한다
+            git merge --no-edit origin/develop || { git merge --abort; echo "::warning::develop과 충돌해 합치지 못했습니다. 자동 수집 PR을 먼저 정리해 주세요."; }
           else
             git checkout -B "$BRANCH"
           fi
@@ -62,12 +66,14 @@ jobs:
         run: python pipeline/watch_updates.py
 
       - name: AI 초안 만들기 (초안이 아직 없는 원문만)
+        continue-on-error: true # 실패해도 아래 '기록 남기기'는 실행 (그날 확인 기록이 사라지지 않게)
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
+          # 키가 없으면 시도 횟수를 세지 않고 건너뛴다 (키를 넣은 다음 날 이어서 변환)
+          if [ -z "$ANTHROPIC_API_KEY" ]; then echo "::warning::ANTHROPIC_API_KEY가 없어 AI 변환을 건너뜁니다 (원문은 저장, 다음 실행 때 다시 시도)"; exit 0; fi
           PENDING="$(python pipeline/watch_updates.py --pending)"
           if [ -z "$PENDING" ]; then echo "변환할 원문 없음"; exit 0; fi
-          if [ -z "$ANTHROPIC_API_KEY" ]; then echo "::warning::ANTHROPIC_API_KEY가 없어 AI 변환을 건너뜁니다 (원문은 저장, 다음 실행 때 다시 시도)"; exit 0; fi
           python pipeline/convert.py --only $PENDING --out pipeline/runs_watch_rules
 
       - name: 검토 대기 초안 목록 갱신
@@ -76,6 +82,7 @@ jobs:
           node oreum-web/scripts/sync-data.mjs
 
       - name: 관리자 화면(Supabase)에 검토 대기로 올리기
+        continue-on-error: true # 실패해도 아래 '기록 남기기'는 실행 (그날 확인 기록이 사라지지 않게)
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
@@ -91,8 +98,6 @@ jobs:
           mkdir -p pipeline/runs_watch_rules
           git add pipeline/state pipeline/raw pipeline/runs_watch_rules pipeline/local_drafts.json oreum-web/public/data/local_drafts.json oreum-web/public/data/source_gone.json
           if git diff --cached --quiet; then echo "바뀐 것 없음"; exit 0; fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -q -m "data: 지자체 제도 변경 확인 $(TZ=Asia/Seoul date +%F)"
           git push origin "$BRANCH"
           if [ -n "$(gh pr list --head "$BRANCH" --base develop --state open --json number -q '.[].number')" ]; then

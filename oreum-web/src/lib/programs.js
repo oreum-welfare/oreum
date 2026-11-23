@@ -46,6 +46,17 @@ export function goneInfo(p, goneMap = {}) {
   return (sid && goneMap[sid]) || null;
 }
 
+// 같은 복지로 서비스의 더 새 버전 초안이 있나 (매일 변경 확인은 바뀔 때마다 u_<ID>_<수정일> 새 초안을 만든다)
+// 버전: 자동 수집 초안은 수정일, 그 밖(시범 제도·처음 만든 AI 초안)은 0
+const versionOf = (p) => (String(p.origin?.service_id || "").match(/^u_WLF\d+_(\d+)$/) || [])[1] || "0";
+export function newerVersionOf(p, all = []) {
+  const sid = serviceIdOf(p);
+  if (!sid) return null;
+  const v = versionOf(p);
+  return all.filter((q) => q.id !== p.id && serviceIdOf(q) === sid && versionOf(q) > v)
+    .sort((a, b) => (versionOf(b) > versionOf(a) ? 1 : -1))[0] || null;
+}
+
 // 계산기에 넣을 '승인' 제도 (rules.json의 local_programs를 대신한다)
 export async function publishedPrograms(data) {
   const base = data.local_programs || [];
