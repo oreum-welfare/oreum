@@ -103,25 +103,47 @@ def pdf_blocks(urls: list[str]) -> list[dict]:
     return blocks
 
 
-def ask_claude(client, msg: str, pdfs: list[str], keys: list[str]) -> tuple[dict, str]:
+IMG_TYPES = {b"GIF8": "image/gif", b"\x89PNG": "image/png", b"\xff\xd8\xff\xe0": "image/jpeg", b"\xff\xd8\xff\xe1": "image/jpeg"}
+
+
+def image_blocks(text: str, limit: int = 20) -> list[tuple[str, str, str]]:
+    """고시 본문의 <img id="…"> 표 이미지 (기준 중위소득표·기준임대료표 등은 글이 아니라 그림으로만 들어 있다).
+    국가법령정보센터 파일 주소(flDownload.do?flSeq=<id>)로 받는다. → [(id, media_type, base64)]"""
+    out = []
+    for img_id in re.findall(r'<img id="(\d+)"', text)[:limit]:
+        try:
+            r = requests.get(f"https://www.law.go.kr/LSW/flDownload.do?flSeq={img_id}", timeout=60)
+        except requests.RequestException:
+            continue
+        mt = next((t for sig, t in IMG_TYPES.items() if r.content.startswith(sig)), None)
+        if r.ok and mt and len(r.content) <= 5 * 1024 * 1024:
+            out.append((img_id, mt, base64.standard_b64encode(r.content).decode()))
+    return out
+
+
+def ask_claude(client, msg: str, pdfs: list[str], keys: list[str], images=()) -> tuple[dict, str]:
     docs = [{"type": "document", "source": {"type": "base64", "media_type": "application/pdf", "data": d}} for d in pdfs]
+    imgs = [part for i, mt, d in images for part in (
+        {"type": "text", "text": f"[이미지 {i}]"}, {"type": "image", "source": {"type": "base64", "media_type": mt, "data": d}})]
     response = client.beta.messages.create(
         model=CLAUDE_MODEL, max_tokens=16000,
         system=[{"type": "text", "text": SYSTEM}],
         output_config={"effort": "high", "format": {"type": "json_schema", "schema": schema(keys)}},
-        messages=[{"role": "user", "content": [*docs, {"type": "text", "text": msg}]}],
+        messages=[{"role": "user", "content": [*docs, *imgs, {"type": "text", "text": msg}]}],
     )
     if response.stop_reason in ("refusal", "max_tokens"):
         raise RuntimeError(f"AI 응답 중단: {response.stop_reason}")
     return json.loads(next(b.text for b in response.content if b.type == "text")), response.model
 
 
-def ask_openai(client, msg: str, pdfs: list[str], keys: list[str]) -> tuple[dict, str]:
+def ask_openai(client, msg: str, pdfs: list[str], keys: list[str], images=()) -> tuple[dict, str]:
     files = [{"type": "file", "file": {"filename": f"table{i + 1}.pdf", "file_data": f"data:application/pdf;base64,{d}"}}
              for i, d in enumerate(pdfs)]
+    imgs = [part for i, mt, d in images for part in (
+        {"type": "text", "text": f"[이미지 {i}]"}, {"type": "image_url", "image_url": {"url": f"data:{mt};base64,{d}", "detail": "high"}})]
     response = client.chat.completions.create(
         model=OPENAI_MODEL,
-        messages=[{"role": "system", "content": SYSTEM}, {"role": "user", "content": [*files, {"type": "text", "text": msg}]}],
+        messages=[{"role": "system", "content": SYSTEM}, {"role": "user", "content": [*files, *imgs, {"type": "text", "text": msg}]}],
         response_format={"type": "json_schema", "json_schema": {"name": "notice_values", "schema": schema(keys), "strict": True}},
     )
     choice = response.choices[0]
@@ -138,10 +160,13 @@ def propose(client, stem: str, rules: dict, hints: dict, ask=ask_claude) -> dict
     text = (NOTICE_DIR / f"{stem}.txt").read_text(encoding="utf-8")
     current = {k: get_path(rules, k) for k in meta["keys"]}
     pdfs = pdf_blocks(meta.get("table_pdfs", []))
+    images = image_blocks(text)
     msg = (f"고시: {meta['name']} (발령 {meta['issued']} {meta['number']}, 시행 {meta['effective']})\n"
            f"값 설명: {hint}\n\n지금 값 (이 모양 그대로 새 값을 적으세요):\n{json.dumps(current, ensure_ascii=False, indent=1)}\n\n"
-           f"<원문>\n{text}\n</원문>\n" + (f"\n별표 PDF {len(pdfs)}개를 함께 첨부했습니다." if pdfs else "\n별표 PDF는 받지 못했습니다."))
-    out, model = ask(client, msg, pdfs, meta["keys"])
+           f"<원문>\n{text}\n</원문>\n" + (f"\n별표 PDF {len(pdfs)}개를 함께 첨부했습니다." if pdfs else "\n별표 PDF는 받지 못했습니다.")
+           + (f"\n원문의 <img id=\"…\"> 자리에 들어가는 표 이미지 {len(images)}개를 '[이미지 id]' 표시와 함께 첨부했습니다. "
+              "이미지의 숫자를 그대로 읽으세요 (예: 표의 '1인가구' 칸 → 키 \"1\")." if images else ""))
+    out, model = ask(client, msg, pdfs, meta["keys"], images)
 
     # AI 제안을 그대로 믿지 않는다: 모양이 같고 숫자인 것만, 지금 값과 다른 칸만 뽑는다
     checked, rejected = [], []
@@ -184,7 +209,9 @@ def export_drafts() -> list[dict]:
     for f in sorted(PROPOSAL_DIR.glob("*.json")) if PROPOSAL_DIR.exists() else []:
         r = json.loads(f.read_text(encoding="utf-8"))
         n = r["notice"]
-        eff = ymd(n.get("effective")) or r.get("effective_date", "")
+        # 시행일: AI가 원문(부칙)에서 찾은 날짜가 있으면 그것 (예: 교육급여 최저보장수준은 고시 시행일과 달리 3월 1일), 없으면 API 시행일
+        ai_eff = str(r.get("effective_date") or "")
+        eff = ai_eff if re.fullmatch(r"\d{4}-\d{2}-\d{2}", ai_eff) else ymd(n.get("effective"))
         if not r.get("related") or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", eff):
             continue
         for it in r["items"]:
