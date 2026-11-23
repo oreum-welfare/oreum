@@ -342,3 +342,37 @@ insert into public.watch_regions (region, added_by) values
 on conflict (region) do nothing;
 grant select, insert, update, delete on public.watch_regions to authenticated;
 grant all on public.watch_regions to service_role;
+
+-- 9. 감시 고시 (계산 기준값을 정하는 중앙 고시 목록). 시스템 관리자가 '운영 설정'에서 더하고 뺀다
+-- 매일 고시 확인(.github/workflows/notice-watch.yml)이 서비스 키로 읽는다. 표가 비었거나 못 읽으면 pipeline/notices.json
+create table if not exists public.watched_notices (
+  key text primary key,            -- 고시 구분 이름 (영문·숫자)
+  source text,                     -- 출처 번호 (예: S04)
+  query text not null,             -- 국가법령정보 검색어 (연도 뺀 고시 이름 일부)
+  match jsonb not null default '[]',   -- 행정규칙명에 모두 들어 있어야 하는 말
+  keys jsonb not null default '[]',    -- 이 고시가 정하는 rules.json 값 (AI는 이 값만 제안)
+  hint text,                       -- AI에게 주는 값 설명
+  active boolean not null default true,
+  added_by text,
+  created_at timestamptz not null default now()
+);
+alter table public.watched_notices enable row level security;
+drop policy if exists "관리자 감시 고시 읽기" on public.watched_notices;
+create policy "관리자 감시 고시 읽기" on public.watched_notices for select using (public.is_admin());
+drop policy if exists "관리자 감시 고시 추가" on public.watched_notices;
+create policy "관리자 감시 고시 추가" on public.watched_notices for insert with check (public.is_admin());
+drop policy if exists "관리자 감시 고시 변경" on public.watched_notices;
+create policy "관리자 감시 고시 변경" on public.watched_notices for update using (public.is_admin()) with check (public.is_admin());
+drop policy if exists "관리자 감시 고시 삭제" on public.watched_notices;
+create policy "관리자 감시 고시 삭제" on public.watched_notices for delete using (public.is_admin());
+insert into public.watched_notices (key, source, query, match, keys, hint, added_by) values
+  ('median_saeng', 'S04', '기준 중위소득', '["기준 중위소득", "생계"]'::jsonb, '["lines.saeng_32"]'::jsonb, '생계급여 선정기준(기준 중위소득 32%) 가구원수별 월 금액. 1~6인', '처음 설정'),
+  ('housing', 'S05', '주거급여 선정기준', '["주거급여", "선정기준"]'::jsonb, '["lines.jugeo_48", "params.rent", "params.jugeo_self_share"]'::jsonb, '주거급여 선정기준(기준 중위소득 48%) 1~5인, 급지별·가구원수별 기준임대료(1~6인, 원/월), 자기부담 비율(소수, 예: 0.3)', '처음 설정'),
+  ('education', 'S06', '교육급여의 선정기준', '["교육급여", "선정기준"]'::jsonb, '["params.edu_annual"]'::jsonb, '교육활동지원비 연액: elem(초)·middle(중)·high(고)', '처음 설정'),
+  ('basic_pension', 'S08', '기초연금 지급대상자 선정기준액', '["기초연금", "선정기준액"]'::jsonb, '["params.basic_pension_line", "params.basic_pension_amount", "params.basic_pension_earned_deduction"]'::jsonb, '선정기준액 single(단독)·couple(부부) 월액, 기준연금액 월액, 근로소득 공제액(월)', '처음 설정'),
+  ('disability_pension', 'S10', '장애인연금 수급권자 선정기준액', '["장애인연금", "선정기준액"]'::jsonb, '["params.dis_pension"]'::jsonb, '선정기준액 line_single·line_couple, 근로소득 공제(earned_deduction), 기초급여액 등. 나이(age_min·age_max)는 고시가 아니라 법이 정하므로 그대로 둔다', '처음 설정'),
+  ('single_parent', 'S11', '한부모가족 지원대상자의 범위', '["한부모가족", "지원대상자"]'::jsonb, '["params.sp_child"]'::jsonb, '아동양육비 소득 기준(기준 중위소득 %)과 자녀 1인당 월 금액', '처음 설정'),
+  ('nhis_caps', 'S13', '월별 건강보험료액의 상한과 하한', '["건강보험료액", "상한", "하한"]'::jsonb, '["params.bukgu_min_premium"]'::jsonb, '지역가입자 월별 보험료액의 하한(최저보험료, 원/월)', '처음 설정')
+on conflict (key) do nothing;
+grant select, insert, update, delete on public.watched_notices to authenticated;
+grant all on public.watched_notices to service_role;

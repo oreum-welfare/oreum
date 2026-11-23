@@ -31,6 +31,9 @@ from pathlib import Path
 
 import requests
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from supabase_rest import select  # noqa: E402
+
 HERE = Path(__file__).resolve().parent
 CONFIG = HERE / "notices.json"
 OUT_DIR = HERE / "notices"
@@ -98,6 +101,17 @@ def collect(node, keys: set[str]) -> dict[str, list[str]]:
     return got
 
 
+def watched_notices() -> tuple[list[dict], str]:
+    """감시 고시: 관리자 화면 '운영 설정'(Supabase watched_notices, 사용 중인 것) → 없으면 pipeline/notices.json"""
+    rows = select("watched_notices", "select=*&active=eq.true&order=key")
+    if rows:
+        out = [{"key": r["key"], "source": r.get("source") or "", "query": r["query"], "match": list(r.get("match") or []),
+                "keys": list(r.get("keys") or []), "hint": r.get("hint") or ""} for r in rows if r.get("query") and r.get("keys")]
+        if out:
+            return out, "관리자 화면 설정"
+    return json.loads(CONFIG.read_text(encoding="utf-8"))["notices"], "notices.json"
+
+
 def latest_version(oc: str, notice: dict, in_force_only: bool = False) -> dict | None:
     """가장 최근 고시. in_force_only면 오늘 이미 시행 중인 것 중 가장 최근 (기준 기록용:
     계산기 값은 지금 시행 중인 고시 기준이라, 시행 전인 다음 연도 고시는 '새 고시'로 잡혀야 한다)"""
@@ -129,7 +143,7 @@ def save_body(oc: str, notice: dict, ver: dict) -> str:
     text += ["[조문]"] + got["조문내용"] + ["", "[별표]"] + got["별표내용"] + ["", "[부칙]"] + got["부칙내용"]
     (OUT_DIR / f"{stem}.txt").write_text("\n".join(text) + "\n", encoding="utf-8")
     pdfs = ["https://www.law.go.kr" + p if p.startswith("/") else p for p in got["별표서식PDF파일링크"]]
-    meta = {"notice": notice["key"], "source": notice["source"], "keys": notice["keys"], **ver,
+    meta = {"notice": notice["key"], "source": notice["source"], "keys": notice["keys"], "hint": notice.get("hint", ""), **ver,
             "tables": got["별표제목"], "table_pdfs": [p for p in pdfs if p.startswith("https://www.law.go.kr/")]}
     (OUT_DIR / f"{stem}.json").write_text(json.dumps(meta, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     return stem
@@ -144,7 +158,8 @@ def main() -> None:
     if not oc:
         sys.exit("LAW_OC 환경변수에 국가법령정보 공동활용 API 인증값(OC)을 넣어 주세요.")
 
-    notices = json.loads(CONFIG.read_text(encoding="utf-8"))["notices"]
+    notices, origin = watched_notices()
+    print(f"감시 고시 {len(notices)}종 ({origin})")
     state = json.loads(STATE.read_text(encoding="utf-8")) if STATE.exists() else {}
     init = args.init or not state
     if init:
