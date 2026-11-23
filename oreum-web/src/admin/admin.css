@@ -305,3 +305,44 @@
 .admin .role ul { list-style: none; padding: 0; margin: 0; color: var(--sub); font-size: 14px; line-height: 1.9; }
 .admin .role-cta { display: block; text-align: center; padding: 14px; font-size: 15px; text-decoration: none; }
 @media (max-width: 640px) { .admin .role-grid { grid-template-columns: 1fr; } }
+
+/* 데이터 분석: 4개 묶음 · 고정 목차 · 요약 카드 이동 · 표 정렬과 접기 · 그래프 한 줄 설명 */
+.admin .an-toc { position: sticky; top: 60px; z-index: 20; display: flex; gap: 4px; flex-wrap: wrap; padding: 8px; margin: 0 -8px; background: rgba(242, 244, 246, 0.94); backdrop-filter: blur(6px); border-radius: 12px; }
+.admin .an-toc a { padding: 7px 14px; border-radius: 999px; font-size: 14px; font-weight: 600; color: var(--muted); text-decoration: none; }
+.admin .an-toc a:hover { color: var(--ink); background: #fff; }
+.admin .an-toc a.on { background: var(--ink); color: #fff; }
+.admin .an-group { display: flex; align-items: center; gap: 14px; margin: 20px 0 0; scroll-margin-top: 120px; }
+.admin .an-group .an-no { flex: none; font-size: 13px; font-weight: 800; color: var(--brand); background: var(--brand-soft); border-radius: 8px; padding: 4px 8px; }
+.admin .an-group h2 { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
+.admin .an-group p { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+.admin .page .card[id], .admin .anchor { scroll-margin-top: 120px; }
+.admin a.stat.jump { text-decoration: none; color: inherit; display: flex; flex-direction: column; border: 1px solid transparent; transition: border-color 0.15s, transform 0.15s; }
+.admin a.stat.jump:hover { border-color: var(--brand-line); transform: translateY(-1px); }
+.admin a.stat.accent.jump:hover { border-color: transparent; filter: brightness(0.97); }
+.admin .stat .jump-go { margin-top: auto; padding-top: 8px; font-size: 12px; font-weight: 700; color: var(--brand); }
+.admin .stat.accent .jump-go { color: #fff; }
+.admin .chart-desc { margin: 2px 0 0; font-size: 14px; color: var(--sub); }
+/* 표: 글씨 크게, 숫자 오른쪽·개수 가운데, 줄 구분과 마우스 올림 강조 */
+.admin .an-table { font-size: 15px; }
+.admin .an-table th { font-size: 13px; }
+.admin .an-table th.r, .admin .an-table td.r { text-align: right; }
+.admin .an-table th.c, .admin .an-table td.c { text-align: center; }
+.admin .an-table .sep { border-left: 1px solid var(--line); }
+.admin .an-table tr.group-head th { background: var(--soft); color: var(--sub); font-size: 12px; text-align: left; padding: 6px 8px; }
+.admin .an-table tbody tr:hover td { background: #f3faf5; }
+.admin .an-table tr.group-row { cursor: pointer; }
+.admin .an-table tr.group-row td { background: #fafbfc; border-top: 2px solid var(--line); }
+.admin .an-table tr.group-row.open td { background: var(--soft); }
+.admin .an-table tr.group-row:hover td { background: #eaf6ee; }
+.admin .an-table .chev { display: inline-block; width: 16px; color: var(--muted); }
+.admin .an-table .loss { color: var(--red-ink); font-weight: 700; }
+.admin .an-table td.best { background: var(--red-soft); }
+.admin .an-table-tools { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: 8px 0; flex-wrap: wrap; }
+.admin details.basis-fold > summary { list-style: none; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+.admin details.basis-fold > summary::-webkit-details-marker { display: none; }
+.admin details.basis-fold > summary .card-title { margin: 0; }
+.admin details.basis-fold[open] > summary { margin-bottom: 14px; }
+.admin details.basis-fold[open] > summary .hint { visibility: hidden; }
+.admin .analysis table { font-size: 15px; }
+.admin .analysis th { font-size: 13px; }
+.admin .analysis tbody tr:hover td { background: #f3faf5; }

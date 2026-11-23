@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Bar, Line, Scatter } from "react-chartjs-2";
 import { createEngine } from "../../lib/engine.js";
 import { man, pct, won } from "../../lib/format.js";
@@ -16,14 +16,6 @@ import {
 const STEP = 10000;
 const RANGE = 2; // 분석 범위: 기준중위소득의 200% (기초연금처럼 중위 100% 위에서 끊기는 혜택까지)
 const EXTRA = 100000;
-const TYPE_COLORS = [
-  "#4e5968",
-  "#6b7684",
-  "#8b95a1",
-  "#b0b8c1",
-  "#333d4b",
-  "#191f28",
-];
 const SNAKE = { spouse_65: "spouse65", dual_earner: "dualEarner", birth_order: "birthOrder", single_parent: "singleParent", third_child_7to18: "thirdChild7to18", residence_months: "residenceMonths", severe_disabled: "severeDisabled" };
 const BASE = { age: 40, spouse: false, spouse65: false, dualEarner: false, infants: 0, elem: 0, middle: 0, high: 0, newborn: false, birthOrder: 1, disabled: false, severeDisabled: false, singleParent: false, thirdChild7to18: false, residenceMonths: 60 };
 
@@ -216,11 +208,12 @@ function Findings({ all }) {
   const share = ends.length ? Math.round((win.count / ends.length) * 100) : 0;
   return (
     <>
+    {/* 요약 카드: 누르면 아래 자세한 분석으로 이동 */}
     <div className="stats">
-      {top && <div className="stat accent"><div className="label">가장 큰 절벽</div><div className="value">{man(top.maxCliff.drop)}<small>원</small></div><div className="stat-sub">{top.type.label} · 월 {man(top.maxCliff.income)}원</div></div>}
-      <div className="stat"><div className="label">혜택이 몰려 끊기는 구간</div><div className="value">{win.from}~{win.from + 10}<small>%</small></div><div className="stat-sub">끊기는 지점의 {share}% (기준중위소득 대비)</div></div>
-      <div className="stat"><div className="label">더 벌어도 손해인 경우</div><div className="value">{cases.filter((c) => c.lossZones > 0).length}<small>/ {cases.length}</small></div><div className="stat-sub">10만 원 더 벌면 손해인 구간이 있는 경우</div></div>
-      <div className="stat"><div className="label">제도 개선 시 절벽</div><div className="value">{totalCliffs}→{policy.after}<small>개</small></div><div className="stat-sub">혜택을 중위 10%p에 걸쳐 서서히 줄이면</div></div>
+      {top && <a className="stat accent jump" href="#an-table"><div className="label">가장 큰 절벽</div><div className="value">{man(top.maxCliff.drop)}<small>원</small></div><div className="stat-sub">{top.type.label} · 월 {man(top.maxCliff.income)}원</div><span className="jump-go">① 가구별 표 →</span></a>}
+      <a className="stat jump" href="#an-ends"><div className="label">혜택이 몰려 끊기는 구간</div><div className="value">{win.from}~{win.from + 10}<small>%</small></div><div className="stat-sub">끊기는 지점의 {share}% (기준중위소득 대비)</div><span className="jump-go">③ 끊기는 구간 →</span></a>
+      <a className="stat jump" href="#an-emtr"><div className="label">더 벌어도 손해인 경우</div><div className="value">{cases.filter((c) => c.lossZones > 0).length}<small>/ {cases.length}</small></div><div className="stat-sub">10만 원 더 벌면 손해인 구간이 있는 경우</div><span className="jump-go">④ 10만 원 더 벌면 →</span></a>
+      <a className="stat jump" href="#an-policy"><div className="label">제도 개선 시 절벽</div><div className="value">{totalCliffs}→{policy.after}<small>개</small></div><div className="stat-sub">혜택을 중위 10%p에 걸쳐 서서히 줄이면</div><span className="jump-go">⑤ 제도 개선 효과 →</span></a>
     </div>
     <section className="card"><h2 className="card-title">핵심 발견</h2>
     <ol className="findings">
@@ -1031,29 +1024,89 @@ function CoLossSection({ cases }) {
     </section>
   );
 }
+// ① 가구별 표: 열을 '가구 · 계산 정보 · 변화 결과'로 묶고, 가구 유형별로 접었다 펴기 (처음엔 가구마다 한 줄 요약)
 function Summary({ cases }) {
   const maxDrop = Math.max(...cases.map((c) => c.maxCliff?.drop ?? 0));
+  const groups = [];
+  for (const c of cases) {
+    const g = groups.find((x) => x.key === c.type.key);
+    if (g) g.items.push(c); else groups.push({ key: c.type.key, label: c.type.label, size: c.size, items: [c] });
+  }
+  const [open, setOpen] = useState(() => new Set());
+  const toggle = (k) => setOpen((o) => { const n = new Set(o); if (n.has(k)) n.delete(k); else n.add(k); return n; });
+  const allOpen = open.size === groups.length;
+  const lossCell = (v) => (v < 0 ? <span className="loss">−{won(-v)}</span> : `+${won(v)}`);
   return (
-    <div className="table-wrap"><table>
-      <thead><tr><th>가구 유형</th><th>지역</th><th style={{ textAlign: "right" }}>절벽 수</th><th style={{ textAlign: "right" }}>첫 절벽</th>
-        <th style={{ textAlign: "right" }}>가장 큰 손해</th><th style={{ textAlign: "right" }}>그 위치</th><th>그때 사라지는 혜택</th><th style={{ textAlign: "right" }}>10만 원 더 벌 때 최악</th></tr></thead>
-      <tbody>{cases.map((c, i) => {
-        const start = i === 0 || cases[i - 1].type.key !== c.type.key;
-        const first = c.cliffs[0], mc = c.maxCliff;
-        return (
-          <tr key={c.type.key + c.region} className={start ? "group-start" : ""}>
-            <td>{start && <><b>{c.type.label}</b> <span className="hint">({c.size}인)</span></>}</td>
-            <td>{c.region}</td>
-            <td className="num">{c.cliffs.length}</td>
-            <td className="num">{first ? <>{man(first.income)}원 <span className="hint">({pct(first.pct)})</span></> : "-"}</td>
-            <td className={`num ${mc && mc.drop === maxDrop ? "best" : ""}`}>{mc ? `−${won(mc.drop)}` : "-"}</td>
-            <td className="num">{mc ? <>{man(mc.income)}원 <span className="hint">({pct(mc.pct)})</span></> : "-"}</td>
-            <td>{mc ? mc.lost.join(", ") || "금액 감소" : "-"}</td>
-            <td className="num" style={c.worst < 0 ? { color: "var(--cliff)" } : undefined}>{c.worst < 0 ? `−${won(-c.worst)}` : `+${won(c.worst)}`}</td>
-          </tr>
-        );
-      })}</tbody>
-    </table></div>
+    <>
+      <div className="an-table-tools">
+        <span className="hint">가구를 누르면 지역별 줄이 펼쳐져요. 빨간 금액이 줄어드는 돈이에요.</span>
+        <button type="button" className="btn sm" onClick={() => setOpen(allOpen ? new Set() : new Set(groups.map((g) => g.key)))}>{allOpen ? "모두 접기" : "모두 펼치기"}</button>
+      </div>
+      <div className="table-wrap"><table className="an-table">
+        <thead>
+          <tr className="group-head"><th colSpan="2">가구</th><th colSpan="4" className="sep">계산 정보</th><th colSpan="2" className="sep">변화 결과</th></tr>
+          <tr><th>가구 유형</th><th>지역</th><th className="sep c">절벽 수</th><th className="r">첫 절벽</th><th className="r">가장 큰 손해 위치</th><th>그때 사라지는 혜택</th>
+            <th className="sep r">가장 큰 손해</th><th className="r">10만 원 더 벌 때 최악</th></tr>
+        </thead>
+        <tbody>{groups.map((g) => {
+          const isOpen = open.has(g.key);
+          const worstCliff = Math.max(...g.items.map((c) => c.maxCliff?.drop ?? 0));
+          const worst = Math.min(...g.items.map((c) => c.worst));
+          return [
+            <tr key={g.key} className={`group-row ${isOpen ? "open" : ""}`} onClick={() => toggle(g.key)} tabIndex={0} aria-expanded={isOpen}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(g.key); } }}>
+              <td><span className="chev" aria-hidden="true">{isOpen ? "▾" : "▸"}</span><b>{g.label}</b> <span className="hint">({g.size}인)</span></td>
+              <td className="hint">{g.items.length}개 지역</td>
+              <td className="sep c num">{g.items.reduce((n, c) => n + c.cliffs.length, 0)}</td>
+              <td className="hint" colSpan="3">{isOpen ? "" : "펼쳐서 지역별 계산 정보 보기"}</td>
+              <td className={`sep r num ${worstCliff === maxDrop && worstCliff > 0 ? "best" : ""}`}>{worstCliff ? <span className="loss">−{won(worstCliff)}</span> : "-"}</td>
+              <td className="r num">{lossCell(worst)}</td>
+            </tr>,
+            ...(isOpen ? g.items.map((c) => {
+              const first = c.cliffs[0], mc = c.maxCliff;
+              return (
+                <tr key={g.key + c.region} className="sub-row">
+                  <td />
+                  <td>{c.region}</td>
+                  <td className="sep c num">{c.cliffs.length}</td>
+                  <td className="r num">{first ? <>{man(first.income)}원 <span className="hint">({pct(first.pct)})</span></> : "-"}</td>
+                  <td className="r num">{mc ? <>{man(mc.income)}원 <span className="hint">({pct(mc.pct)})</span></> : "-"}</td>
+                  <td>{mc ? mc.lost.join(", ") || "금액 감소" : "-"}</td>
+                  <td className={`sep r num ${mc && mc.drop === maxDrop ? "best" : ""}`}>{mc ? <span className="loss">−{won(mc.drop)}</span> : "-"}</td>
+                  <td className="r num">{lossCell(c.worst)}</td>
+                </tr>
+              );
+            }) : []),
+          ];
+        })}</tbody>
+      </table></div>
+    </>
+  );
+}
+
+// 큰 묶음 머리말 (01 요약 · 02 상세 데이터 · 03 변화 분석 · 04 근거)
+function Group({ id, no, title, desc }) {
+  return <div className="an-group" id={id}><span className="an-no">{no}</span><div><h2>{title}</h2><p>{desc}</p></div></div>;
+}
+
+// 고정 목차: 지금 보는 구역을 표시
+const TOC = [["an-summary", "요약"], ["an-table", "가구별 표"], ["an-curve", "소득 변화"], ["an-change", "변화 분석"], ["an-basis", "계산 근거"]];
+function Toc() {
+  const [cur, setCur] = useState(TOC[0][0]);
+  useEffect(() => {
+    const onScroll = () => {
+      let at = TOC[0][0];
+      for (const [id] of TOC) { const el = document.getElementById(id); if (el && el.getBoundingClientRect().top < 160) at = id; }
+      setCur(at);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+  return (
+    <nav className="an-toc" aria-label="분석 목차">
+      {TOC.map(([id, label]) => <a key={id} href={`#${id}`} className={cur === id ? "on" : ""} aria-current={cur === id ? "true" : undefined}>{label}</a>)}
+    </nav>
   );
 }
 
@@ -1067,6 +1120,7 @@ export default function Analysis() {
     [data, moreOpen]
   );
   const [curveRegion, setCurveRegion] = useState("경상북도 경산시");
+  const [curveFocus, setCurveFocus] = useState("single_parent");
   const [emtrType, setEmtrType] = useState("single_parent");
   const [emtrRegion, setEmtrRegion] = useState("경상북도 경산시");
 
@@ -1074,9 +1128,10 @@ export default function Analysis() {
   if (!all) return <main className="page"><p className="empty">분석 중…</p></main>;
 
   const curveCases = all.cases.filter((c) => c.region === curveRegion);
-  const curveData = { datasets: curveCases.map((c, i) => ({
-    label: c.type.label, showLine: true, pointRadius: 0, borderWidth: 2,
-    borderColor: TYPE_COLORS[i], backgroundColor: TYPE_COLORS[i],
+  // 고른 가구는 진하게(맨 위에 그림), 나머지는 연한 회색
+  const curveData = { datasets: [...curveCases].sort((a, b) => (a.type.key === curveFocus) - (b.type.key === curveFocus)).map((c) => ({
+    label: c.type.label, showLine: true, pointRadius: 0, borderWidth: c.type.key === curveFocus ? 3 : 1.5,
+    borderColor: c.type.key === curveFocus ? "#191f28" : "#cfd4da", backgroundColor: c.type.key === curveFocus ? "#191f28" : "#cfd4da",
     data: c.sim.incomes.map((inc, j) => ({ x: (inc / c.m) * 100, y: (c.sim.disposable[j] / c.m) * 100 })),
   })) };
 
@@ -1092,25 +1147,44 @@ export default function Analysis() {
   const eLabels = ec.sim.incomes.slice(0, ec.retained.length);
   const avg = ec.retained.reduce((s, r) => s + r, 0) / ec.retained.length;
   const worstIdx = ec.retained.indexOf(ec.worst);
+  // 손해 구간(남는 돈 < 0)에만 연한 주황 배경
+  const lossBand = {
+    id: "lossBand",
+    beforeDatasetsDraw(chart) {
+      const { ctx, chartArea, scales: { x } } = chart;
+      const half = (x.getPixelForValue(1) - x.getPixelForValue(0)) / 2;
+      ctx.save(); ctx.fillStyle = "rgba(240, 140, 60, 0.16)";
+      ec.retained.forEach((v, i) => { if (v < 0) { const px = x.getPixelForValue(i); ctx.fillRect(px - half, chartArea.top, half * 2, chartArea.bottom - chartArea.top); } });
+      ctx.restore();
+    },
+  };
 
   return (
     <>
-      <main className="page">
+      <main className="page analysis">
         <PageHead title={<>복지 절벽은 <em>누구에게, 어디서</em> 나타날까?</>}
           desc="대표 가구 6개 × 지역 2곳, 12가지 경우를 소득 0원부터 기준중위소득 200%까지 1만 원 단위로 계산했어요." />
+        <Toc />
+        <Group id="an-summary" no="01" title="요약" desc="분석 결과 한눈에 보기 · 카드를 누르면 자세한 분석으로 이동해요" />
         <Findings all={all} />
         {data.provisional?.length > 0 && <div className="notice">일부 금액({data.provisional.length}개 항목)이 추정값이에요. 금액이 바뀌면 아래 결과도 함께 바뀌어요.</div>}
-        <section className="card">
+
+        <Group id="an-detail" no="02" title="상세 데이터" desc="가구 유형·지역별 계산 결과와 소득별 변화" />
+        <section className="card" id="an-table">
           <h2 className="card-title">① 가구 유형 × 지역별 절벽 요약</h2>
           <p className="hint">절벽 = 소득이 1만 원 늘었는데 '근로소득 + 혜택' 합계가 줄어드는 지점.</p>
           <Summary cases={all.cases} />
         </section>
-        <section className="card">
+        <section className="card" id="an-curve">
           <div className="card-head">
             <h2 className="card-title">② 가구 유형별 '근로소득 + 혜택' 곡선</h2>
-            <label className="field-inline small">지역 <select value={curveRegion} onChange={(e) => setCurveRegion(e.target.value)}>{all.regions.map((r) => <option key={r}>{r}</option>)}</select></label>
+            <div className="controls">
+              <label className="field-inline small">강조할 가구 <select value={curveFocus} onChange={(e) => setCurveFocus(e.target.value)}>{data.analysis_households.map((t) => <option key={t.key} value={t.key}>{t.label}</option>)}</select></label>
+              <label className="field-inline small">지역 <select value={curveRegion} onChange={(e) => setCurveRegion(e.target.value)}>{all.regions.map((r) => <option key={r}>{r}</option>)}</select></label>
+            </div>
           </div>
-          <p className="hint">가로·세로 모두 <b>기준중위소득 대비 %</b>로 바꿔 겹쳐 그렸습니다. 선이 아래로 꺾이는 곳이 절벽입니다.</p>
+          <p className="chart-desc">소득이 늘 때 실제로 쓸 수 있는 돈이 어떻게 바뀌는지 · 선이 아래로 꺾이는 곳이 절벽이에요</p>
+          <p className="hint">고른 가구는 진하게, 나머지 가구는 회색으로 비교해요. 가로·세로 모두 <b>기준중위소득 대비 %</b>예요.</p>
           <div className="chart-box"><Scatter data={curveData} options={{
             responsive: true, maintainAspectRatio: false, animation: false, interaction: { mode: "nearest", intersect: false },
             scales: { x: { min: 0, max: RANGE * 100, title: { display: true, text: "월 근로소득 (기준중위소득 대비 %)" }, ticks: { callback: (v) => `${v}%` } },
@@ -1118,12 +1192,11 @@ export default function Analysis() {
             plugins: { legend: { position: "bottom" }, tooltip: { callbacks: { label: (it) => ` ${it.dataset.label}: 근로소득 ${it.parsed.x.toFixed(0)}% → 합계 ${it.parsed.y.toFixed(0)}%` } } },
           }} /></div>
         </section>
-        <section className="card">
+        <Group id="an-change" no="03" title="변화 분석" desc="혜택이 끊기는 구간, 더 벌 때 남는 돈, 제도 개선 효과와 원인" />
+        <section className="card" id="an-ends">
   <h2 className="card-title">③ 혜택이 끊기는 소득 구간 분포</h2>
-  <p className="hint">
-    12가지 경우에서 각 혜택의 자격이 사라지는 지점을 모아
-    기준중위소득 대비 5% 구간별로 세었습니다.
-  </p>
+  <p className="chart-desc">어느 소득 구간에서 혜택이 가장 많이 끊기는지 · 빨간 막대가 가장 많이 몰린 구간이에요</p>
+  <p className="hint">12가지 경우에서 각 혜택의 자격이 사라지는 지점을 모아 기준중위소득 대비 5% 구간별로 세었어요.</p>
 
   <div className="chart-box short">
     <Bar
@@ -1132,21 +1205,28 @@ export default function Analysis() {
         datasets: [{
           label: "혜택이 끊기는 횟수",
           data: buckets.map((b) => b.count),
-          backgroundColor: buckets.map((b) =>
-            b.count === maxB
-              ? "#e5503c"
-              : b.count >= maxB * 0.5
-                ? "#d4a02a"
-                : "#8b95a1"
-          ),
+          backgroundColor: buckets.map((b) => (b.count === maxB ? "#e5503c" : "#c4cad2")),
           borderRadius: 6
         }]
       }}
+      plugins={[{
+        id: "peakLabel",
+        afterDatasetsDraw(chart) {
+          const { ctx } = chart;
+          chart.getDatasetMeta(0).data.forEach((bar, i) => {
+            if (buckets[i].count !== maxB) return;
+            ctx.save(); ctx.fillStyle = "#c2412d"; ctx.font = "700 12px Pretendard, sans-serif"; ctx.textAlign = "center";
+            ctx.fillText(`${maxB}회 · ${buckets[i].from}~${buckets[i].to}%`, bar.x, bar.y - 8);
+            ctx.restore();
+          });
+        },
+      }]}
       options={{
         responsive: true,
         maintainAspectRatio: false,
         animation: false,
-        plugins: { legend: { display: false } },
+        layout: { padding: { top: 22 } },
+        plugins: { legend: { display: false }, tooltip: { callbacks: { title: (its) => `중위소득 ${its[0].label}`, label: (it) => ` 혜택이 끊기는 횟수 ${it.raw}회` } } },
         scales: {
           x: {
             title: {
@@ -1164,8 +1244,10 @@ export default function Analysis() {
     />
   </div>
 
+  <details className="more-table">
+  <summary>구간별 끊기는 혜택 표 보기</summary>
   <div className="table-wrap">
-    <table>
+    <table className="an-table">
       <thead>
         <tr>
           <th>구간</th>
@@ -1189,8 +1271,9 @@ export default function Analysis() {
       </tbody>
     </table>
   </div>
+  </details>
 </section>
-        <section className="card">
+        <section className="card" id="an-emtr">
           <div className="card-head">
             <h2 className="card-title">④ 10만 원 더 벌면 실제로 얼마가 남나</h2>
             <div className="controls">
@@ -1198,8 +1281,9 @@ export default function Analysis() {
               <label className="field-inline small">지역 <select value={emtrRegion} onChange={(e) => setEmtrRegion(e.target.value)}>{all.regions.map((r) => <option key={r}>{r}</option>)}</select></label>
             </div>
           </div>
-          <p className="hint">10만 원보다 적으면 일부를 잃는 것이고, <b style={{ color: "var(--cliff)" }}>0원 아래면 오히려 손해</b>입니다.</p>
-          <div className="chart-box short"><Line data={{ labels: eLabels, datasets: [
+          <p className="chart-desc">소득 구간마다 10만 원을 더 벌 때 손에 남는 돈 · 주황 배경이 오히려 손해인 구간이에요</p>
+          <p className="hint">점선(10만 원)보다 낮으면 일부를 잃는 것이고, <b style={{ color: "var(--cliff)" }}>0원 아래면 오히려 손해</b>예요.</p>
+          <div className="chart-box short"><Line plugins={[lossBand]} data={{ labels: eLabels, datasets: [
             {
               label: "10만 원 더 벌 때 늘어나는 금액",
               data: ec.retained,
@@ -1236,7 +1320,7 @@ export default function Analysis() {
             : <>이 가구에는 손해 구간이 없습니다.</>}</p>
         </section>
         {/* ⑤ 정책 개입 효과 */}
-        <PolicySection all={all} data={data} />
+        <div id="an-policy" className="anchor"><PolicySection all={all} data={data} /></div>
 
         {/* ⑥ 복지 절벽 원인 기여도 */}
         <CauseSection cases={all.cases} />
@@ -1252,8 +1336,10 @@ export default function Analysis() {
           <SensitivitySection rows={sensitivityRows} />
         </>}
 
+        <Group id="an-basis" no="04" title="근거 및 참고 자료" desc="계산 기준과 분석 방법, 한계" />
         <section className="card">
-          <h2 className="card-title">분석 방법과 한계</h2>
+          <details className="basis-fold">
+          <summary><span className="card-title">분석 방법과 한계</span><span className="hint">펼쳐 보기</span></summary>
           <div className="method-grid">
             <div><h3>방법</h3><ol>
               <li>복지로 선정기준 원문을 판정 규칙으로 변환 (<code>rules.json</code>)</li>
@@ -1264,6 +1350,7 @@ export default function Analysis() {
             </ol></div>
             <div><h3>한계</h3><ul>{[...data.assumptions, "가구 유형 6개는 대표 사례이며 모든 가구를 대표하지 않습니다.", "지역은 대구 북구와 경산시 2곳만 분석했습니다."].map((a) => <li key={a}>{a}</li>)}</ul></div>
           </div>
+          </details>
         </section>
       </main>
     </>
