@@ -160,9 +160,9 @@ export function ChangePoints({ sim, inc, cmp, cliffs, focus, curLoss }) {
   const nextDrop = next && next.index > 0 ? ys[next.index - 1] - ys[next.index] : 0;
   const nearNext = next && nextDrop > 0 && next.income - after <= maxX * 0.25;
   const rows = [
-    { key: "now", at: inc, el: <li key="now"><i style={{ background: PIN.now }} /><b>현재 소득</b><span>월 {manwon(inc)} 원 · 생활비 {manwon(ys[nowI])} 원{curLoss ? <> · <em className="bad">줄기 전보다 {manwon(curLoss.shortfall)} 원 적어요</em></> : null}</span></li> },
-    focus && { key: "cliff", at: focus.income, el: <li key="cliff"><i style={{ background: PIN.cliff }} /><b>혜택 감소</b><span>월 {manwon(focus.income)} 원 · 생활비 <em className="bad">{drop > 0 ? `${manwon(drop)} 원 ` : ""}감소</em></span></li> },
-    focus?.recover != null && { key: "rec", at: focus.recover, el: <li key="rec"><i style={{ background: PIN.recover }} /><b>회복 구간</b><span>월 {manwon(focus.recover)} 원 · 줄기 전만큼 돌아와요</span></li> },
+    { key: "now", at: inc, el: <li key="now"><i style={{ background: PIN.now }} /><b>현재 소득</b><span><em className="cp-inc">월 {manwon(inc)} 원</em> · 생활비 {manwon(ys[nowI])} 원{curLoss ? <> · <em className="bad">줄기 전보다 {manwon(curLoss.shortfall)} 원 적어요</em></> : null}</span></li> },
+    focus && { key: "cliff", at: focus.income, el: <li key="cliff"><i style={{ background: PIN.cliff }} /><b>혜택 감소</b><span><em className="cp-inc cliff">월 {manwon(focus.income)} 원</em> · 생활비 <em className="bad">{drop > 0 ? `${manwon(drop)} 원 ` : ""}감소</em></span></li> },
+    focus?.recover != null && { key: "rec", at: focus.recover, el: <li key="rec"><i style={{ background: PIN.recover }} /><b>회복 구간</b><span><em className="cp-inc rec">월 {manwon(focus.recover)} 원</em> · 줄기 전만큼 돌아와요</span></li> },
   ].filter(Boolean).sort((a, b) => a.at - b.at);
   return (
     <section className="chart-points" aria-label="주요 변화 지점">

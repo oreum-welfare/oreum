@@ -403,3 +403,15 @@ a { color: inherit; }
 .user .card-link .cl-sub { font-size: 13px; }
 .user .card-link::after { content: none; }
 .user .card-link .cl-preview > span { padding-right: 0; }
+.user .chart-points li em.cp-inc { color: var(--text); }
+.user .chart-points li em.cp-inc.cliff { color: var(--red-ink); }
+.user .chart-points li em.cp-inc.rec { color: var(--brand-ink); }
+.user .r-chart .chart-points { background: var(--bg); }
+/* 주의 구간 상자 */
+.user .warn-box { margin-top: 20px; padding: 18px 20px; background: var(--red-soft); border-radius: var(--radius); }
+.user .warn-box .wb-tag { display: inline-block; padding: 3px 10px; border-radius: 999px; background: #f6dcd5; color: var(--red-ink); font-size: 13px; font-weight: 700; }
+.user .warn-box .wb-title { font-size: 18px; font-weight: 700; margin: 10px 0 2px; }
+.user .warn-box .wb-desc { font-size: 14px; color: var(--text-2); margin: 0; }
+.user .warn-box .wb-amt { font-size: 32px; font-weight: 800; letter-spacing: -0.03em; color: var(--red-ink); margin: 6px 0 0; }
+.user .warn-box.calm { background: var(--brand-soft); }
+.user .warn-box.calm .wb-tag { background: #d6eedd; color: var(--brand-ink); }

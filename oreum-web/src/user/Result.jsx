@@ -43,8 +43,28 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
           {r.capped && <p className="notice">입력한 소득(월 {manwon(income)} 원)이 너무 커서, 계산할 수 있는 가장 큰 소득(월 {manwon(maxIncome)} 원) 기준으로 보여 드려요.</p>}
         </section>
 
-        {/* 2. 주요 변화 지점 (현재 월급·감소 시작·회복) */}
-        <ChangePoints sim={r.sim} inc={inc} cmp={cmp} cliffs={r.cliffs} focus={focus} curLoss={curLoss} />
+        {/* 2. 주의 구간: 생활비가 줄어드는 곳 한 상자 */}
+        {curLoss ? (
+          <section className="warn-box">
+            <span className="wb-tag">주의 구간</span>
+            <p className="wb-title">월급 {manwon(curLoss.cliff.income)} 원부터</p>
+            <p className="wb-desc">생활비가 줄어든 구간에 있어요.{curLoss.recover != null ? ` 월급 ${manwon(curLoss.recover)} 원이 되면 돌아와요.` : ""}</p>
+            <p className="wb-amt">−{manwon(curLoss.shortfall)} 원</p>
+          </section>
+        ) : cliff ? (
+          <section className="warn-box">
+            <span className="wb-tag">주의 구간</span>
+            <p className="wb-title">월급 {manwon(cliff.income)} 원부터</p>
+            <p className="wb-desc">생활비가 줄어들기 시작해요.</p>
+            <p className="wb-amt">−{manwon(cliff.drop)} 원</p>
+          </section>
+        ) : (
+          <section className="warn-box calm">
+            <span className="wb-tag">안심 구간</span>
+            <p className="wb-title">줄어드는 구간이 없어요</p>
+            <p className="wb-desc">소득이 늘수록 생활비도 계속 늘어나요.</p>
+          </section>
+        )}
 
         {/* 3. 복지 절벽 넘는 방법: 이 화면의 핵심 행동이라 바로 아래에 크게 */}
         <button type="button" className={`path-cta${cliff || curLoss ? "" : " calm"}`} onClick={() => setSheet("path")}>
@@ -59,6 +79,8 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
         {/* 4. 그래프 */}
         <Chart sim={r.sim} inc={inc} cmp={cmp} cliffs={r.cliffs}
           focus={focus} />
+        {/* 주요 변화 지점 (현재 소득·혜택 감소·회복 구간) */}
+        <ChangePoints sim={r.sim} inc={inc} cmp={cmp} cliffs={r.cliffs} focus={focus} curLoss={curLoss} />
 
         {/* 5. 비교: 슬라이더는 트랙만 초록, 바꾼 소득과 생활비 변화를 크게 */}
         <section className="compare" aria-label="소득을 바꿔 보기">
