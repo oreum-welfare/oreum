@@ -370,3 +370,14 @@ a { color: inherit; }
 .user .f-no.bad { background: #e5503c; }
 .user .f-no.ok { background: #3d9a5d; }
 @media (max-width: 559px) { .user .feature-row { grid-template-columns: 1fr; } }
+/* 입력 단계: 선택 상태 더 또렷하게, 지역 확인 칸, 입력 요약 */
+.user .option { border: 2px solid transparent; transition: background .15s, border-color .15s; }
+.user .option.on { border-color: var(--brand-strong); font-weight: 700; }
+.user .region-pick { display: flex; flex-direction: column; gap: 2px; background: var(--surface); border-radius: 14px; padding: 12px 14px; margin: 4px 0 8px; }
+.user .region-pick span { font-size: 12px; color: var(--text-3); }
+.user .region-pick b { font-size: 16px; }
+.user .region-pick small { font-size: 13px; color: var(--text-3); }
+.user .region-pick.local { background: var(--brand-soft); }
+.user .region-pick.local small { color: var(--brand-ink); }
+.user .group-title small { font-weight: 400; font-size: 12px; color: var(--text-3); margin-left: 6px; }
+.user .answer-summary { margin: 8px 0 0; font-size: 13px; color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

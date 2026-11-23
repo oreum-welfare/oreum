@@ -25,6 +25,15 @@ export default function Questions({ regions, pilotRegions = [], residenceRegions
     return n;
   });
   const kids = hh.infants + hh.elem + hh.middle + hh.high;
+  // 셋째 이상 자녀(7~18세): 셋째부터는 나이가 어린 쪽이라, 초·중·고 자녀가 셋 이상이어야 셋째도 7~18세
+  // (예: 영유아 2명 + 초등 1명이면 셋째는 영유아) — 앞 단계 자녀 수로 자동 판단, 다시 묻지 않음
+  const thirdChild = hh.elem + hh.middle + hh.high >= 3;
+  useEffect(() => { if (hh.thirdChild7to18 !== thirdChild) setHh((h) => ({ ...h, thirdChild7to18: thirdChild })); }, [thirdChild, hh.thirdChild7to18]);
+  const noneSelected = !hh.singleParent && !hh.disabled && !hh.severeDisabled && !hh.newborn;
+  const clearTraits = () => { setHh((h) => ({ ...h, singleParent: false, disabled: false, severeDisabled: false, newborn: false })); setStep(step + 1); };
+  // 지금까지 입력한 정보 한 줄 요약 (2단계부터)
+  const summary = [short(hh.region), step > 2 && `${hh.age}세`, step > 2 && hh.spouse && "배우자", step > 2 && kids > 0 && `자녀 ${kids}명`,
+    step > 3 && hh.singleParent && "한부모", step > 3 && (hh.disabled || hh.severeDisabled) && "장애", step > 3 && hh.newborn && "출산"].filter(Boolean);
   const next = () => (step < TOTAL ? setStep(step + 1) : onFinish(hh, income));
   const noAsset = () => { setHasAsset(false); setHh((h) => ({ ...h, housingAsset: 0, financialAsset: 0, debt: 0 })); setStep(step + 1); };
   const bySido = regionsBySido(regions);
@@ -108,12 +117,13 @@ export default function Questions({ regions, pilotRegions = [], residenceRegions
             );
           })}
         </nav>
+        {step > 1 && summary.length > 0 && <p className="answer-summary" aria-label="지금까지 입력한 정보">{summary.join(" · ")}</p>}
       </div>
 
       <div className="screen-body col">
         {step === 1 && <>
           <h1 className="title">어디에 사세요?</h1>
-          <p className="desc">사는 곳에 따라 주거급여와 지자체 혜택이 달라져요</p>
+          <p className="desc">지금 사는 곳(주민등록 주소)을 골라 주세요. 사는 곳에 따라 주거급여와 지자체 혜택이 달라져요</p>
           <div className="field">
             <label className="field-name" htmlFor="q-sido">시·도</label>
             <select id="q-sido" className="select" value={sido} onChange={(e) => set("region", bySido[e.target.value][0])}>
@@ -126,18 +136,22 @@ export default function Questions({ regions, pilotRegions = [], residenceRegions
               {bySido[sido].map((k) => <option key={k} value={k}>{regions[k].sigungu}</option>)}
             </select>
           </div>}
+          <div className={`region-pick ${pilotRegions.includes(hh.region) ? "local" : ""}`}>
+            <span>선택한 지역</span><b>{hh.region}</b>
+            <small>{pilotRegions.includes(hh.region) ? "중앙 제도 + 이 지역 자체 혜택까지 계산해요" : "중앙 제도만 계산해요 (이 지역 자체 혜택은 아직 준비 중)"}</small>
+          </div>
           {pilotRegions.length > 0 && <>
-            <p className="group-title">지자체 자체 혜택까지 계산되는 곳</p>
+            <p className="group-title">지자체 자체 혜택까지 계산되는 곳 <small>사는 곳이 여기라면 눌러서 바로 고를 수 있어요</small></p>
             <div className="options">
               {pilotRegions.map((k) => <Option key={k} on={hh.region === k} onClick={() => set("region", k)} sub={k}>{short(k)}</Option>)}
             </div>
           </>}
-          <p className="note">중앙 제도(생계·의료·주거·교육급여, 기초연금, 근로장려금 등)는 전국 어디서나 계산해요. 지자체 자체 혜택은 담당자가 승인한 지역만 들어가요.</p>
+          <p className="note">중앙정부 복지(생계·의료·주거·교육급여, 기초연금, 근로장려금 등)는 전국 기준으로, 지자체 복지는 선택한 지역에서 제공하는 사업만 계산해요.</p>
         </>}
 
         {step === 2 && <>
           <h1 className="title">가족은 어떻게 되세요?</h1>
-          <p className="desc">함께 사는 가족 기준이에요</p>
+          <p className="desc">함께 사는 가족을 입력해 주세요. 일부 혜택은 주민등록상 가구원 등 따로 정한 기준을 써요</p>
           <div className="field"><span>본인 나이</span><Stepper label="본인 나이" value={hh.age} min={19} max={100} suffix="세" onChange={(v) => set("age", v)} /></div>
           <div className="field"><span>배우자</span><Seg label="배우자" options={[[false, "없음"], [true, "있음"]]} value={hh.spouse} onChange={(v) => set("spouse", v)} /></div>
           {hh.spouse && <>
@@ -152,18 +166,19 @@ export default function Questions({ regions, pilotRegions = [], residenceRegions
 
         {step === 3 && <>
           <h1 className="title">해당하는 게 있나요?</h1>
-          <p className="desc">없으면 그냥 넘어가도 돼요. 여러 개 고를 수 있어요</p>
+          <p className="desc">여러 개 고를 수 있어요. 해당하는 게 없으면 '해당 없음'을 누르세요</p>
           <div className="options">
             <Option on={hh.singleParent} onClick={() => set("singleParent", !hh.singleParent)} sub={hh.spouse ? "고르면 '배우자 있음'이 해제돼요" : null}>한부모 가구예요</Option>
-            <Option on={hh.disabled} onClick={() => set("disabled", !hh.disabled)}>장애가 있는 가족이 있어요</Option>
-            <Option on={hh.severeDisabled} onClick={() => set("severeDisabled", !hh.severeDisabled)}>본인이 심한 장애예요</Option>
+            <Option on={hh.disabled} onClick={() => set("disabled", !hh.disabled)} sub="본인 포함, 등록장애인인 가족">장애가 있는 가족이 있어요</Option>
+            <Option on={hh.severeDisabled} onClick={() => set("severeDisabled", !hh.severeDisabled)} sub="18~64세 본인이 심한 장애 (장애인연금 계산)">본인이 심한 장애예요</Option>
             <Option on={hh.newborn} onClick={() => set("newborn", !hh.newborn)}>올해 아이가 태어났어요</Option>
             {hh.newborn && <>
               <div className="field" style={{ paddingTop: 8 }}><span>몇째 아이인가요?</span><Seg label="출생 순위" options={[[1, "첫째"], [2, "둘째"], [3, "셋째"], [4, "넷째+"]]} value={hh.birthOrder} onChange={(v) => set("birthOrder", v)} /></div>
               {hh.birthOrder > kids && <p className="warn">자녀가 {kids}명으로 입력돼 있어요. {ORDINAL[hh.birthOrder]}라면 이전 화면에서 형제자매도 넣어 주세요.</p>}
             </>}
-            <Option on={hh.thirdChild7to18} onClick={() => set("thirdChild7to18", !hh.thirdChild7to18)} sub="7~18세 셋째 이상">자녀가 셋 이상이에요</Option>
+            <Option on={noneSelected} onClick={clearTraits} sub="바로 다음으로 넘어가요">해당 없음</Option>
           </div>
+          {thirdChild && <p className="note">초·중·고 자녀가 셋 이상이라 셋째 이상 자녀(7~18세) 혜택도 함께 계산해요.</p>}
           {askResidence && <div className="field"><span className="field-name">{short(hh.region)}에 산 기간<small>지자체 혜택에 거주 기간 조건이 있어요</small></span><Stepper label="거주 기간" value={Math.floor(hh.residenceMonths / 12)} max={50} suffix="년" onChange={(v) => set("residenceMonths", v * 12)} /></div>}
         </>}
 
