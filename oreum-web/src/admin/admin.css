@@ -117,7 +117,7 @@
 .admin .fair li { counter-increment: f; background: var(--soft); border-radius: 14px; padding: 14px; font-size: 13px; color: var(--sub); }
 .admin .fair li::before { content: counter(f); display: inline-flex; width: 22px; height: 22px; border-radius: 50%; background: var(--brand); color: #fff; font-size: 12px; font-weight: 700; align-items: center; justify-content: center; margin-bottom: 8px; }
 .admin .fair b { display: block; color: var(--ink); font-size: 14px; margin-bottom: 2px; }
-.admin .review-layout { display: grid; grid-template-columns: 270px minmax(0, 1fr); gap: 16px; align-items: start; }
+.admin .review-layout { display: grid; grid-template-columns: minmax(250px, 20fr) minmax(0, 80fr); gap: 16px; align-items: start; }
 .admin .review-list { position: sticky; top: 20px; }
 .admin .review-list ul { list-style: none; padding: 0; margin: 8px 0 12px; display: flex; flex-direction: column; gap: 6px; max-height: 60vh; overflow-y: auto; }
 .admin .review-list li button { width: 100%; text-align: left; border: 1px solid var(--line); background: #fff; border-radius: 12px; padding: 9px 11px; cursor: pointer; display: flex; flex-direction: column; gap: 2px; }
@@ -128,7 +128,7 @@
 .admin .rv-sub { font-size: 12px; color: var(--muted); }
 .admin .rv-badges { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 2px; }
 .admin .review-main { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
-.admin .review-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+.admin .review-cols { display: grid; grid-template-columns: minmax(0, 38fr) minmax(0, 42fr); gap: 16px; align-items: start; }
 .admin .source-text { white-space: pre-wrap; word-break: keep-all; font-family: inherit; font-size: 14px; line-height: 1.75; margin: 8px 0 0; max-height: 70vh; overflow-y: auto; color: var(--sub); }
 .admin mark.ev { background: var(--yellow-soft); border-radius: 3px; padding: 0 1px; color: var(--ink); }
 .admin mark.ev.active { background: var(--yellow); box-shadow: 0 0 0 2px var(--yellow); }
@@ -256,3 +256,27 @@
 .admin .admin-bar { gap: 20px; }
 .admin .admin-tabs { gap: 0; }
 .admin .admin-tabs a { padding: 0 10px; font-size: 14px; }
+
+/* AI 검수: 현황 · 서비스 목록 카드 · 원문과 연결된 규칙 */
+.admin .rv-status { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
+.admin .rv-status > div { background: var(--soft); border-radius: 14px; padding: 14px 18px; }
+.admin .rv-status span { display: block; font-size: 13px; color: var(--muted); }
+.admin .rv-status b { display: block; font-size: 32px; font-weight: 800; letter-spacing: -0.03em; margin-top: 2px; }
+.admin .rv-status .done b { color: var(--green); }
+.admin .rv-status .wait b { color: #a45a1f; }
+.admin .rv-progress-head { display: flex; justify-content: space-between; margin-top: 14px; font-size: 13px; color: var(--muted); }
+.admin .rv-progress-head b { color: var(--ink); }
+.admin .rv-progress { height: 8px; border-radius: 4px; background: var(--soft); margin-top: 6px; overflow: hidden; }
+.admin .rv-progress i { display: block; height: 100%; background: var(--brand); border-radius: 4px; transition: width 0.3s; }
+.admin .review-list ul { gap: 8px; }
+.admin .review-list li button { padding: 12px 14px; gap: 4px; border-radius: 14px; }
+.admin .review-list li button.active { border-color: var(--brand-2); background: var(--brand-soft); }
+.admin .rv-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; }
+.admin .rv-name { font-size: 14px; }
+.admin .pill.s-wait { background: #fbeee4; color: #a45a1f; }
+.admin .rv-linked { margin-top: 14px; }
+.admin .rv-linked-head { margin: 0 0 8px; font-size: 13px; font-weight: 700; color: var(--green); }
+.admin .rv-linked-card { border: 1.5px solid var(--brand-2); border-radius: 14px; padding: 14px 16px; }
+.admin .rv-linked-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 14px; }
+.admin .rv-linked-value { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; margin: 4px 0 2px; word-break: keep-all; }
+@media (max-width: 640px) { .admin .rv-status { grid-template-columns: 1fr; } }
