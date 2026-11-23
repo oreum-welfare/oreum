@@ -328,3 +328,19 @@ a { color: inherit; }
 .user .why-table small { color: var(--text-3, #8b95a1); margin-left: 4px; }
 .user .why-sub { margin-top: 6px; font-size: 13px; }
 .user .why-sub summary { cursor: pointer; color: var(--text-3, #6b7684); }
+/* 결과 화면 '자세히 보기' 카드 */
+.user .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 24px 0 0; }
+.user .card-link { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: left; width: 100%;
+  background: var(--surface, #f9fafb); border: 1px solid var(--surface-2, #eef0f3); border-radius: 16px; padding: 16px 32px 16px 16px; font: inherit; color: var(--text); cursor: pointer; transition: border-color .15s, background .15s; }
+.user .card-link:hover { border-color: var(--text-3, #b0b8c1); background: #fff; }
+.user .card-link::after { content: "›"; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 22px; color: var(--text-3, #b0b8c1); }
+.user .card-link .cl-title { font-size: 14px; font-weight: 600; color: var(--text-2, #4e5968); }
+.user .card-link .cl-value { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.25; word-break: keep-all; }
+.user .card-link .cl-sub { font-size: 12px; color: var(--text-3, #8b95a1); }
+.user .card-link.benefit .cl-value { color: var(--brand-strong, #3d9a5d); }
+.user .card-link.cliff { background: var(--red-soft, #fdf3f1); border-color: transparent; }
+.user .card-link.cliff .cl-value { color: var(--red-ink, #c4392a); }
+.user .card-link.path { background: var(--brand-soft, #eef7f1); border-color: transparent; }
+.user .card-link.path .cl-value { color: var(--brand-ink, #2f7a49); }
+@media (max-width: 340px) { .user .cards { grid-template-columns: 1fr; } }
+.user .cards > .card-link:last-child:nth-child(odd) { grid-column: 1 / -1; }

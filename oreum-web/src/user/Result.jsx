@@ -102,12 +102,23 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
 
         <div className="r-more">
         {/* 6. 자세히 */}
-        <nav className="rows" aria-label="자세히 보기">
-          <button type="button" className="row" onClick={() => setSheet("benefits")}><span>받는 혜택 {benefits.length}가지</span><span className="chev">월 {manwon(total)} 원</span></button>
-          {cliff && <button type="button" className="row" onClick={() => setSheet("cliff")}><span>왜 줄어드나요?</span><span className="chev">{cliff.lost[0]}</span></button>}
-          <button type="button" className="row" onClick={() => setSheet("path")}><span>줄어드는 구간 넘는 방법</span><span className="chev">{pathCount(r.programs, r.gains)}가지</span></button>
-          <button type="button" className="row" onClick={() => setSheet("region")}><span>다른 지역이라면?</span><span className="chev" /></button>
-          <button type="button" className="row" onClick={() => setSheet("basis")}><span>계산 기준</span><span className="chev" /></button>
+        {/* 자세히 보기: 카드로 크게 (핵심 숫자를 먼저 보이게) */}
+        <nav className="cards" aria-label="자세히 보기">
+          <button type="button" className="card-link benefit" onClick={() => setSheet("benefits")}>
+            <span className="cl-title">받는 혜택 {benefits.length}가지</span><b className="cl-value">월 {manwon(total)} 원</b><span className="cl-sub">금액 근거 보기</span>
+          </button>
+          {cliff && <button type="button" className="card-link cliff" onClick={() => setSheet("cliff")}>
+            <span className="cl-title">왜 줄어드나요?</span><b className="cl-value">{cliff.lost[0]}{cliff.lost.length > 1 ? ` 외 ${cliff.lost.length - 1}` : ""}</b><span className="cl-sub">끊기는 혜택과 이유</span>
+          </button>}
+          <button type="button" className="card-link path" onClick={() => setSheet("path")}>
+            <span className="cl-title">줄어드는 구간 넘는 방법</span><b className="cl-value">{pathCount(r.programs, r.gains)}가지</b><span className="cl-sub">도움이 되는 제도와 방법</span>
+          </button>
+          <button type="button" className="card-link" onClick={() => setSheet("region")}>
+            <span className="cl-title">다른 지역이라면?</span><b className="cl-value">지역 비교</b><span className="cl-sub">같은 가족·같은 소득일 때</span>
+          </button>
+          <button type="button" className="card-link" onClick={() => setSheet("basis")}>
+            <span className="cl-title">계산 기준</span><b className="cl-value">출처·확인</b><span className="cl-sub">고시·조례와 확인 상태</span>
+          </button>
         </nav>
 
         {/* 6. 상담 연결: 결과 링크 복사 (입력값이 주소에 저장돼 있어 같은 화면이 열림) */}
