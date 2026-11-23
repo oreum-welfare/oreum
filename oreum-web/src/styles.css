@@ -312,3 +312,4 @@ a { color: inherit; }
 .chart-zoom { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 13px; color: var(--text-3, #8b95a1); margin-bottom: 4px; }
 .user .chart-legend li.next-cliff { flex-wrap: wrap; gap: 4px 8px; color: var(--text-3, #6b7684); font-size: 13px; }
 .user .chart-legend i.dash { width: 20px; height: 0; border-radius: 0; border-top: 2px dashed #e5503c; opacity: 0.6; }
+.user .freshness::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--brand-strong, #3d9a5d); margin-right: 6px; vertical-align: 1px; }

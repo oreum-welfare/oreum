@@ -25,3 +25,18 @@ for (const [from, to] of pairs) {
     console.warn(`경고: ${from} 도 ${to} 도 없습니다.`);
   }
 }
+
+// 자동 확인 상태 (Supabase가 없을 때 쓰는 기본값): 저장소에 남은 매일 확인 기록에서 마지막 확인 시각·범위를 뽑는다
+import { readFileSync, writeFileSync } from "node:fs";
+const readJson = (rel) => { try { return JSON.parse(readFileSync(resolve(here, rel), "utf8")); } catch { return null; } };
+const lastChecked = (state) => Object.values(state || {}).map((e) => e.checked || "").sort().pop() || null;
+const watch = readJson("../../pipeline/state/watch_state.json");
+const notices = readJson("../../pipeline/state/notice_state.json");
+if (watch || notices) {
+  const status = {
+    local_watch: watch ? { checked_at: lastChecked(watch), summary: { regions: new Set(Object.values(watch).map((e) => e.region)).size, programs: Object.keys(watch).length } } : null,
+    notice_watch: notices ? { checked_at: lastChecked(notices), summary: { notices: Object.keys(notices).length } } : null,
+  };
+  writeFileSync(resolve(here, "../public/data/freshness.json"), JSON.stringify(status, null, 1) + "\n");
+  console.log("자동 확인 상태: ../public/data/freshness.json");
+}

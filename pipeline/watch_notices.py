@@ -32,7 +32,7 @@ from pathlib import Path
 import requests
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from supabase_rest import select  # noqa: E402
+from supabase_rest import select, upsert  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 CONFIG = HERE / "notices.json"
@@ -216,6 +216,8 @@ def main() -> None:
     if failed:
         lines += ["", "확인하지 못한 것 (다음 실행 때 다시): " + ", ".join(failed)]
     SUMMARY.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    upsert("system_status", {"key": "notice_watch", "checked_at": datetime.now(timezone.utc).isoformat(),
+                             "summary": {"notices": len(notices), "new": len(new)}})
     print(f"완료: 새 고시 {len(new)}건")
 
 

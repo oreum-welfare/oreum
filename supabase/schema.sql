@@ -382,3 +382,15 @@ grant all on public.watched_notices to service_role;
 drop policy if exists "관리자 직접 입력" on public.central_values;
 create policy "관리자 직접 입력" on public.central_values for insert with check (public.is_admin() and status = '검토 대기');
 grant insert on public.central_values to authenticated;
+
+-- 11. 자동 확인 상태 (매일 확인이 마지막으로 돈 시각과 요약). 계산기 화면에 "매일 자동 확인 · 마지막 확인 ○월 ○일"로 보여 준다
+create table if not exists public.system_status (
+  key text primary key,            -- local_watch (지자체 제도) / notice_watch (중앙 고시)
+  checked_at timestamptz not null default now(),
+  summary jsonb not null default '{}'
+);
+alter table public.system_status enable row level security;
+drop policy if exists "자동 확인 상태는 누구나 읽기" on public.system_status;
+create policy "자동 확인 상태는 누구나 읽기" on public.system_status for select using (true);
+grant select on public.system_status to anon, authenticated;
+grant all on public.system_status to service_role;   -- 쓰기는 매일 확인(서비스 키)만

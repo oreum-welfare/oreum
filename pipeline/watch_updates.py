@@ -36,7 +36,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from fetch_bokjiro import ENDPOINTS, ApiTimeout, call, format_body, leaves, parse_detail  # noqa: E402
-from supabase_rest import select  # noqa: E402
+from supabase_rest import select, upsert  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 RAW_DIR, RULES_DIR = HERE / "raw", HERE / "runs_watch_rules"
@@ -229,6 +229,9 @@ def main() -> None:
     if skipped:
         lines += ["", "응답이 없어 건너뛴 것 (다음 실행 때 다시 확인): " + ", ".join(skipped)]
     SUMMARY.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    # 계산기 화면의 "매일 자동 확인 · 마지막 확인"에 쓰인다 (Supabase 설정이 없으면 건너뜀)
+    upsert("system_status", {"key": "local_watch", "checked_at": datetime.now(timezone.utc).isoformat(),
+                             "summary": {"regions": len(regions), "programs": len(state), "changes": len(changes), "gone": len(gone_all)}})
     print(f"완료: 새 제도·바뀐 제도 {len(changes)}건, 기록 {len(state)}건")
 
 

@@ -25,3 +25,21 @@ def select(table: str, query: str) -> list[dict] | None:
         return None
     data = r.json()
     return data if isinstance(data, list) else None
+
+
+def upsert(table: str, row: dict) -> bool:
+    """한 줄 넣거나 바꾸기 (자동 확인 상태 기록용). 설정이 없거나 실패하면 False (확인 자체는 계속)"""
+    url = (os.environ.get("SUPABASE_URL") or "").strip().rstrip("/")
+    if url.endswith("/rest/v1"):
+        url = url[: -len("/rest/v1")]
+    key = (os.environ.get("SUPABASE_SERVICE_ROLE_KEY") or "").strip()
+    if not url or not key:
+        return False
+    headers = {"apikey": key, "Content-Type": "application/json", "Prefer": "resolution=merge-duplicates,return=minimal"}
+    if not key.startswith("sb_"):
+        headers["Authorization"] = f"Bearer {key}"
+    try:
+        r = requests.post(f"{url}/rest/v1/{table}", headers=headers, json=row, timeout=30)
+    except requests.RequestException:
+        return False
+    return r.ok

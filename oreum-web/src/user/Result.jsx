@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useCallback, useState } from "react";
 import { Sheet } from "../ui/index.jsx";
 import { applyInfo } from "./apply.js";
+import { freshnessText, useFreshness } from "../lib/freshness.js";
 import Chart from "./Chart.jsx";
 import { CHECK_LABEL, LEVEL_LABEL, STEP, about, baseYear, iga, levelOf, localReady, manwon, short, sourceKeys, statusClass, won } from "./data.js";
 
@@ -14,6 +15,7 @@ const SOURCES = [
 
 // 결과 화면: 숫자 하나 → 조심할 곳 한 줄 → 다시 좋아지는 곳 → 그래프 → 비교 → 자세히(시트)
 export default function Result({ data, hh, income, r, includeInkind, setIncludeInkind, setCompare, adoptCompare, onEdit, onRestart }) {
+  const freshness = freshnessText(useFreshness()); // 매일 자동 확인 상태 (지자체 제도·중앙 고시)
   const [sheet, setSheet] = useState(null);
   const close = useCallback(() => setSheet(null), []);
   const { inc, total, benefits, cliff, curLoss, cmp, diff, maxIncome } = r;
@@ -116,6 +118,7 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
         <footer className="footer">
           <p style={{ margin: "0 0 8px" }}>{short(hh.region)} · {hh.age}세{hh.spouse ? " · 배우자" : ""}{hh.infants + hh.elem + hh.middle + hh.high ? ` · 자녀 ${hh.infants + hh.elem + hh.middle + hh.high}명` : ""}{hh.singleParent ? " · 한부모" : ""}</p>
           <p style={{ margin: "0 0 8px" }}>데이터: 복지로 · 한국사회보장정보원 복지서비스 API, 보건복지부·국토교통부 고시 ({baseYear(data)}년 기준) · <button type="button" className="link-btn" onClick={() => setSheet("basis")} style={{ fontSize: 13 }}>출처 자세히</button></p>
+          {freshness && <p style={{ margin: "0 0 8px" }} className="freshness">{freshness}</p>}
           <p style={{ margin: "0 0 12px" }}>{baseYear(data)}년 기준 참고용이에요. 실제 수급은 읍면동 행정복지센터에서 결정돼요.</p>
           <button type="button" className="link-btn" onClick={onRestart} style={{ fontSize: 13 }}>처음부터 다시</button>
           <span style={{ margin: "0 8px" }}>·</span>

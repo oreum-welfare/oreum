@@ -1,0 +1,15 @@
+{
+ "local_watch": {
+  "checked_at": "2026-11-23",
+  "summary": {
+   "regions": 3,
+   "programs": 43
+  }
+ },
+ "notice_watch": {
+  "checked_at": "2026-11-24",
+  "summary": {
+   "notices": 7
+  }
+ }
+}
