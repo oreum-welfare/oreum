@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { createEngine } from "../lib/engine.js";
-import { publishedPrograms } from "../lib/programs.js";
+import { applyCentral } from "../lib/central.js";
+import { publishedCentral, publishedPrograms } from "../lib/programs.js";
 import { decodeState, encodeState } from "../lib/urlState.js";
 import { useJson } from "../lib/useJson.js";
 import { calculate } from "./calc.js";
@@ -15,9 +16,11 @@ export default function UserApp() {
   const { data: rules, error } = useJson("/data/rules.json");
   // 지자체 제도는 담당자가 '승인'한 것만 (데모: 이 브라우저의 승인 결정, Supabase: DB의 승인 제도)
   const [programs, setPrograms] = useState(null);
-  useEffect(() => { if (rules) publishedPrograms(rules).then(setPrograms); }, [rules]);
-  // 승인 제도를 받기 전에는 계산하지 않는다 (먼저 rules.json으로 계산하면 DB에서 중지한 제도가 잠깐 보였다 사라진다)
-  const data = useMemo(() => (rules && programs ? { ...rules, local_programs: programs } : null), [rules, programs]);
+  // 중앙 기준값: 관리자가 승인한 새 고시 값 중 시행일이 지난 것 (예: 2027-01-01부터 2027년 기준 중위소득)
+  const [central, setCentral] = useState(null);
+  useEffect(() => { if (rules) { publishedPrograms(rules).then(setPrograms); publishedCentral().then(setCentral); } }, [rules]);
+  // 승인 제도·기준값을 받기 전에는 계산하지 않는다 (먼저 rules.json으로 계산하면 결과가 잠깐 보였다 바뀐다)
+  const data = useMemo(() => (rules && programs && central ? { ...applyCentral(rules, central), local_programs: programs } : null), [rules, programs, central]);
   const engine = useMemo(() => (data ? createEngine(data) : null), [data]);
   const [params, setParams] = useSearchParams();
   const [editing, setEditing] = useState(false); // false 또는 수정을 시작할 질문 번호

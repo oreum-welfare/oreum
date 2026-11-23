@@ -4,6 +4,7 @@
 // 계산기(사용자 화면)는 어느 모드든 '승인'된 제도만 받아 쓴다. 가구 입력값은 어디로도 보내지 않는다.
 
 const STORE_KEY = "oreum-local-programs-v1";
+const CENTRAL_KEY = "oreum-central-values-v1"; // 데모: 중앙 기준값 결정
 
 export const backendMode = () =>
   import.meta.env?.VITE_SUPABASE_URL && import.meta.env?.VITE_SUPABASE_ANON_KEY ? "supabase" : "demo";
@@ -77,4 +78,32 @@ export async function publishedPrograms(data) {
   if (changed.length === 0) return base;
   const ids = new Set(changed.map((p) => p.id));
   return [...base.filter((p) => !ids.has(p.id)), ...changed].filter((p) => p.status === "승인");
+}
+
+// ---- 중앙 기준값 (고시 값) ----
+// 데모: AI 제안(central_drafts.json) + 이 브라우저의 결정, Supabase: DB central_values
+export function loadCentralOverlay() {
+  try { return JSON.parse(localStorage.getItem(CENTRAL_KEY)) || {}; } catch { return {}; }
+}
+export function saveCentralOverlay(overlay) {
+  try { localStorage.setItem(CENTRAL_KEY, JSON.stringify(overlay)); return true; } catch { return false; }
+}
+export function resetCentralOverlay() {
+  try { localStorage.removeItem(CENTRAL_KEY); } catch { /* 저장 불가 환경 */ }
+}
+export const mergeCentral = (drafts = [], overlay = {}) => drafts.map((r) => overlay[r.id] || r);
+
+// 계산기에 넣을 '승인' 기준값 (시행일 고르기는 central.js applyCentral)
+export async function publishedCentral() {
+  if (backendMode() === "supabase") {
+    try {
+      const sb = await supabaseClient();
+      const { data: rows, error } = await sb.from("central_values").select("id, key, value, effective_from, notice, status").eq("status", "승인");
+      if (error) throw error;
+      return rows;
+    } catch {
+      return []; // 연결이 안 되면 rules.json 값 그대로
+    }
+  }
+  return Object.values(loadCentralOverlay()).filter((r) => r.status === "승인");
 }

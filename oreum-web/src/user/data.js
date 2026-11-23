@@ -45,6 +45,8 @@ export function localReady(data, key) {
 }
 // "다른 지역이라면?" 비교 지역: 지금 지역 + 급지별 대표 + 지자체 혜택이 있는 지역
 export const COMPARE_REGIONS = ["서울특별시 관악구", "경기도 남양주시", "대구광역시 북구", "경상북도 경산시", "전라남도 신안군"];
+// 계산 기준 연도: rules.json 연도, 또는 시행 중인 새 고시 값(관리자 승인)이 있으면 그 시행 연도
+export const baseYear = (data) => Math.max(Number(data?.year) || 2026, ...(data?.central_applied || []).map((a) => Number(String(a.effective_from).slice(0, 4)) || 0));
 export const ORDINAL = { 1: "첫째", 2: "둘째", 3: "셋째", 4: "넷째 이상" };
 
 export const NAMES = {

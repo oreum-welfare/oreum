@@ -4,19 +4,21 @@ watch_notices.py가 저장한 새 고시(pipeline/notices/*.txt + 별표 PDF)를
 그 고시가 정하는 rules.json 값(pipeline/notices.json의 keys)을 지금 값과 같은 모양으로 다시 적어 준다.
 코드가 모양(항목·개수·숫자)을 검사하고, 지금 값과 다른 칸만 '바뀐 값'으로 뽑는다. AI가 계산식을 바꿀 수는 없다.
 
---apply 로 실행하면 검사를 통과한 값을 data/rules.json에 써서 PR로 올린다.
-그래도 최종 결정은 사람: PR에서 원문과 대조하고, 시행일에 맞춰 합친다 (합치면 계산기에 바로 반영).
+검사를 통과한 제안은 pipeline/central_drafts.json에 '검토 대기'로 모이고, 매일 확인이 Supabase(central_values)에 올린다.
+최종 결정은 사람: 관리자 화면 '중앙 기준값'에서 시스템 관리자가 원문과 대조해 승인하면, 시행일부터 계산기에 자동 반영.
+rules.json은 바꾸지 않는다 (다음 해 rules.json을 새로 만들 때 승인된 값을 옮긴다).
 
 실행 예:
   $env:ANTHROPIC_API_KEY = "..."      # 또는 ant auth login
-  python pipeline/propose_notice.py            # 제안만 (pipeline/notices/proposals/*.json)
-  python pipeline/propose_notice.py --apply    # 제안 + rules.json 반영 + 요약에 표 추가
+  python pipeline/propose_notice.py            # 새 고시 제안 → proposals/*.json → central_drafts.json
+  python pipeline/propose_notice.py --export   # AI 호출 없이 central_drafts.json만 다시 만들기
 """
 from __future__ import annotations
 
 import argparse
 import base64
 import json
+import re
 import sys
 import time
 from pathlib import Path
@@ -30,6 +32,7 @@ CONFIG = HERE / "notices.json"
 NOTICE_DIR, PROPOSAL_DIR = HERE / "notices", HERE / "notices" / "proposals"
 STATE_DIR = HERE / "state"
 TRIES, SUMMARY = STATE_DIR / "notice_tries.json", STATE_DIR / "notice_summary.md"
+DRAFTS = HERE / "central_drafts.json"
 MODEL = "claude-opus-5-5"
 MAX_TRIES = 3
 MAX_PDF_BYTES = 15 * 1024 * 1024
@@ -52,11 +55,6 @@ def get_path(d: dict, path: str):
     return d
 
 
-def set_path(d: dict, path: str, value) -> None:
-    *head, last = path.split(".")
-    for p in head:
-        d = d[p]
-    d[last] = value
 
 
 def same_shape(a, b) -> bool:
@@ -153,16 +151,47 @@ def fmt(v) -> str:
     return f"{v:,}" if isinstance(v, int) else str(v)
 
 
+def ymd(v: str) -> str:
+    v = str(v or "")
+    return f"{v[:4]}-{v[4:6]}-{v[6:8]}" if re.fullmatch(r"\d{8}", v) else v
+
+
+def export_drafts() -> list[dict]:
+    """검사를 통과한 제안 중 지금 값과 다른 것만 → 관리자 화면 '중앙 기준값'의 검토 대기 목록"""
+    rows = []
+    for f in sorted(PROPOSAL_DIR.glob("*.json")) if PROPOSAL_DIR.exists() else []:
+        r = json.loads(f.read_text(encoding="utf-8"))
+        n = r["notice"]
+        eff = ymd(n.get("effective")) or r.get("effective_date", "")
+        if not r.get("related") or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", eff):
+            continue
+        for it in r["items"]:
+            if not it["changes"]:
+                continue
+            rows.append({
+                "id": f"{n['notice']}_{n['serial']}_{it['key']}", "key": it["key"], "value": it["value"], "effective_from": eff,
+                "notice": {"key": n["notice"], "source": n["source"], "name": n["name"], "number": n["number"], "issued": n["issued"], "serial": n["serial"]},
+                "evidence": it["evidence"][:500], "location": it["location"], "proposed_by": f"ai:{r.get('model', '')}", "status": "검토 대기",
+            })
+    DRAFTS.write_text(json.dumps({"note": "새 고시에서 AI가 읽은 중앙 기준값 제안 (계산에 쓰지 않음). 시스템 관리자가 승인한 것만 시행일부터 반영",
+                                  "drafts": rows}, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    return rows
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="새 고시 → AI가 바뀐 기준값 제안")
-    ap.add_argument("--apply", action="store_true", help="검사를 통과한 값을 data/rules.json에 반영")
+    ap.add_argument("--export", action="store_true", help="AI 호출 없이 central_drafts.json만 다시 만들기")
     args = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8")
+    if args.export:
+        print(f"중앙 기준값 제안 {len(export_drafts())}건 저장")
+        return
     hints = {n["key"]: n.get("hint", "") for n in json.loads(CONFIG.read_text(encoding="utf-8"))["notices"]}
     tries = json.loads(TRIES.read_text(encoding="utf-8")) if TRIES.exists() else {}
     todo = [s for s in pending() if tries.get(s, 0) < MAX_TRIES]
     if not todo:
         print("제안할 새 고시 없음")
+        export_drafts()
         return
 
     import anthropic
@@ -180,13 +209,14 @@ def main() -> None:
         time.sleep(1)
     STATE_DIR.mkdir(exist_ok=True)
     TRIES.write_text(json.dumps(tries, indent=1, sort_keys=True) + "\n", encoding="utf-8")
+    drafts = export_drafts()
 
     lines = []
     for r in results:
         n = r["notice"]
-        lines += ["", f"### {n['name']} (시행 {r['effective_date'] or n['effective']})"]
+        lines += ["", f"### {n['name']} (시행 {ymd(n['effective']) or r['effective_date']})"]
         if not r["related"]:
-            lines.append("AI 판단: 오름 계산 값과 관련 없는 개정이에요. 값은 바꾸지 않았어요.")
+            lines.append("AI 판단: 오름 계산 값과 관련 없는 개정이에요.")
         changes = [c for it in r["items"] for c in it["changes"]]
         if changes:
             lines += ["", "| 값 | 지금 | 새 고시 (AI 판독) |", "|---|---|---|"]
@@ -198,19 +228,14 @@ def main() -> None:
             lines.append(f"⚠️ AI가 읽지 못한 값 (사람이 원문에서 확인): {r['unreadable']}")
         if r["rejected"]:
             lines.append("⚠️ 검사에서 걸러낸 제안: " + "; ".join(r["rejected"]))
-        if args.apply:
-            for it in r["items"]:
-                if it["changes"]:
-                    set_path(rules, it["key"], it["value"])
     if failed:
         lines += ["", f"AI 제안 실패 (다음 실행 때 다시, {MAX_TRIES}번까지): " + ", ".join(failed)]
-    if args.apply and any(it["changes"] for r in results for it in r["items"]):
-        RULES.write_text(json.dumps(rules, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        lines += ["", "위 값을 `data/rules.json`에 반영했어요. **합치기 전에**: 원문 대조, `value_checks.csv`·`verification` 갱신, "
-                  "테스트 기대값(`tests/engine_checks.mjs` 등) 확인. 합치는 순간 계산기에 반영되니 시행일에 맞춰 합쳐 주세요."]
+    if results:
+        lines += ["", f"관리자 화면 **중앙 기준값**에 '검토 대기'로 올렸어요 (전체 {len(drafts)}건). 시스템 관리자가 원문과 대조해 승인하면 "
+                  "시행일부터 계산기에 자동으로 반영돼요. 이 PR은 기록용이라 rules.json은 바뀌지 않아요."]
     with SUMMARY.open("a", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
-    print(f"완료: 제안 {len(results)}건, 실패 {len(failed)}건")
+    print(f"완료: 제안 {len(results)}건, 실패 {len(failed)}건, 검토 대기 {len(drafts)}건")
 
 
 if __name__ == "__main__":

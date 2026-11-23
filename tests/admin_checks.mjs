@@ -5,8 +5,9 @@ import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const { canReview, decide, computable } = await import(pathToFileURL(join(root, "oreum-web/src/lib/permissions.js")));
+const { canReview, decide, computable, decideCentral, canReviewCentral } = await import(pathToFileURL(join(root, "oreum-web/src/lib/permissions.js")));
 const { mergePrograms, newerVersionOf } = await import(pathToFileURL(join(root, "oreum-web/src/lib/programs.js")));
+const { applyCentral, inForce, sameShape } = await import(pathToFileURL(join(root, "oreum-web/src/lib/central.js")));
 const { createEngine } = await import(pathToFileURL(join(root, "oreum-web/src/lib/engine.js")));
 const data = JSON.parse(readFileSync(join(root, "data/rules.json"), "utf8"));
 const drafts = JSON.parse(readFileSync(join(root, "pipeline/local_drafts.json"), "utf8")).drafts;
@@ -63,6 +64,24 @@ check("AI 초안은 모두 '검토 대기'로 들어옴", drafts.every((d) => d.
   const all = [oldDraft, v1, v2, other];
   check("새 버전 초안: 가장 새 것을 가리킴", newerVersionOf(oldDraft, all)?.id === v2.id && newerVersionOf(v1, all)?.id === v2.id);
   check("새 버전 초안: 가장 새 버전·다른 서비스는 해당 없음", !newerVersionOf(v2, all) && !newerVersionOf(other, all));
+}
+
+// 중앙 기준값: 시스템 관리자만, 시행일부터 자동 반영, 모양이 다르면 쓰지 않음
+{
+  const v27 = { ...data.lines.saeng_32, 1: 900000 };
+  const row = { id: "median_saeng_1_lines.saeng_32", key: "lines.saeng_32", value: v27, effective_from: "2027-01-01", status: "검토 대기", notice: { name: "2027 기준 중위소득" } };
+  check("중앙 기준값: 지자체 담당자는 결정 불가, 관리자만", !canReviewCentral(gs) && canReviewCentral(admin) && Boolean(decideCentral(gs, row, "승인").error));
+  check("중앙 기준값: 모양이 다른 수정은 거절", Boolean(decideCentral(admin, row, "승인", { value: { 1: 900000 }, sameShape }).error));
+  const ok = decideCentral(admin, row, "승인", { value: { ...v27, 2: 1400000 }, sameShape });
+  check("중앙 기준값: 승인 + 관리자가 고친 칸 저장", ok.row?.status === "승인" && ok.row.value[2] === 1400000 && ok.row.approved_by === admin.name, ok.error);
+  const before = applyCentral(data, [ok.row], "2026-12-31"), after = applyCentral(data, [ok.row], "2027-01-01");
+  check("중앙 기준값: 시행일 전에는 지금 값, 시행일부터 새 값", before.lines.saeng_32[1] === data.lines.saeng_32[1] && after.lines.saeng_32[1] === 900000 && after.central_applied.length === 1);
+  check("중앙 기준값: 원본 rules는 그대로", data.lines.saeng_32[1] !== 900000);
+  check("중앙 기준값: 검토 대기·모양 다른 값은 반영 안 함", applyCentral(data, [row], "2027-06-01") === data && applyCentral(data, [{ ...ok.row, value: { 1: 1 } }], "2027-06-01") === data);
+  const older = { ...ok.row, id: "x", value: { ...v27, 1: 850000 }, effective_from: "2026-08-01" };
+  check("중앙 기준값: 같은 키는 시행일이 가장 최근인 것", inForce([older, ok.row], "2027-02-01")["lines.saeng_32"].id === ok.row.id && inForce([older, ok.row], "2026-09-01")["lines.saeng_32"].id === "x");
+  const eng = createEngine(after);
+  check("중앙 기준값: 계산 엔진이 새 기준선을 씀", Math.round(eng.medianIncome(1)) === Math.round(900000 / 0.32));
 }
 
 if (bad) { console.error(`${bad}개 검사 실패`); process.exit(1); }

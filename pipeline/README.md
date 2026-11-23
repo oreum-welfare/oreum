@@ -136,8 +136,10 @@ python pipeline/convert.py --provider openai --prefix api --out pipeline/runs_ap
 
 1. `watch_notices.py`: 고시별 최신 버전(현행·연혁, 발령일자 기준)을 지난 기록과 비교 → 새 고시면 본문·별표를 `notices/`에 저장
 2. `propose_notice.py`: Claude가 본문과 별표 PDF를 읽고, 그 고시가 정하는 `rules.json` 값만 **지금 값과 같은 모양으로** 다시 적음.
-   코드가 모양(항목·개수·숫자)을 검사해 통과한 것만, 지금 값과 다른 칸만 반영. 계산식은 바꿀 수 없음
-3. `auto/notice-updates` → develop PR: 바뀐 값 표(지금 → 새 고시)와 근거 조문. **사람이 원문과 대조하고 시행일에 맞춰 합칩니다** (합치는 순간 계산기에 반영)
+   코드가 모양(항목·개수·숫자)을 검사해 통과한 것만, 지금 값과 다른 것만 `central_drafts.json`에 '검토 대기'로. 계산식은 바꿀 수 없음
+3. Supabase `central_values`에 올림 (`supabase/seed_central.mjs`) → 관리자 화면 **중앙 기준값**에서 **시스템 관리자**가 원문과 대조
+   (AI가 잘못 읽은 칸은 고쳐서) 승인 → **시행일부터 계산기에 자동 반영**. 2027년 값을 미리 승인해 두면 2027-01-01에 바뀜. `rules.json`은 그대로
+4. 기록은 `auto/notice-updates` → develop PR (새 고시·바뀐 값 표)
 
 AI가 읽지 못한 표(이미지·HWP만 있는 경우)는 PR에 "사람이 확인"으로 남고, 실패한 제안은 3번까지만 다시 시도합니다.
 처음 실행은 지금 고시를 기준으로만 기록합니다. 필요한 값: `LAW_OC`(open.law.go.kr에서 신청한 API 인증값), `ANTHROPIC_API_KEY`(선택).

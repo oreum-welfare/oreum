@@ -58,3 +58,27 @@ export function decide(user, program, to, { reason = "", monthly, applyChecks, f
   next.history = [...(program.history || []), event];
   return { program: next, event };
 }
+
+// ---- 중앙 기준값 (고시 값) ----
+// 전국 계산에 영향을 주므로 시스템 관리자만 결정한다 (DB: is_admin())
+export const canReviewCentral = (user) => user?.role === "admin";
+
+// value: 검토 대기 값을 승인·반려할 때만, AI가 잘못 읽은 칸을 원문대로 고친 값 (모양은 그대로여야 함)
+export function decideCentral(user, row, to, { reason = "", value, sameShape } = {}, now = new Date()) {
+  if (!canReviewCentral(user)) return { error: "중앙 기준값은 시스템 관리자만 결정할 수 있어요" };
+  if (!canTransition(row.status, to)) return { error: `'${row.status}'에서 '${to}'(으)로 바꿀 수 없어요` };
+  if ((to === "반려" || to === "중지") && !reason.trim()) return { error: "사유를 적어 주세요" };
+  const next = { ...row, status: to };
+  if (value !== undefined && row.status === "검토 대기") {
+    if (sameShape && !sameShape(row.value, value)) return { error: "값의 모양이 지금 값과 달라요 (항목·개수를 그대로 두고 숫자만 고쳐 주세요)" };
+    next.value = value;
+  }
+  if (to === "승인") {
+    next.approved_by = user.name;
+    next.approved_at = now.toISOString().slice(0, 10);
+  }
+  if (to === "반려" || to === "중지") next.reason = reason.trim();
+  const event = { at: now.toISOString(), by: user.name, role: user.role, from: row.status, to, reason: reason.trim() };
+  next.history = [...(row.history || []), event];
+  return { row: next, event };
+}

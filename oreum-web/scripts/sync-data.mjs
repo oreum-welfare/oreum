@@ -10,7 +10,8 @@ const pairs = [
   ["../../pipeline/review_export.json", "../public/data/review.json"],
   ["../../pipeline/ai_results.json", "../public/data/ai_results.json"],
   ["../../pipeline/local_drafts.json", "../public/data/local_drafts.json"],
-  ["../../pipeline/state/gone.json", "../public/data/source_gone.json"], // 매일 변경 확인: 복지로 목록에서 사라진 제도
+  ["../../pipeline/state/gone.json", "../public/data/source_gone.json"],
+  ["../../pipeline/central_drafts.json", "../public/data/central_drafts.json"], // 중앙 기준값 제안 (관리자 화면 데모용) // 매일 변경 확인: 복지로 목록에서 사라진 제도
 ];
 mkdirSync(resolve(here, "../public/data"), { recursive: true });
 for (const [from, to] of pairs) {
