@@ -2,6 +2,7 @@ import { Link, Navigate, NavLink, Route, Routes } from "react-router-dom";
 import "./chartSetup.js";
 import "./admin.css";
 import Logo from "../ui/Logo.jsx";
+import Accounts from "./pages/Accounts.jsx";
 import AiResults from "./pages/AiResults.jsx";
 import Analysis from "./pages/Analysis.jsx";
 import CentralValues from "./pages/CentralValues.jsx";
@@ -15,6 +16,7 @@ const TABS = [
   ["review", "AI 검수"],
   ["local", "지자체 제도 검토"],
   ["central", "중앙 기준값"],
+  ["accounts", "계정 관리"],
 ];
 
 // 관리자(운영자) 화면: 정책 분석·AI 추출 성능·사람 검수
@@ -46,6 +48,7 @@ function AdminShell() {
           <Route path="review" element={<Review />} />
           <Route path="local" element={<LocalPrograms />} />
           <Route path="central" element={<CentralValues />} />
+          <Route path="accounts" element={<Accounts />} />
           <Route path="*" element={<Navigate to="analysis" replace />} />
         </Routes>
       </div>

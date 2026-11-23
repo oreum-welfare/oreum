@@ -268,3 +268,54 @@ grant select, update on public.central_values to authenticated;  -- 관리자만
 grant select on public.central_events to authenticated;
 grant all on public.central_values, public.central_events to service_role;
 grant execute on function public.is_admin() to anon, authenticated;
+
+-- 7. 담당자 계정 관리 (개발자 없이): 담당자가 관리자 화면에서 가입 신청 → 시스템 관리자가 승인하며 지역 지정
+-- (Supabase Authentication → Sign In / Providers → Email의 "Confirm email"을 끄면 .test 같은 주소로도 바로 신청할 수 있다)
+alter table public.profiles add column if not exists email text;
+
+create table if not exists public.access_requests (
+  id uuid primary key references auth.users (id) on delete cascade,
+  email text,
+  name text not null,
+  requested_region text,          -- 희망 담당 지역 (rules.json 지역 키)
+  requested_sido text,
+  note text,
+  status text not null default '대기' check (status in ('대기', '승인', '반려')),
+  decided_by text,
+  decided_at timestamptz,
+  created_at timestamptz not null default now()
+);
+alter table public.access_requests enable row level security;
+drop policy if exists "본인 가입 신청" on public.access_requests;
+create policy "본인 가입 신청" on public.access_requests for insert with check (id = auth.uid() and status = '대기');
+drop policy if exists "본인·관리자 신청 읽기" on public.access_requests;
+create policy "본인·관리자 신청 읽기" on public.access_requests for select using (id = auth.uid() or public.is_admin());
+drop policy if exists "관리자 신청 결정" on public.access_requests;
+create policy "관리자 신청 결정" on public.access_requests for update using (public.is_admin()) with check (public.is_admin());
+
+-- 권한(profiles)은 시스템 관리자만 주고·바꾸고·회수한다. 본인은 여전히 자기 것만 읽는다(1절)
+drop policy if exists "관리자 전체 권한 읽기" on public.profiles;
+create policy "관리자 전체 권한 읽기" on public.profiles for select using (public.is_admin());
+drop policy if exists "관리자 권한 부여" on public.profiles;
+create policy "관리자 권한 부여" on public.profiles for insert with check (public.is_admin());
+drop policy if exists "관리자 권한 변경" on public.profiles;
+create policy "관리자 권한 변경" on public.profiles for update using (public.is_admin()) with check (public.is_admin());
+drop policy if exists "관리자 권한 회수" on public.profiles;
+create policy "관리자 권한 회수" on public.profiles for delete using (public.is_admin());
+
+-- 관리자가 자기 권한을 없애 아무도 관리할 수 없게 되는 일을 막는다
+create or replace function public.guard_profile_change() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  if auth.uid() is not null and old.id = auth.uid() and (tg_op = 'DELETE' or new.role <> 'admin') then
+    raise exception '자기 관리자 권한은 없앨 수 없어요 (다른 관리자에게 부탁하세요)';
+  end if;
+  return case when tg_op = 'DELETE' then old else new end;
+end $$;
+drop trigger if exists guard_profile_change on public.profiles;
+create trigger guard_profile_change before update or delete on public.profiles
+  for each row execute function public.guard_profile_change();
+
+grant select, insert, update, delete on public.profiles to authenticated;   -- 관리자만 (RLS·트리거)
+grant select, insert, update on public.access_requests to authenticated;
+grant all on public.access_requests to service_role;
