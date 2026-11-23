@@ -226,3 +226,5 @@
 .admin .lp-history { margin: 0; padding-left: 18px; color: var(--sub); font-size: 13px; }
 @media (max-width: 760px) { .admin .lp-cols { grid-template-columns: 1fr; } }
 .admin .check-later { display: flex; gap: 6px; align-items: center; margin-top: 6px; font-size: 13px; color: var(--sub); cursor: pointer; }
+.admin .lp-gone { margin-left: 6px; font-size: 11px; vertical-align: middle; }
+.admin .lp-gone-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }

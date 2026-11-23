@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { won } from "../../lib/format.js";
 import { ROLE_LABEL, STATUS, TRANSITIONS, canReview, computable, decide } from "../../lib/permissions.js";
-import { loadOverlay, mergePrograms, resetOverlay, saveOverlay, supabaseClient } from "../../lib/programs.js";
+import { goneInfo, loadOverlay, mergePrograms, resetOverlay, saveOverlay, supabaseClient } from "../../lib/programs.js";
 import { useJson } from "../../lib/useJson.js";
 import { PageHead } from "../adminUi.jsx";
 import { SignIn, useSession } from "../session.jsx";
@@ -25,6 +25,8 @@ export default function LocalPrograms() {
   const { mode, user, ready, signOut } = useSession();
   const { data } = useJson("/data/rules.json");
   const { data: draftFile } = useJson("/data/local_drafts.json");
+  const { data: goneFile } = useJson("/data/source_gone.json"); // 매일 변경 확인: 복지로 목록에서 사라진 제도 (없으면 빈 목록)
+  const goneMap = goneFile || {};
   const [programs, setPrograms] = useState(null);
   const [status, setStatus] = useState("검토 대기");
   const [pickedId, setPickedId] = useState(null);
@@ -96,6 +98,8 @@ export default function LocalPrograms() {
   };
 
   const counts = Object.fromEntries(STATUS.map((s) => [s, mine.filter((p) => p.status === s).length]));
+  // 승인돼 계산 중인데 원문(복지로 목록)에서 사라진 제도: 자동으로 빼지 않고 담당자에게 확인을 요청한다
+  const goneApproved = mine.filter((p) => p.status === "승인" && goneInfo(p, goneMap));
   return (
     <div className="page">
       <PageHead title="지자체 제도 검토" desc="AI 초안을 원문과 대조해 승인하면 계산기에 들어갑니다. 계산할 수 없는 조건(기타 문장 등)이 있으면 승인할 수 없어요.">
@@ -116,6 +120,16 @@ export default function LocalPrograms() {
           </button>
         ))}
       </div>
+      {goneApproved.length > 0 && (
+        <div className="warn" role="alert">
+          <b>폐지 의심 {goneApproved.length}건</b> · 계산 중인 제도가 복지로 목록에서 3일 넘게 보이지 않아요. 원문을 확인하고, 폐지됐으면 '계산에서 빼기(중지)'를 눌러 주세요.
+          <div className="lp-gone-list">
+            {goneApproved.map((p) => (
+              <button key={p.id} type="button" className="btn sm" onClick={() => { setStatus("승인"); setPickedId(p.id); }}>{p.name}</button>
+            ))}
+          </div>
+        </div>
+      )}
       {msg && <p className="notice" role="status">{msg}</p>}
       {!programs ? <p className="hint">불러오는 중…</p> : mine.length === 0 ? <p className="empty">검토할 수 있는 제도가 없어요.</p> : (
         <div className="lp-cols">
@@ -123,17 +137,18 @@ export default function LocalPrograms() {
             {shown.length === 0 && <li className="hint">이 상태의 제도가 없어요.</li>}
             {shown.map((p) => {
               const c = computable(p, facts);
+              const gone = goneInfo(p, goneMap);
               return (
                 <li key={p.id}>
                   <button type="button" className={`lp-item ${picked?.id === p.id ? "on" : ""}`} onClick={() => setPickedId(p.id)}>
-                    <b>{p.name}</b>
+                    <b>{p.name}{gone && <span className="pill s-warn lp-gone">폐지 의심</span>}</b>
                     <small>{user.role === "admin" ? `${p.region || p.sido} · ` : ""}{p.origin?.type === "ai" ? `AI 초안 (${p.origin.prompt} 프롬프트)` : "기존 규칙"}{c.ok ? "" : " · 계산 불가 조건 있음"}</small>
                   </button>
                 </li>
               );
             })}
           </ul>
-          {picked && <Detail key={picked.id} p={picked} facts={facts} onAct={apply} />}
+          {picked && <Detail key={picked.id} p={picked} facts={facts} gone={goneInfo(picked, goneMap)} onAct={apply} />}
         </div>
       )}
       <p className="hint" style={{ marginTop: 16 }}>승인된 제도는 <Link to="/">계산기</Link>에서 그 지역을 고르면 '지자체' 혜택으로 계산돼요.</p>
@@ -141,7 +156,7 @@ export default function LocalPrograms() {
   );
 }
 
-function Detail({ p, facts, onAct }) {
+function Detail({ p, facts, gone, onAct }) {
   const [monthly, setMonthly] = useState(p.amount?.monthly ?? 0);
   const [reason, setReason] = useState("");
   const [later, setLater] = useState(() => new Set(p.apply_checks || []));
@@ -157,9 +172,13 @@ function Detail({ p, facts, onAct }) {
         <span className={`pill ${STATUS_CLASS[p.status]}`}>{p.status}</span>
       </div>
       <p className="hint">{p.region || p.sido} · {KIND_LABEL[p.kind] || p.kind} · 출처: {p.source || "—"}</p>
+      {gone && (
+        <p className="warn">복지로 목록에서 {gone.since}부터 보이지 않아요 (3일 연속). 폐지됐거나, 이름·서비스 번호가 바뀌었을 수 있어요.
+          {p.status === "승인" ? " 폐지가 맞으면 사유를 적고 '계산에서 빼기(중지)'를 눌러 주세요." : " 승인하기 전에 제도가 아직 있는지 확인해 주세요."}</p>
+      )}
       {p.origin?.type === "ai" && (
         <p className={p.origin.judgeable ? "hint" : "warn"}>
-          AI(GPT-5, {p.origin.prompt} 프롬프트) 판단: 판정 {p.origin.judgeable ? "가능" : "불가"}{p.origin.not_judgeable_reason ? ` — ${p.origin.not_judgeable_reason}` : ""}
+          AI({String(p.origin.model || "").startsWith("claude") ? "Claude" : "GPT-5"}, {p.origin.prompt} 프롬프트) 판단: 판정 {p.origin.judgeable ? "가능" : "불가"}{p.origin.not_judgeable_reason ? ` — ${p.origin.not_judgeable_reason}` : ""}
         </p>
       )}
       <h3 className="card-title">조건</h3>

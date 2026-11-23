@@ -1,7 +1,8 @@
 name: 지자체 제도 변경 확인 (매일)
 
 # 공공데이터포털 API는 새 정책 알림을 주지 않아서, 매일 최종 수정일을 비교해 바뀐 제도만 처리한다.
-# 1) 바뀐 제도 원문 저장 → 2) AI 초안 → 3) '검토 대기' 초안 목록 갱신 → 4) (설정했으면) Supabase에 검토 대기로 올림
+# 1) 바뀐 제도 원문 저장 + 3일 연속 사라진 제도 표시 → 2) AI 초안 → 3) '검토 대기' 초안 목록 갱신
+# → 4) (설정했으면) Supabase에 검토 대기로 올리고 '폐지 의심' 표시 (자동 중지는 하지 않음)
 # → 5) 기록을 auto/policy-updates 브랜치에 남기고 develop으로 PR. 담당자가 승인해야 계산에 들어간다.
 #
 # 저장소 Settings → Secrets and variables → Actions 에 넣을 값 (코드·채팅에 붙이지 않기)
@@ -81,13 +82,14 @@ jobs:
         run: |
           if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then echo "Supabase 설정 없음 - PR로만 남깁니다"; exit 0; fi
           node supabase/seed_programs.mjs
+          node supabase/mark_gone.mjs   # 복지로 목록에서 3일 연속 사라진 제도에 '폐지 의심' 표시 (자동 중지는 하지 않음)
 
       - name: 기록 남기고 PR 열기
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p pipeline/runs_watch_rules
-          git add pipeline/state pipeline/raw pipeline/runs_watch_rules pipeline/local_drafts.json oreum-web/public/data/local_drafts.json
+          git add pipeline/state pipeline/raw pipeline/runs_watch_rules pipeline/local_drafts.json oreum-web/public/data/local_drafts.json oreum-web/public/data/source_gone.json
           if git diff --cached --quiet; then echo "바뀐 것 없음"; exit 0; fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

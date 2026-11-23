@@ -33,6 +33,19 @@ export function mergePrograms(base = [], drafts = [], overlay = {}) {
   return all.map((p) => overlay[p.id] || p);
 }
 
+// 복지로 서비스 ID (매일 변경 확인과 연결): 직접 적은 service_id → AI 초안의 원문 이름(t12_WLF… / u_WLF…_날짜) → 출처 문구
+export function serviceIdOf(p) {
+  const pick = (s) => (String(s || "").match(/WLF\d+/) || [])[0];
+  return pick(p.service_id) || pick(p.origin?.service_id) || pick(p.source) || null;
+}
+
+// 복지로 목록에서 사라진 제도인가 (폐지 의심). DB 표시(source_gone_since) 또는 매일 변경 확인 결과(source_gone.json)
+export function goneInfo(p, goneMap = {}) {
+  if (p.source_gone_since) return { since: p.source_gone_since };
+  const sid = serviceIdOf(p);
+  return (sid && goneMap[sid]) || null;
+}
+
 // 계산기에 넣을 '승인' 제도 (rules.json의 local_programs를 대신한다)
 export async function publishedPrograms(data) {
   const base = data.local_programs || [];

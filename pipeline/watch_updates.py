@@ -19,6 +19,8 @@ export_local_drafts.py가 '검토 대기' 초안으로 내보낸다 (.github/wor
   pipeline/raw/u_<서비스ID>_<수정일>.txt     바뀐 제도 원문 (버전마다 새 파일 → 새 초안 id, 승인된 이전 버전은 그대로 계산)
   pipeline/state/watch_state.json            제도별 마지막 확인 기록
   pipeline/state/summary.md                  이번 실행 요약 (PR 본문)
+  pipeline/state/gone.json                   복지로 목록에서 3일(서로 다른 날) 연속 사라진 제도 → 관리자 화면에 '폐지 의심' 표시
+                                             (자동 중지하지 않음. 이름 변경·서비스 번호 재발급도 사라짐으로 보이기 때문)
 """
 from __future__ import annotations
 
@@ -38,7 +40,7 @@ from fetch_bokjiro import ENDPOINTS, ApiTimeout, call, format_body, leaves, pars
 HERE = Path(__file__).resolve().parent
 RAW_DIR, RULES_DIR = HERE / "raw", HERE / "runs_watch_rules"
 STATE_DIR = HERE / "state"
-STATE, SUMMARY = STATE_DIR / "watch_state.json", STATE_DIR / "summary.md"
+STATE, SUMMARY, GONE = STATE_DIR / "watch_state.json", STATE_DIR / "summary.md", STATE_DIR / "gone.json"
 DEFAULT_REGIONS = ["경상북도 경산시", "대구광역시 북구", "경상북도 영천시"]
 SAFE = re.compile(r"[^A-Za-z0-9_]")  # 파일 이름·명령 인자에 들어가므로 API 값에서 안전한 글자만 남긴다
 KST = timezone(timedelta(hours=9))
@@ -48,7 +50,8 @@ def today() -> str:
     return datetime.now(KST).strftime("%Y-%m-%d")
 
 
-def list_region(key: str, region: str) -> list[dict]:
+def list_region(key: str, region: str) -> tuple[list[dict], bool]:
+    """(목록, 끝까지 다 받았는지). 서버가 목록을 덜 주면 '사라짐' 판단에 쓰지 않는다"""
     sido, _, sgg = region.partition(" ")
     base, list_op, _ = ENDPOINTS["local"]
     items, page = [], 1
@@ -58,8 +61,33 @@ def list_region(key: str, region: str) -> list[dict]:
         items += batch
         total = int(root.findtext(".//totalCount") or 0)
         if not batch or len(items) >= total:
-            return items
+            return items, total > 0 and len({it.get("servId") for it in items}) >= total
         page += 1
+
+
+GONE_DAYS = 3  # 이 날수(서로 다른 날) 연속으로 목록에 없으면 '원문에서 사라짐'으로 본다
+
+
+def check_missing(state: dict, region: str, seen: set[str], day: str) -> tuple[list[dict], list[dict]]:
+    """목록을 끝까지 받은 지역만: 기록에 있는데 목록에 없는 제도를 센다. (새로 사라짐, 다시 보임)"""
+    gone, back = [], []
+    for sid, e in state.items():
+        if e.get("region") != region:
+            continue
+        if sid in seen:
+            if e.get("gone_since"):
+                back.append({"sid": sid, **e})
+            for k in ("missing_days", "missing_last", "gone_since"):
+                e.pop(k, None)
+            continue
+        if e.get("missing_last") == day:
+            continue  # 같은 날 여러 번 실행해도 하루로 센다
+        e["missing_days"] = e.get("missing_days", 0) + 1
+        e["missing_last"] = day
+        if e["missing_days"] >= GONE_DAYS and not e.get("gone_since"):
+            e["gone_since"] = day
+            gone.append({"sid": sid, **e})
+    return gone, back
 
 
 def core_hash(body: list[str]) -> str:
@@ -96,14 +124,18 @@ def main() -> None:
     RAW_DIR.mkdir(exist_ok=True)
     STATE_DIR.mkdir(exist_ok=True)
 
-    changes, skipped, deferred = [], [], 0
+    changes, skipped, deferred, gone, back = [], [], 0, [], []
     for region in args.region or DEFAULT_REGIONS:
         try:
-            items = list_region(key, region)
+            items, complete = list_region(key, region)
         except ApiTimeout as e:
             skipped.append(f"{region} 목록 ({e})")
             continue
-        print(f"[{region}] 목록 {len(items)}건")
+        print(f"[{region}] 목록 {len(items)}건" + ("" if complete else " (목록을 다 받지 못해 사라진 제도는 확인하지 않음)"))
+        if complete and not init:
+            g, b = check_missing(state, region, {SAFE.sub("", it.get("servId", "")) for it in items}, today())
+            gone += g
+            back += b
         for it in items:
             sid = SAFE.sub("", it.get("servId", ""))
             if not sid:
@@ -140,15 +172,26 @@ def main() -> None:
             time.sleep(0.2)
 
     STATE.write_text(json.dumps(state, ensure_ascii=False, indent=1, sort_keys=True) + "\n", encoding="utf-8")
+    # 관리자 화면용: 원문(복지로 목록)에서 사라진 제도. 자동으로 중지하지 않고 담당자에게 확인을 요청한다
+    gone_all = {sid: {"name": e["name"], "region": e["region"], "since": e["gone_since"]}
+                for sid, e in sorted(state.items()) if e.get("gone_since")}
+    GONE.write_text(json.dumps(gone_all, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     lines = [f"## 지자체 제도 변경 확인 ({today()})", ""]
     if init:
         lines.append(f"처음 실행이라 지금 있는 제도 {len(state)}건을 기준으로 기록했어요. 내일부터 바뀐 것만 잡아요.")
-    elif changes:
+    elif not changes and not gone and not back:
+        lines.append("바뀐 제도가 없어요.")
+    if changes and not init:
         lines += ["새로 생겼거나 바뀐 제도예요. AI 초안이 **검토 대기**로 올라가고, 담당자가 승인해야 계산에 들어가요.", "",
                   "| 지역 | 제도 | 구분 | 최종 수정일 |", "|---|---|---|---|"]
         lines += [f"| {c['region']} | {c['name']} | {c['kind']} | {c['mod']} |" for c in changes]
-    else:
-        lines.append("바뀐 제도가 없어요.")
+    if gone:
+        lines += ["", f"### 복지로 목록에서 {GONE_DAYS}일 연속 사라진 제도 (폐지 의심)",
+                  "자동으로 계산에서 빼지 않아요. 담당자가 확인하고 폐지면 관리자 화면에서 '계산에서 빼기(중지)'를 눌러 주세요.", "",
+                  "| 지역 | 제도 | 서비스 ID | 사라진 날 |", "|---|---|---|---|"]
+        lines += [f"| {g['region']} | {g['name']} | {g['sid']} | {g['gone_since']} |" for g in gone]
+    if back:
+        lines += ["", "다시 보이는 제도 (사라짐 표시 해제): " + ", ".join(f"{b['name']} ({b['region']})" for b in back)]
     if deferred:
         lines += ["", f"하루 최대 건수를 넘은 {deferred}건은 다음 실행 때 처리해요."]
     if skipped:

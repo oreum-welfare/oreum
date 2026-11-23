@@ -41,6 +41,8 @@ create table if not exists public.local_programs (
   check (region is not null or sido is not null)
 );
 alter table public.local_programs add column if not exists facts jsonb;  -- 예전에 만든 DB에도 추가
+-- 매일 변경 확인에서 복지로 목록에서 3일 연속 사라진 날 (폐지 의심). 자동 중지하지 않고 담당자 화면에 표시만 한다
+alter table public.local_programs add column if not exists source_gone_since date;
 alter table public.local_programs enable row level security;
 
 -- 지금 로그인한 사람의 권한
@@ -99,7 +101,7 @@ begin
     return new;
   end if;
   if new.region is distinct from old.region or new.sido is distinct from old.sido or new.conditions is distinct from old.conditions
-     or new.facts is distinct from old.facts or new.name is distinct from old.name or new.kind is distinct from old.kind or new.text is distinct from old.text
+     or new.facts is distinct from old.facts or new.source_gone_since is distinct from old.source_gone_since or new.name is distinct from old.name or new.kind is distinct from old.kind or new.text is distinct from old.text
      or new.source is distinct from old.source or new.origin is distinct from old.origin or new.effective_from is distinct from old.effective_from then
     raise exception '지역·조건·원문은 결정 화면에서 바꿀 수 없어요 (새 초안으로 올려 주세요)';
   end if;

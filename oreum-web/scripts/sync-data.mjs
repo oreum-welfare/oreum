@@ -10,6 +10,7 @@ const pairs = [
   ["../../pipeline/review_export.json", "../public/data/review.json"],
   ["../../pipeline/ai_results.json", "../public/data/ai_results.json"],
   ["../../pipeline/local_drafts.json", "../public/data/local_drafts.json"],
+  ["../../pipeline/state/gone.json", "../public/data/source_gone.json"], // 매일 변경 확인: 복지로 목록에서 사라진 제도
 ];
 mkdirSync(resolve(here, "../public/data"), { recursive: true });
 for (const [from, to] of pairs) {

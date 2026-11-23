@@ -33,3 +33,5 @@
    $env:SUPABASE_URL="https://xxxx.supabase.co"; $env:SUPABASE_SERVICE_ROLE_KEY="(서비스 키)"; node supabase/seed_programs.mjs
    ```
 6. Vercel → Project → Settings → Environment Variables에 `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`(공개용 anon 키)를 넣고 다시 배포합니다.
+7. (선택) 매일 변경 확인(`.github/workflows/policy-watch.yml`)이 새 초안을 올리고 폐지 의심을 표시하게 하려면,
+   GitHub 저장소 Secrets에 `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`를 넣습니다. 폐지 의심 표시는 `mark_gone.mjs`가 하고, 상태(승인·중지)는 바꾸지 않습니다.
