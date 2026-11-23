@@ -137,6 +137,8 @@ export function SignIn() {
   const [name, setName] = useState("");
   const [area, setArea] = useState({ region: null, sido: "" });
   const [note, setNote] = useState("");
+  const [showPw, setShowPw] = useState(false);
+  const [fieldErr, setFieldErr] = useState({});
   if (mode === "supabase" && joining) {
     return (
       <form className="card signin" onSubmit={(e) => { e.preventDefault(); signUp({ email, password, name: name.trim(), region: area.region, sido: area.sido, note }); }}>
@@ -154,15 +156,35 @@ export function SignIn() {
     );
   }
   if (mode === "supabase") {
+    // 입력 오류는 그 칸 아래, 계정 불일치는 버튼 위, 가입 승인 상태는 안내 상자로
+    const submit = (e) => {
+      e.preventDefault();
+      const fe = {};
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) fe.email = email.trim() ? "이메일 형식이 맞지 않아요. 예: name@korea.kr" : "이메일을 입력해 주세요.";
+      if (!password) fe.password = "비밀번호를 입력해 주세요.";
+      setFieldErr(fe);
+      if (!fe.email && !fe.password) signIn({ email: email.trim(), password });
+    };
+    const statusMsg = error && /신청|승인|반려|인증/.test(error);
     return (
-      <form className="card signin" onSubmit={(e) => { e.preventDefault(); signIn({ email, password }); }}>
-        <h2 className="card-title">담당자 로그인</h2>
-        <p className="hint">지자체 담당자 계정으로 로그인하면 자기 지자체 제도만 검토·승인할 수 있어요.</p>
-        <label className="field"><span>이메일</span><input type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required /></label>
-        <label className="field"><span>비밀번호</span><input type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required /></label>
-        {error && <p className="warn">{error}</p>}
+      <form className="card signin login-card" onSubmit={submit} noValidate>
+        <h2 className="card-title">관리자 로그인</h2>
+        <p className="hint">등록된 담당자·관리자 계정으로 로그인해 주세요. 담당자는 자기 지자체 제도만 검토·승인할 수 있어요.</p>
+        <label className="field"><span>이메일</span>
+          <input type="email" autoComplete="username" value={email} aria-invalid={!!fieldErr.email} onChange={(e) => { setEmail(e.target.value); setFieldErr((f) => ({ ...f, email: "" })); }} />
+          {fieldErr.email && <small className="field-err" role="alert">{fieldErr.email}</small>}</label>
+        <label className="field"><span>비밀번호</span>
+          <span className="pw-wrap">
+            <input type={showPw ? "text" : "password"} autoComplete="current-password" value={password} aria-invalid={!!fieldErr.password} onChange={(e) => { setPassword(e.target.value); setFieldErr((f) => ({ ...f, password: "" })); }} />
+            <button type="button" className="pw-toggle" onClick={() => setShowPw((v) => !v)} aria-label={showPw ? "비밀번호 숨기기" : "비밀번호 보기"} aria-pressed={showPw}>{showPw ? "숨기기" : "보기"}</button>
+          </span>
+          {fieldErr.password && <small className="field-err" role="alert">{fieldErr.password}</small>}</label>
+        {error && (statusMsg ? <p className="notice" role="status">{error}</p> : <p className="login-err" role="alert">{error}</p>)}
         <button type="submit" className="btn primary">로그인</button>
-        <button type="button" className="link-btn" onClick={() => setJoining(true)}>계정이 없나요? 담당자 가입 신청</button>
+        <div className="join-line">
+          <span className="hint">지자체 담당자만 가입 신청할 수 있어요.</span>
+          <button type="button" className="btn sm" onClick={() => setJoining(true)}>담당자 가입 신청</button>
+        </div>
       </form>
     );
   }

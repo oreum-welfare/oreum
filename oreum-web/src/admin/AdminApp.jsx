@@ -53,9 +53,19 @@ function AdminShell() {
       <div className="admin-body">
         {!ready ? <p className="hint">불러오는 중…</p> : !user ? (
           // 들어오자마자 로그인: 담당자·시스템 관리자만 쓰는 업무 화면
-          <div className="page admin-gate">
-            <header className="page-head"><div><h1>오름 관리자</h1>
-              <p>지자체 담당자와 시스템 관리자가 제도를 검토·승인하는 화면이에요. 로그인해 주세요.{mode === "demo" ? " (지금은 데모 모드: 계정을 고르면 들어가요)" : ""}</p></div></header>
+          // 왼쪽: 관리자 포털 소개 · 오른쪽: 로그인 카드
+          <div className="admin-gate">
+            <section className="gate-intro">
+              <span className="gate-kicker">ADMIN PORTAL</span>
+              <h1>더 정확한 복지를 위한 관리</h1>
+              <p>AI가 분석한 복지 제도를 검토하고, 지역 주민에게 정확한 복지 정보를 제공하세요.{mode === "demo" ? " 지금은 데모 모드라 계정을 고르면 바로 들어가요." : ""}</p>
+              <p className="gate-sub">관리자 주요 업무</p>
+              <ul className="gate-tasks">
+                <li><b>복지 제도 검토 및 승인</b><span>AI 초안을 원문과 비교해 승인·반려</span></li>
+                <li><b>복지 데이터 관리</b><span>중앙 기준값·지자체 제도 버전 관리</span></li>
+                <li><b>정확한 계산 기준 관리</b><span>새 고시의 시행일·값 확인</span></li>
+              </ul>
+            </section>
             <SignIn />
           </div>
         ) : (
