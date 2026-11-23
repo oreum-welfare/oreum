@@ -244,3 +244,4 @@
 .admin .cv-form input, .admin .cv-form select, .admin .cv-form textarea { padding: 8px 10px; border: 1px solid var(--line-2); border-radius: var(--radius-sm); font: inherit; }
 .admin .cv-keys { display: flex; flex-direction: column; gap: 4px; }
 .admin .formula textarea { width: 100%; font-family: ui-monospace, Consolas, monospace; font-size: 13px; padding: 8px 10px; border: 1px solid var(--line-2); border-radius: var(--radius-sm); }
+.admin .lp-form { margin-bottom: 16px; }

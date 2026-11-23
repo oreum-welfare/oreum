@@ -6,7 +6,7 @@ import { FORMULA_VARS, SAMPLE_FACTS, evalFormula, validateFormula } from "../../
 import { goneInfo, loadOverlay, newerVersionOf, mergePrograms, resetOverlay, saveOverlay, supabaseClient } from "../../lib/programs.js";
 import { useJson } from "../../lib/useJson.js";
 import { PageHead } from "../adminUi.jsx";
-import { SignIn, useSession } from "../session.jsx";
+import { RegionPicker, SignIn, useSession } from "../session.jsx";
 
 const FIELD_LABEL = {
   age: "나이", household_size: "가구원 수", income_recognized_pct_median: "소득인정액 (중위소득 %)",
@@ -32,6 +32,7 @@ export default function LocalPrograms() {
   const [status, setStatus] = useState("검토 대기");
   const [pickedId, setPickedId] = useState(null);
   const [msg, setMsg] = useState("");
+  const [form, setForm] = useState(null); // 직접 등록: { from?: 새 버전을 만들 기존 제도 }
 
   // 목록 불러오기: 데모는 기본 제도 + AI 초안 + 이 브라우저의 결정, Supabase는 DB (RLS가 권한에 맞는 행만 돌려준다)
   useEffect(() => {
@@ -95,7 +96,51 @@ export default function LocalPrograms() {
       if (!saveOverlay(overlay)) { setMsg("이 브라우저에 저장할 수 없어요."); return; }
     }
     setPrograms((all) => all.map((p) => (p.id === res.program.id ? res.program : p)));
+    // 새 버전을 승인하면 이전 버전은 자동으로 계산에서 뺀다 (같은 제도가 두 번 계산되지 않게)
+    const old = to === "승인" && res.program.origin?.replaces && programs.find((p) => p.id === res.program.origin.replaces);
+    if (old && old.status === "승인") {
+      const r2 = decide(user, old, "중지", { reason: `새 버전(${res.program.name}) 승인`, facts });
+      if (!r2.error && await save(r2.program)) setPrograms((all) => all.map((p) => (p.id === old.id ? r2.program : p)));
+    }
     setMsg(to === "승인" ? `승인했어요. ${mode === "supabase" ? "계산기에 바로 반영돼요." : "이 브라우저의 계산기에 반영돼요 (데모)."}` : `'${to}'(으)로 바꿨어요.`);
+  };
+
+  // 결정 하나 저장 (새 버전 승인 때 이전 버전 중지에도 쓴다)
+  async function save(prog) {
+    if (mode === "supabase") {
+      try {
+        const sb = await supabaseClient();
+        const { error } = await sb.from("local_programs").update({ status: prog.status, amount: prog.amount, apply_checks: prog.apply_checks ?? [], reason: prog.reason ?? null }).eq("id", prog.id);
+        return !error;
+      } catch { return false; }
+    }
+    const overlay = loadOverlay();
+    overlay[prog.id] = prog;
+    return saveOverlay(overlay);
+  }
+
+  // 직접 등록·새 버전: '검토 대기'로 넣는다 (DB: 담당 지역만 넣을 수 있음)
+  const create = async (prog) => {
+    setMsg("");
+    if (mode === "supabase") {
+      const cols = ["id", "name", "region", "sido", "kind", "conditions", "apply_checks", "amount", "amount_text", "note", "source", "origin", "text", "status"];
+      try {
+        const sb = await supabaseClient();
+        const { error } = await sb.from("local_programs").insert(Object.fromEntries(cols.map((c) => [c, prog[c] ?? null])));
+        if (error) { setMsg(`저장하지 못했어요: ${error.message}`); return; }
+      } catch {
+        setMsg("서버에 연결하지 못했어요."); return;
+      }
+    } else {
+      const overlay = loadOverlay();
+      overlay[prog.id] = prog;
+      if (!saveOverlay(overlay)) { setMsg("이 브라우저에 저장할 수 없어요."); return; }
+    }
+    setPrograms((all) => [prog, ...(all || [])]);
+    setForm(null);
+    setStatus("검토 대기");
+    setPickedId(prog.id);
+    setMsg(`'${prog.name}'을(를) 검토 대기로 올렸어요. 예시 계산과 조건을 다시 확인한 뒤 승인해 주세요.${prog.origin?.replaces ? " 승인하면 이전 버전은 자동으로 계산에서 빠져요." : ""}`);
   };
 
   const counts = Object.fromEntries(STATUS.map((s) => [s, mine.filter((p) => p.status === s).length]));
@@ -120,7 +165,9 @@ export default function LocalPrograms() {
             {s} {counts[s]}
           </button>
         ))}
+        <button type="button" className="btn sm primary" onClick={() => setForm({})}>+ 새 제도 직접 등록</button>
       </div>
+      {form && data && <ProgramForm user={user} rules={data} facts={facts} from={form.from} onCancel={() => setForm(null)} onSubmit={create} />}
       {goneApproved.length > 0 && (
         <div className="warn" role="alert">
           <b>폐지 의심 {goneApproved.length}건</b> · 계산 중인 제도가 복지로 목록에서 3일 넘게 보이지 않아요. 원문을 확인하고, 폐지됐으면 '계산에서 빼기(중지)'를 눌러 주세요.
@@ -144,13 +191,13 @@ export default function LocalPrograms() {
                 <li key={p.id}>
                   <button type="button" className={`lp-item ${picked?.id === p.id ? "on" : ""}`} onClick={() => setPickedId(p.id)}>
                     <b>{p.name}{gone && <span className="pill s-warn lp-gone">폐지 의심</span>}{newer && <span className="pill s-warn lp-gone">새 버전 있음</span>}</b>
-                    <small>{user.role === "admin" ? `${p.region || p.sido} · ` : ""}{p.origin?.type === "ai" ? `AI 초안 (${p.origin.prompt} 프롬프트)` : "기존 규칙"}{c.ok ? "" : " · 계산 불가 조건 있음"}</small>
+                    <small>{user.role === "admin" ? `${p.region || p.sido} · ` : ""}{p.origin?.type === "ai" ? `AI 초안 (${p.origin.prompt} 프롬프트)` : p.origin?.type === "manual" ? `직접 등록 (${p.origin.by})${p.origin.replaces ? " · 새 버전" : ""}` : "기존 규칙"}{c.ok ? "" : " · 계산 불가 조건 있음"}</small>
                   </button>
                 </li>
               );
             })}
           </ul>
-          {picked && <Detail key={picked.id} p={picked} facts={facts} gone={goneInfo(picked, goneMap)} newer={newerVersionOf(picked, mine)} onPick={setPickedId} onAct={apply} />}
+          {picked && <Detail key={picked.id} p={picked} facts={facts} gone={goneInfo(picked, goneMap)} newer={newerVersionOf(picked, mine)} onPick={setPickedId} onAct={apply} onNewVersion={() => setForm({ from: picked })} />}
         </div>
       )}
       <p className="hint" style={{ marginTop: 16 }}>승인된 제도는 <Link to="/">계산기</Link>에서 그 지역을 고르면 '지자체' 혜택으로 계산돼요.</p>
@@ -158,7 +205,7 @@ export default function LocalPrograms() {
   );
 }
 
-function Detail({ p, facts, gone, newer, onPick, onAct }) {
+function Detail({ p, facts, gone, newer, onPick, onAct, onNewVersion }) {
   const [monthly, setMonthly] = useState(p.amount?.monthly ?? 0);
   const [reason, setReason] = useState("");
   const [later, setLater] = useState(() => new Set(p.apply_checks || []));
@@ -223,6 +270,10 @@ function Detail({ p, facts, gone, newer, onPick, onAct }) {
           ? <>계산할 수 없는 조건이 {c.unknown.length}개 있어요. 원문을 보고 신청 단계에서 확인할 조건이면 '신청할 때 확인'으로 두고, 자격의 핵심이라 계산 없이는 의미가 없으면 반려해 주세요.</>
           : <>계산하는 조건이 하나도 없어요. 거주 지역만으로는 모든 주민이 받는 것으로 계산되므로 승인할 수 없어요.</>}</p>
       )}
+      {p.origin?.replaces && p.status === "검토 대기" && <p className="hint">기존 제도의 새 버전이에요. 승인하면 이전 버전은 자동으로 계산에서 빠져요.</p>}
+      {p.status === "승인" && onNewVersion && (
+        <p className="hint">조례 개정 등으로 조건·금액이 바뀌었나요? <button type="button" className="link-btn" onClick={onNewVersion}>새 버전 만들기</button> (승인 전까지는 지금 버전으로 계산)</p>
+      )}
       {next.length > 0 && (
         <div className="lp-actions">
           {next.some((t) => t === "반려" || t === "중지") && (
@@ -283,5 +334,78 @@ function FormulaReview({ amount, editable, onChange }) {
         <p>함수: min, max, round, floor, ceil, if(조건, 참, 거짓), lookup("표 이름", 키) · 연산: + - * / 비교 &amp;&amp; ||</p>
       </details>
     </div>
+  );
+}
+
+// 지자체 제도 직접 등록·새 버전: 조건(항목·비교·값·하나 이상 묶음)과 금액(고정 또는 계산식)을 입력 → '검토 대기'
+const OPS = [["<=", "이하"], ["<", "미만"], [">=", "이상"], [">", "초과"], ["==", "같음"], ["in", "중 하나"], ["between", "사이 (최소,최대)"]];
+function ProgramForm({ user, rules, facts, from, onCancel, onSubmit }) {
+  const [name, setName] = useState(from?.name || "");
+  const [kind, setKind] = useState(from?.kind || "cash");
+  const [area, setArea] = useState({ region: from?.region || user.region || null, sido: from?.sido || user.sido || rules.regions[user.region]?.sido || "" });
+  const [conds, setConds] = useState(() => (from?.conditions || []).filter((c) => c.field !== "other" && c.field !== "residence_region").map((c) => ({ ...c }))
+    .concat(from ? [] : [{ field: "income_recognized_pct_median", op: "<=", value: "50", group: "" }]));
+  const [amountType, setAmountType] = useState(from?.amount?.type === "formula" ? "formula" : "fixed");
+  const [monthly, setMonthly] = useState(from?.amount?.type === "fixed" ? from.amount.monthly || 0 : 0);
+  const [formula, setFormula] = useState(from?.amount?.type === "formula" ? from.amount : { type: "formula", expr: "", tables: {}, unit: "monthly", explanation: "" });
+  const [note, setNote] = useState(from?.note || "");
+  const [source, setSource] = useState(from?.source || "");
+  const [text, setText] = useState(from?.text || "");
+  const fieldNames = [...facts.filter((f) => f !== "residence_region"), "other"];
+  const setCond = (i, k, v) => setConds((cs) => cs.map((c, j) => (j === i ? { ...c, [k]: v } : c)));
+  const region = from ? from.region : user.role === "admin" ? area.region : user.region;
+  const sido = from ? from.sido : region ? rules.regions[region]?.sido : user.role === "admin" ? area.sido : user.sido;
+  const amount = amountType === "formula" ? formula : { type: "fixed", monthly: Math.max(0, Math.round(Number(monthly) || 0)) };
+  const regionCond = region ? { field: "residence_region", op: "in", value: region, group: "", evidence: "담당자 직접 입력" } : null;
+  const prog = {
+    id: `manual_${Date.now().toString(36)}`, name: name.trim(), region: region || null, sido: sido || null, kind,
+    conditions: [...(regionCond ? [regionCond] : []), ...conds.filter((c) => c.field && String(c.value).trim() !== "").map((c) => ({ ...c, value: String(c.value).trim(), evidence: c.evidence || "담당자 직접 입력" }))],
+    apply_checks: [], amount, amount_text: amountType === "fixed" ? `월 ${Number(monthly || 0).toLocaleString("ko-KR")}원` : formula.explanation || "",
+    note: note.trim(), source: source.trim(), text: text.trim(), status: "검토 대기", history: [],
+    origin: { type: "manual", by: user.name, ...(from ? { replaces: from.id } : {}) },
+  };
+  const c = computable(prog, facts);
+  const ok = prog.name && (prog.region || prog.sido) && c.ok && prog.source;
+  return (
+    <section className="card lp-form">
+      <div className="card-head"><h2 className="card-title">{from ? `새 버전 만들기: ${from.name}` : "새 제도 직접 등록"}</h2>
+        <button type="button" className="btn sm ghost" onClick={onCancel}>닫기</button></div>
+      <p className="hint">입력한 제도는 '검토 대기'로 들어가고, 승인해야 계산기에 들어가요.{from ? " 승인 전까지는 지금 버전으로 계산해요." : ""}</p>
+      <div className="cv-form">
+        <label className="field"><span>제도 이름</span><input value={name} onChange={(e) => setName(e.target.value)} placeholder="예: 저소득 노인 난방비 지원" /></label>
+        {user.role === "admin" && !from && <div className="field"><span>지역</span><RegionPicker regions={rules.regions} value={area.region} sido={area.sido} onChange={setArea} allowSido /></div>}
+        <label className="field"><span>종류</span><select value={kind} onChange={(e) => setKind(e.target.value)}>{Object.entries(KIND_LABEL).map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></label>
+        <div className="field"><span>조건 (모두 충족 · '묶음' 이름이 같은 조건끼리는 하나 이상 충족) — 거주 지역 조건은 자동으로 붙어요</span>
+          {conds.map((cd, i) => (
+            <div key={i} className="acc-edit">
+              <select value={cd.field} onChange={(e) => setCond(i, "field", e.target.value)} aria-label="항목">{fieldNames.map((f) => <option key={f} value={f}>{FIELD_LABEL[f] || f}</option>)}</select>
+              <select value={cd.op} onChange={(e) => setCond(i, "op", e.target.value)} aria-label="비교">{OPS.map(([o, l]) => <option key={o} value={o}>{l}</option>)}</select>
+              <input value={cd.value} onChange={(e) => setCond(i, "value", e.target.value)} placeholder="값 (예: 65 / 생계,의료 / true)" aria-label="값" />
+              <input value={cd.group || ""} onChange={(e) => setCond(i, "group", e.target.value)} placeholder="묶음 (선택)" aria-label="묶음" style={{ width: 110 }} />
+              <button type="button" className="btn sm ghost" onClick={() => setConds((cs) => cs.filter((_, j) => j !== i))}>빼기</button>
+            </div>
+          ))}
+          <button type="button" className="btn sm" onClick={() => setConds((cs) => [...cs, { field: "age", op: ">=", value: "", group: "" }])}>+ 조건 더하기</button>
+        </div>
+        <div className="field"><span>금액</span>
+          <div className="acc-edit">
+            <label className="check-later"><input type="radio" checked={amountType === "fixed"} onChange={() => setAmountType("fixed")} /> 고정 월 금액</label>
+            <label className="check-later"><input type="radio" checked={amountType === "formula"} onChange={() => setAmountType("formula")} /> 계산식 (가구원 수·소득 등에 따라 달라짐)</label>
+          </div>
+          {amountType === "fixed"
+            ? <input type="number" min="0" step="1000" value={monthly} onChange={(e) => setMonthly(e.target.value)} aria-label="월 금액" />
+            : <>
+                <input value={formula.explanation || ""} onChange={(e) => setFormula((f) => ({ ...f, explanation: e.target.value }))} placeholder="쉬운 설명 (예: 가구원 수별 기준액에서 소득인정액을 뺀 만큼)" />
+                <select value={formula.unit || "monthly"} onChange={(e) => setFormula((f) => ({ ...f, unit: e.target.value }))}><option value="monthly">결과가 월 금액</option><option value="annual">결과가 연 금액 (12로 나눔)</option></select>
+                <FormulaReview amount={formula} editable onChange={setFormula} />
+              </>}
+        </div>
+        <label className="field"><span>근거 (조례·공고 이름과 조항)</span><input value={source} onChange={(e) => setSource(e.target.value)} placeholder="예: ○○시 노인복지 조례 제5조" /></label>
+        <label className="field"><span>결과 화면 안내 (선택)</span><input value={note} onChange={(e) => setNote(e.target.value)} /></label>
+        <label className="field"><span>원문 (선택, 붙여 넣기)</span><textarea rows={4} value={text} onChange={(e) => setText(e.target.value)} /></label>
+        {!c.ok && <p className="warn">{c.unknown.length ? `계산할 수 없는 조건이 있어요: ${c.unknown.map((x) => FIELD_LABEL[x.field] || x.field).join(", ")}` : !c.meaningful ? "거주 지역 말고 조건이 하나 이상 필요해요 (예: 소득인정액, 나이)" : "금액을 확인해 주세요 (계산식은 오류를 고쳐 주세요)"}</p>}
+        <button type="button" className="btn primary" disabled={!ok} onClick={() => onSubmit(prog)}>검토 대기로 올리기</button>
+      </div>
+    </section>
   );
 }

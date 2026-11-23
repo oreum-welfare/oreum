@@ -87,6 +87,21 @@ check("AI 초안은 모두 '검토 대기'로 들어옴", drafts.every((d) => d.
   check("중앙 기준값: 계산 엔진이 새 기준선을 씀", Math.round(eng.medianIncome(1)) === Math.round(900000 / 0.32));
 }
 
+// 담당자 직접 등록·새 버전
+{
+  const base = { id: "gs_birth", status: "승인", origin: { type: "rules" } };
+  const v2 = { id: "manual_x", status: "검토 대기", origin: { type: "manual", by: "경산 담당", replaces: "gs_birth" } };
+  check("직접 등록: 새 버전이 있으면 이전 버전에 '새 버전 있음'", newerVersionOf(base, [base, v2])?.id === "manual_x" && !newerVersionOf(base, [base, { ...v2, status: "반려" }]));
+  const merged = mergePrograms(data.local_programs, [], { manual_x: { ...v2, region: "경상북도 경산시" } });
+  check("직접 등록: 데모 저장소에서도 목록에 보임", merged.some((p) => p.id === "manual_x") && merged.length === data.local_programs.length + 1);
+  const prog = { id: "manual_y", name: "난방비", region: "경상북도 경산시", sido: "경상북도", kind: "cash", status: "검토 대기", apply_checks: [],
+    conditions: [{ field: "residence_region", op: "in", value: "경상북도 경산시", group: "" }, { field: "age", op: ">=", value: "65", group: "" }], amount: { type: "fixed", monthly: 30000 } };
+  const ok = decide(gs, prog, "승인", { facts });
+  check("직접 등록: 담당자가 넣은 제도도 같은 규칙으로 승인·계산", ok.program?.status === "승인" &&
+    createEngine({ ...data, local_programs: [ok.program] }).evaluate({ region: "경상북도 경산시", age: 70 }, 0).some((b) => b.id === "manual_y" && b.monthly === 30000), ok.error);
+  check("직접 등록: 다른 지역 담당자는 승인 불가", Boolean(decide(bk, prog, "승인", { facts }).error));
+}
+
 // AI 계산식: 허용한 문법만, 안전하게 계산, 잘못된 식은 승인 불가
 {
   const { validateFormula, evalFormula } = await import(pathToFileURL(join(root, "oreum-web/src/lib/formula.js")));
