@@ -4,6 +4,8 @@
 
 export const KIND_LABEL = { cash: "현금", inkind: "감면·현물", access: "자격·융자" };
 
+import { evalFormula } from "./formula.js";
+
 export function createEngine(data) {
   const P = data.params;
   const L = data.lines;
@@ -226,7 +228,7 @@ export function createEngine(data) {
       total_income_annual: earned * 12, assets: hh.housingAsset + hh.financialAsset, recipient_status: recipientStatus,
       basic_pension_recipient: bp > 0, residence_months: hh.residenceMonths, child_count: d.children, newborn: hh.newborn,
       school_enrolled: d.schoolKids > 0, disabled: d.disabled, single_parent: hh.singleParent, senior_in_household: d.seniors > 0,
-      third_child_7to18: hh.thirdChild7to18, child_birth_order: hh.birthOrder,
+      third_child_7to18: hh.thirdChild7to18, child_birth_order: hh.birthOrder, senior_count: d.seniors,
       residence_region: [hh.region, region.sido, region.sigungu].filter(Boolean),
     };
     for (const prog of localProgramsFor(hh.region)) {
@@ -234,7 +236,9 @@ export function createEngine(data) {
       if (prog.facts?.nhis_premium_rate) f.nhis_premium = earned * P[prog.facts.nhis_premium_rate];
       const skip = new Set(prog.apply_checks || []); // 담당자가 '신청할 때 확인'으로 둔 조건 (계산에서 제외, 안내만)
       if (!conditionsMet(prog.conditions, f, skip)) continue;
-      const { monthly, vars } = programAmount(prog.amount, hh, d);
+      const amt = programAmount(prog.amount, hh, d, f);
+      if (!amt) continue; // 계산식이 잘못되면 계산에서 뺀다 (관리자 화면에서 승인 전에 막지만 한 번 더)
+      const { monthly, vars } = amt;
       const later = (prog.conditions || []).filter((_, i) => skip.has(i)).map((c) => c.value);
       add(prog.id, prog.name, "지자체", prog.kind, monthly, fillNote(prog.note, vars) + (later.length ? ` · 신청할 때 확인: ${later.join(", ")}` : ""));
     }
@@ -276,7 +280,12 @@ export function createEngine(data) {
     }
     return Object.values(groups).every((g) => g.some((c) => conditionOk(c, facts)));
   }
-  function programAmount(a, hh, d) {
+  function programAmount(a, hh, d, facts = {}) {
+    if (a.type === "formula") {
+      // AI가 원문에서 만든 계산식 (formula.js: 허용한 변수·함수만, eval 없음)
+      const monthly = evalFormula(a, facts);
+      return monthly == null ? null : { monthly, vars: {} };
+    }
     if (a.type === "per_senior") return { monthly: P[a.param] * d.seniors, vars: {} };
     if (a.type === "by_birth_order") {
       const [amt, months] = P[a.param][Math.min(hh.birthOrder, 4)];

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { won } from "../../lib/format.js";
 import { ROLE_LABEL, STATUS, TRANSITIONS, canReview, computable, decide } from "../../lib/permissions.js";
+import { FORMULA_VARS, SAMPLE_FACTS, evalFormula, validateFormula } from "../../lib/formula.js";
 import { goneInfo, loadOverlay, newerVersionOf, mergePrograms, resetOverlay, saveOverlay, supabaseClient } from "../../lib/programs.js";
 import { useJson } from "../../lib/useJson.js";
 import { PageHead } from "../adminUi.jsx";
@@ -163,7 +164,9 @@ function Detail({ p, facts, gone, newer, onPick, onAct }) {
   const [later, setLater] = useState(() => new Set(p.apply_checks || []));
   const pending = p.status === "검토 대기";
   const outdated = pending && newer; // 같은 서비스의 더 새 버전이 있으면 이 초안은 승인하지 않는다
-  const c = computable({ ...p, amount: { ...p.amount, monthly }, apply_checks: [...later] }, facts);
+  const isFormula = p.amount?.type === "formula";
+  const [formula, setFormula] = useState(isFormula ? p.amount : null);
+  const c = computable({ ...p, amount: isFormula ? formula : { ...p.amount, monthly }, apply_checks: [...later] }, facts);
   const toggle = (i) => setLater((s) => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n; });
   const editableAmount = p.status === "검토 대기" && p.amount?.type === "fixed" && !p.amount.param;
   const next = TRANSITIONS[p.status] || [];
@@ -209,7 +212,7 @@ function Detail({ p, facts, gone, newer, onPick, onAct }) {
         })}
       </ul>
       <h3 className="card-title">금액</h3>
-      {editableAmount ? (
+      {isFormula ? <FormulaReview amount={formula} editable={pending} onChange={setFormula} /> : editableAmount ? (
         <label className="field"><span>월 금액 (원) <small className="hint">{p.amount_text || ""}</small></span>
           <input type="number" min="0" step="1000" value={monthly} onChange={(e) => setMonthly(e.target.value)} />
         </label>
@@ -229,7 +232,7 @@ function Detail({ p, facts, gone, newer, onPick, onAct }) {
             {next.map((t) => (
               <button key={t} type="button" className={`btn ${t === "승인" ? "primary" : ""}`}
                 disabled={t === "승인" && (!c.ok || outdated)} title={t === "승인" && outdated ? "더 새 버전 초안이 있어요" : t === "승인" && !c.ok ? "계산할 수 없는 조건이 있어요" : ""}
-                onClick={() => onAct(t, { reason, monthly: editableAmount ? monthly : undefined, applyChecks: pending ? [...later] : undefined })}>{ACTION_LABEL[t]}</button>
+                onClick={() => onAct(t, { reason, monthly: editableAmount ? monthly : undefined, amount: isFormula && pending ? formula : undefined, applyChecks: pending ? [...later] : undefined })}>{ACTION_LABEL[t]}</button>
             ))}
           </div>
         </div>
@@ -244,5 +247,41 @@ function Detail({ p, facts, gone, newer, onPick, onAct }) {
       )}
       {p.approved_at && <p className="hint">승인: {p.approved_by} · {p.approved_at}</p>}
     </section>
+  );
+}
+
+// AI가 만든 계산식 확인: 쉬운 설명 + 식·표 + 예시 계산. 담당자는 식을 몰라도 예시가 원문과 맞는지 보면 된다
+function FormulaReview({ amount, editable, onChange }) {
+  const [tablesText, setTablesText] = useState(() => JSON.stringify(amount?.tables || {}, null, 1));
+  const [tablesErr, setTablesErr] = useState("");
+  const v = validateFormula(amount);
+  const sizes = [1, 2, 4], incomes = [0, 500000, 1000000, 2000000];
+  const ex = (size, inc) => evalFormula(amount, { ...SAMPLE_FACTS, household_size: size, income_recognized_won: inc, child_count: size >= 3 ? size - 2 : 0 });
+  const setTables = (text) => {
+    setTablesText(text);
+    try { onChange({ ...amount, tables: JSON.parse(text || "{}") }); setTablesErr(""); } catch { setTablesErr("표 JSON 형식이 맞지 않아요"); }
+  };
+  return (
+    <div className="formula">
+      <p><b>AI 설명:</b> {amount?.explanation || "—"} <small className="hint">({amount?.unit === "annual" ? "연 금액 → 12로 나눠 월 금액" : "월 금액"})</small></p>
+      <label className="field"><span>계산식</span>
+        <textarea rows={2} value={amount?.expr || ""} readOnly={!editable} onChange={(e) => onChange({ ...amount, expr: e.target.value })} spellCheck={false} /></label>
+      <label className="field"><span>표 (lookup에서 쓰는 값)</span>
+        <textarea rows={4} value={tablesText} readOnly={!editable} onChange={(e) => setTables(e.target.value)} spellCheck={false} /></label>
+      {tablesErr && <p className="warn">{tablesErr}</p>}
+      {v.ok ? (
+        <>
+          <p className="hint">예시 계산 (월 금액, 다른 조건은 기본값) — 원문과 맞는지 확인해 주세요</p>
+          <table className="cv-table">
+            <thead><tr><th>가구원 수 \ 소득인정액</th>{incomes.map((i) => <th key={i}>{(i / 10000).toLocaleString("ko-KR")}만 원</th>)}</tr></thead>
+            <tbody>{sizes.map((s) => <tr key={s}><td>{s}인</td>{incomes.map((i) => { const m = ex(s, i); return <td key={i}>{m == null ? "오류" : `${Math.round(m).toLocaleString("ko-KR")}원`}</td>; })}</tr>)}</tbody>
+          </table>
+        </>
+      ) : <p className="warn">계산식을 쓸 수 없어요: {v.error}</p>}
+      <details className="hint"><summary>계산식 문법</summary>
+        <p>변수: {Object.entries(FORMULA_VARS).map(([k, l]) => `${k}(${l})`).join(", ")}</p>
+        <p>함수: min, max, round, floor, ceil, if(조건, 참, 거짓), lookup("표 이름", 키) · 연산: + - * / 비교 &amp;&amp; ||</p>
+      </details>
+    </div>
   );
 }

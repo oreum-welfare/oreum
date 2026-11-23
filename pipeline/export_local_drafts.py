@@ -24,6 +24,19 @@ def header(text: str, key: str) -> str:
     return m.group(1).strip() if m else ""
 
 
+def amount_of(b: dict) -> dict:
+    """AI가 계산식을 만들었으면 계산식 금액(관리자 화면이 문법·예시 계산으로 다시 검사), 아니면 고정 월 금액"""
+    f = b.get("formula") or {}
+    if str(f.get("expr") or "").strip():
+        try:
+            tables = json.loads(f.get("tables_json") or "{}")
+        except json.JSONDecodeError:
+            tables = {}
+        return {"type": "formula", "expr": f["expr"].strip(), "tables": tables if isinstance(tables, dict) else {},
+                "unit": f.get("unit") or "monthly", "explanation": f.get("explanation", ""), "monthly": int(b.get("monthly_amount_won") or 0)}
+    return {"type": "fixed", "monthly": int(b.get("monthly_amount_won") or 0)}
+
+
 def main() -> None:
     regions = json.loads((ROOT / "data" / "rules.json").read_text(encoding="utf-8"))["regions"]
     drafts = []
@@ -48,7 +61,7 @@ def main() -> None:
             "region": region,
             "kind": KIND.get(b.get("type"), "access"),
             "conditions": ai.get("conditions", []),
-            "amount": {"type": "fixed", "monthly": int(b.get("monthly_amount_won") or 0)},
+            "amount": amount_of(b),
             "amount_text": b.get("amount_text", ""),
             "note": b.get("amount_text", ""),
             "status": "검토 대기",

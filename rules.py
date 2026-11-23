@@ -351,6 +351,8 @@ def evaluate(hh: Household, earned: float) -> list[Benefit]:
         skip = set(prog.get("apply_checks") or [])  # 담당자가 '신청할 때 확인'으로 둔 조건 (계산에서 제외, 안내만)
         if not conditions_met(prog.get("conditions"), f, skip):
             continue
+        if prog["amount"].get("type") == "formula":
+            continue  # 계산식 금액은 관리자 승인(DB)으로만 쓰이고 계산기(engine.js formula.js)에서 계산한다. rules.json에는 넣지 않는다
         monthly, vars_ = _program_amount(prog["amount"], hh)
         later = [c["value"] for i, c in enumerate(prog.get("conditions") or []) if i in skip]
         note = _fill_note(prog.get("note", ""), vars_) + (f" · 신청할 때 확인: {', '.join(later)}" if later else "")
