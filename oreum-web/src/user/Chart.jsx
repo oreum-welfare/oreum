@@ -23,7 +23,8 @@ function useWidth(fallback) {
 const PIN = { now: "#191f28", cliff: "#e5503c", recover: "#3d9a5d" };
 
 // 확대할 구간: 볼 지점들(지금·절벽·회복·비교)을 모두 넣고 양옆에 여유. 전체의 80% 넘게 차지하면 확대하지 않는다
-export function zoomRange(points, maxX) {
+// stopBefore: 다음 절벽 소득. 오른쪽 끝을 그 앞에서 끊어 그래프에는 ①②③ 절벽만 보이게 한다 (다음 절벽은 글로 안내)
+export function zoomRange(points, maxX, stopBefore = Infinity) {
   const ps = points.filter((v) => Number.isFinite(v));
   if (!ps.length || maxX <= 0) return null;
   const lo = Math.min(...ps), hi = Math.max(...ps);
@@ -37,6 +38,10 @@ export function zoomRange(points, maxX) {
     x1 = Math.min(maxX, x0 + minWidth);
     x0 = Math.max(0, x1 - minWidth);
   }
+  if (Number.isFinite(stopBefore) && x1 >= stopBefore) {
+    // 다음 절벽 바로 앞까지만 (볼 지점보다는 오른쪽, 절벽과의 사이의 3/4 지점)
+    x1 = Math.max(hi + (stopBefore - hi) * 0.75, hi);
+  }
   return x1 - x0 >= maxX * 0.8 ? null : [x0, x1];
 }
 
@@ -48,7 +53,11 @@ export default function Chart({ sim, inc, cmp, cliffs, focus }) {
   const maxX = xs[xs.length - 1] || 1;
   const at = (v) => Math.min(xs.length - 1, Math.max(0, Math.round((v / maxX) * (xs.length - 1))));
   // 절벽이 있을 때만 확대 (절벽이 없으면 전체 흐름을 보는 게 더 쓸모 있다)
-  const zoom = focus ? zoomRange([inc, focus.income, focus.recover, cmp !== inc ? cmp : null], maxX) : null;
+  // 바로 다음 절벽: 확대 그림에서는 빼고, 가까우면 아래에 한 줄로 알린다 (숨기지 않음)
+  const after = focus ? Math.max(focus.recover ?? focus.income, focus.income) : null;
+  const next = focus ? cliffs.find((c) => c.income > after) : null;
+  const nextDrop = next && next.index > 0 ? ys[next.index - 1] - ys[next.index] : 0;
+  const zoom = focus ? zoomRange([inc, focus.income, focus.recover, cmp !== inc ? cmp : null], maxX, next?.income) : null;
   const [x0, x1] = !full && zoom ? zoom : [0, maxX];
   const i0 = at(x0), i1 = at(x1);
   // 세로축은 보이는 구간에 맞춘다 (확대하면 떨어지는 폭이 또렷하게 보인다)
@@ -125,6 +134,10 @@ export default function Chart({ sim, inc, cmp, cliffs, focus }) {
         {focus && <li><i style={{ background: PIN.cliff }}>2</i>월 {manwon(focus.income)} 원부터 생활비가 {drop > 0 ? `${manwon(drop)} 원 ` : ""}줄어요</li>}
         {focus?.recover != null && <li><i style={{ background: PIN.recover }}>3</i>월 {manwon(focus.recover)} 원에서 줄기 전만큼 돌아와요</li>}
         {cmpI !== nowI && <li><i className="hollow" />비교 소득 월 {manwon(cmp)} 원</li>}
+        {next && nextDrop > 0 && next.income - after <= maxX * 0.25 && (
+          <li className="next-cliff"><i className="dash" />그다음 월 {manwon(next.income)} 원에서 한 번 더 {manwon(nextDrop)} 원 줄어요
+            {zoom && !full && <> · <button type="button" className="link-btn" onClick={() => setFull(true)}>전체 보기</button></>}</li>
+        )}
       </ul>
       <figcaption className="chart-caption"><span>세로: 월급 + 혜택 (한 달 생활비)</span><span>가로: 월급 →</span></figcaption>
     </figure>

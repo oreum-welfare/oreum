@@ -310,3 +310,5 @@ a { color: inherit; }
 .screen .field label.field-name { white-space: nowrap; margin-right: 12px; }
 .kv .tag { display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 6px; background: var(--brand-soft); color: var(--brand-ink); font-size: 11px; font-weight: 600; vertical-align: middle; }
 .chart-zoom { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 13px; color: var(--text-3, #8b95a1); margin-bottom: 4px; }
+.user .chart-legend li.next-cliff { flex-wrap: wrap; gap: 4px 8px; color: var(--text-3, #6b7684); font-size: 13px; }
+.user .chart-legend i.dash { width: 20px; height: 0; border-radius: 0; border-top: 2px dashed #e5503c; opacity: 0.6; }
