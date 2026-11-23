@@ -20,7 +20,7 @@
 
 /* ===== 틀: 위쪽 막대 + 탭 ===== */
 .admin .admin-top { position: sticky; top: 0; z-index: 30; background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
-.admin .admin-bar { max-width: 1160px; margin: 0 auto; padding: 0 24px; height: 60px; display: flex; align-items: center; gap: 28px; }
+.admin .admin-bar { max-width: 1280px; margin: 0 auto; padding: 0 24px; height: 60px; display: flex; align-items: center; gap: 28px; }
 .admin .admin-id { display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--ink); flex: none; }
 .admin .admin-id .wordmark { display: block; color: var(--ink); }
 .admin .admin-id span { font-size: 13px; font-weight: 600; color: var(--muted); }
@@ -30,7 +30,7 @@
 .admin .admin-tabs a.active { color: var(--ink); border-bottom-color: var(--ink); }
 .admin .admin-exit { margin-left: auto; font-size: 14px; color: var(--sub); text-decoration: none; white-space: nowrap; }
 .admin .admin-exit:hover { color: var(--ink); }
-.admin .admin-body { max-width: 1160px; margin: 0 auto; padding: 28px 24px 72px; }
+.admin .admin-body { max-width: 1280px; margin: 0 auto; padding: 28px 24px 72px; }
 .admin .admin-note { margin: 0 0 18px; font-size: 13px; color: var(--muted); }
 
 /* ===== 페이지 공통 ===== */
@@ -403,3 +403,52 @@
 .admin .login-card .btn.primary { padding: 12px; font-size: 15px; }
 .admin .join-line { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 12px; margin-top: 4px; }
 @media (max-width: 860px) { .admin .admin-gate { grid-template-columns: 1fr; gap: 24px; min-height: 0; } .admin .gate-intro h1 { font-size: 26px; } }
+
+/* 지자체 제도 검토: 현황(검토 대기 강조) · 목록 고정 너비+내부 스크롤 · AI 판정 먼저 · 조건과 원문 나란히 */
+.admin .lp-summary-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.admin .lp-stats { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 10px; margin-top: 12px; }
+.admin .lp-stat { text-align: left; border: 1px solid transparent; background: var(--soft); border-radius: 12px; padding: 12px 16px; cursor: pointer; font: inherit; display: flex; flex-direction: column; gap: 2px; }
+.admin .lp-stat span { font-size: 13px; color: var(--muted); }
+.admin .lp-stat b { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; }
+.admin .lp-stat.main b { font-size: 32px; color: #a45a1f; }
+.admin .lp-stat:hover { border-color: var(--brand-line); }
+.admin .lp-stat.on { border-color: var(--brand-2); background: var(--brand-soft); }
+.admin .lp-cols { grid-template-columns: 260px minmax(0, 1fr); }
+.admin .lp-side { padding: 14px; position: sticky; top: 76px; }
+.admin .lp-side-head { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+.admin .lp-side-head input { width: 100%; padding: 8px 10px; border: 1px solid var(--line-2); border-radius: 10px; font: inherit; font-size: 13px; }
+.admin .lp-side .lp-list { max-height: 720px; overflow-y: auto; padding-right: 2px; gap: 8px; }
+.admin .lp-item { gap: 4px; padding: 12px; }
+.admin .lp-item-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; }
+.admin .lp-name { font-size: 15px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.admin .lp-item.on { border-color: var(--brand-2); }
+.admin .lp-badges { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+.admin .lp-nav { display: flex; justify-content: flex-end; gap: 6px; margin-bottom: 6px; }
+.admin .lp-title { font-size: 20px; }
+.admin .lp-ai { display: flex; flex-direction: column; gap: 2px; border-radius: 12px; padding: 12px 16px; margin: 12px 0 16px; }
+.admin .lp-ai.check { background: var(--yellow-soft); color: var(--yellow-ink); border-left: 4px solid var(--yellow); }
+.admin .lp-ai.ok { background: var(--green-soft); color: var(--green); border-left: 4px solid var(--green); }
+.admin .lp-ai b { font-size: 15px; }
+.admin .lp-ai span { font-size: 14px; color: var(--ink); }
+.admin .lp-ai small { font-size: 12px; color: var(--muted); }
+.admin .lp-compare.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.admin .lp-source { position: sticky; top: 76px; }
+.admin .lp-source-text { white-space: pre-wrap; word-break: keep-all; font-family: inherit; font-size: 14px; line-height: 1.7; max-height: 560px; overflow-y: auto; margin: 0; background: var(--soft); border-radius: 12px; padding: 14px; color: var(--sub); }
+.admin .lp-source-text mark.ev { background: var(--yellow-soft); color: var(--ink); border-radius: 3px; }
+.admin .lp-source-text mark.ev.active { background: var(--yellow); }
+.admin .lp-cond { border-left-width: 4px; }
+.admin .lp-cond.k-auto { border-left-color: var(--green); }
+.admin .lp-cond.k-apply { border-left-color: var(--yellow); }
+.admin .lp-cond.k-manual { border-left-color: var(--red); }
+.admin .lp-cond .cond-type { font-size: 11px; color: var(--muted); }
+.admin .lp-cond .lp-kind { margin-left: auto; }
+.admin .lp-amount-parts { margin: 6px 0 0; padding-left: 18px; font-size: 14px; color: var(--sub); }
+.admin .lp-warn { margin-top: 14px; background: var(--yellow-soft); border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; color: var(--yellow-ink); font-size: 13px; }
+.admin .lp-warn b { font-size: 14px; }
+.admin .btn.lg { padding: 11px 22px; font-size: 15px; }
+.admin .btn.outline-danger { border-color: var(--red); color: var(--red-ink); background: #fff; }
+.admin .btn.outline-danger:hover { background: var(--red-soft); }
+.admin .btn.primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.admin .modal .field input { width: 100%; padding: 8px 12px; border: 1px solid var(--line-2); border-radius: var(--radius-sm); font: inherit; }
+@media (max-width: 1100px) { .admin .lp-compare.two { grid-template-columns: 1fr; } .admin .lp-source { position: static; } }
+@media (max-width: 760px) { .admin .lp-cols { grid-template-columns: 1fr; } .admin .lp-side { position: static; } .admin .lp-stats { grid-template-columns: 1fr 1fr; } }

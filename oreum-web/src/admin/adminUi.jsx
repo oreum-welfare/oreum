@@ -24,16 +24,17 @@ export function StatRow({ items }) {
 }
 
 // 위험한 동작(권한 회수·삭제) 확인 창. 브라우저 기본 confirm 대신 무엇이 일어나는지 적어 보여 준다
-export function ConfirmModal({ title, target, body, confirmLabel, onCancel, onConfirm }) {
+export function ConfirmModal({ title, target, body, confirmLabel, onCancel, onConfirm, children, confirmClass = "danger-solid", confirmDisabled = false }) {
   return (
     <div className="modal-back" role="presentation" onClick={onCancel}>
       <div className="modal" role="alertdialog" aria-modal="true" aria-labelledby="modal-title" onClick={(e) => e.stopPropagation()}>
         <h2 id="modal-title">{title}</h2>
         {target && <p className="modal-target">{target}</p>}
         {body && <p className="hint">{body}</p>}
+        {children}
         <div className="modal-actions">
           <button type="button" className="btn" onClick={onCancel} autoFocus>취소</button>
-          <button type="button" className="btn danger-solid" onClick={onConfirm}>{confirmLabel}</button>
+          <button type="button" className={`btn ${confirmClass}`} onClick={onConfirm} disabled={confirmDisabled}>{confirmLabel}</button>
         </div>
       </div>
     </div>

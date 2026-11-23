@@ -5,7 +5,7 @@ import { ROLE_LABEL, STATUS, TRANSITIONS, canReview, computable, decide } from "
 import { FORMULA_VARS, SAMPLE_FACTS, evalFormula, validateFormula } from "../../lib/formula.js";
 import { goneInfo, loadOverlay, newerVersionOf, mergePrograms, resetOverlay, saveOverlay, supabaseClient } from "../../lib/programs.js";
 import { useJson } from "../../lib/useJson.js";
-import { PageHead } from "../adminUi.jsx";
+import { ConfirmModal, PageHead } from "../adminUi.jsx";
 import { RegionPicker, SignIn, useSession } from "../session.jsx";
 
 const FIELD_LABEL = {
@@ -33,6 +33,7 @@ export default function LocalPrograms() {
   const [pickedId, setPickedId] = useState(null);
   const [msg, setMsg] = useState("");
   const [form, setForm] = useState(null); // 직접 등록: { from?: 새 버전을 만들 기존 제도 }
+  const [q, setQ] = useState("");
 
   // 목록 불러오기: 데모는 기본 제도 + AI 초안 + 이 브라우저의 결정, Supabase는 DB (RLS가 권한에 맞는 행만 돌려준다)
   useEffect(() => {
@@ -60,7 +61,7 @@ export default function LocalPrograms() {
   }, [mode, user, data, draftFile]);
 
   const mine = useMemo(() => (programs || []).filter((p) => canReview(user, p)), [programs, user]);
-  const shown = mine.filter((p) => p.status === status);
+  const shown = mine.filter((p) => p.status === status && (!q.trim() || `${p.name} ${p.region || ""}`.includes(q.trim())));
   const picked = mine.find((p) => p.id === pickedId) || shown[0] || null;
   const facts = data?.local_program_spec?.facts || [];
 
@@ -159,14 +160,17 @@ export default function LocalPrograms() {
         <p className="notice">데모 모드: 결정은 이 브라우저에만 저장되고, 권한 검사도 화면에서만 해요 (보안 아님).
           실제 운영은 Supabase 로그인과 DB 행 단위 보안으로 강제해요 · <button type="button" className="link-btn" onClick={() => { resetOverlay(); setPrograms(mergePrograms(data.local_programs, draftFile.drafts, {})); setMsg("데모 결정을 모두 지웠어요."); }}>데모 결정 초기화</button></p>
       )}
-      <div className="status-tabs" role="tablist">
-        {STATUS.map((s) => (
-          <button key={s} type="button" role="tab" aria-selected={status === s} className={`btn sm ${status === s ? "on" : ""}`} onClick={() => { setStatus(s); setPickedId(null); }}>
-            {s} {counts[s]}
-          </button>
-        ))}
-        <button type="button" className="btn sm primary" onClick={() => setForm({})}>+ 새 제도 직접 등록</button>
-      </div>
+      <section className="card lp-summary">
+        <div className="lp-summary-head"><h2 className="card-title">제도 검토 현황</h2>
+          <button type="button" className="btn primary" onClick={() => setForm({})}>+ 제도 직접 등록</button></div>
+        <div className="lp-stats" role="tablist" aria-label="상태별 보기">
+          {STATUS.map((s) => (
+            <button key={s} type="button" role="tab" aria-selected={status === s} className={`lp-stat ${s === "검토 대기" ? "main" : ""} ${status === s ? "on" : ""}`} onClick={() => { setStatus(s); setPickedId(null); }}>
+              <span>{s}</span><b>{counts[s]}</b>
+            </button>
+          ))}
+        </div>
+      </section>
       {form && data && <ProgramForm user={user} rules={data} facts={facts} from={form.from} onCancel={() => setForm(null)} onSubmit={create} />}
       {goneApproved.length > 0 && (
         <div className="warn" role="alert">
@@ -181,23 +185,39 @@ export default function LocalPrograms() {
       {msg && <p className="notice" role="status">{msg}</p>}
       {!programs ? <p className="hint">불러오는 중…</p> : mine.length === 0 ? <p className="empty">검토할 수 있는 제도가 없어요.</p> : (
         <div className="lp-cols">
-          <ul className="lp-list" aria-label={`${status} 제도`}>
-            {shown.length === 0 && <li className="hint">이 상태의 제도가 없어요.</li>}
-            {shown.map((p) => {
-              const c = computable(p, facts);
-              const gone = goneInfo(p, goneMap);
-              const newer = p.status === "검토 대기" && newerVersionOf(p, mine);
-              return (
-                <li key={p.id}>
-                  <button type="button" className={`lp-item ${picked?.id === p.id ? "on" : ""}`} onClick={() => setPickedId(p.id)}>
-                    <b>{p.name}{gone && <span className="pill s-warn lp-gone">폐지 의심</span>}{newer && <span className="pill s-warn lp-gone">새 버전 있음</span>}</b>
-                    <small>{user.role === "admin" ? `${p.region || p.sido} · ` : ""}{p.origin?.type === "ai" ? `AI 초안 (${p.origin.prompt} 프롬프트)` : p.origin?.type === "manual" ? `직접 등록 (${p.origin.by})${p.origin.replaces ? " · 새 버전" : ""}` : "기존 규칙"}{c.ok ? "" : " · 계산 불가 조건 있음"}</small>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-          {picked && <Detail key={picked.id} p={picked} facts={facts} gone={goneInfo(picked, goneMap)} newer={newerVersionOf(picked, mine)} onPick={setPickedId} onAct={apply} onNewVersion={() => setForm({ from: picked })} />}
+          <aside className="card lp-side">
+            <div className="lp-side-head">
+              <b>{status} 제도 <span className="hint">{shown.length}개</span></b>
+              <input type="search" placeholder="제도명·지역 검색" value={q} onChange={(e) => setQ(e.target.value)} aria-label="제도 검색" />
+            </div>
+            <ul className="lp-list" aria-label={`${status} 제도`}>
+              {shown.length === 0 && <li className="hint">{q.trim() ? "검색 결과가 없어요." : "이 상태의 제도가 없어요."}</li>}
+              {shown.map((p) => {
+                const c = computable(p, facts);
+                const gone = goneInfo(p, goneMap);
+                const newer = p.status === "검토 대기" && newerVersionOf(p, mine);
+                const checks = (p.conditions || []).filter((x) => !facts.includes(x.field)).length;
+                const on = picked?.id === p.id;
+                return (
+                  <li key={p.id}>
+                    <button type="button" className={`lp-item ${on ? "on" : ""}`} onClick={() => setPickedId(p.id)} aria-current={on ? "true" : undefined}>
+                      <span className="lp-item-top"><b className="lp-name">{p.name}</b>{on && <span className="pill s-done">선택됨</span>}</span>
+                      <small>{p.region || p.sido} · {p.origin?.type === "ai" ? `AI 초안 ${p.origin.prompt}` : p.origin?.type === "manual" ? `직접 등록${p.origin.replaces ? " · 새 버전" : ""}` : "기존 규칙"}</small>
+                      <span className="lp-badges">
+                        <span className={`pill ${c.ok ? "s-ok" : "s-bad"}`}>{c.ok ? "계산 가능" : "계산 불가"}</span>
+                        {checks > 0 && <span className="pill s-group">확인 조건 {checks}개</span>}
+                        {gone && <span className="pill s-warn">폐지 의심</span>}
+                        {newer && <span className="pill s-warn">새 버전 있음</span>}
+                        <span className={`pill ${STATUS_CLASS[p.status]}`}>{p.status}</span>
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </aside>
+          {picked && <Detail key={picked.id} p={picked} facts={facts} gone={goneInfo(picked, goneMap)} newer={newerVersionOf(picked, mine)} onPick={setPickedId} onAct={apply} onNewVersion={() => setForm({ from: picked })}
+            prev={shown[shown.findIndex((x) => x.id === picked.id) - 1]} next={shown[shown.findIndex((x) => x.id === picked.id) + 1]} />}
         </div>
       )}
       <p className="hint" style={{ marginTop: 16 }}>승인된 제도는 <Link to="/">계산기</Link>에서 그 지역을 고르면 '지자체' 혜택으로 계산돼요.</p>
@@ -205,7 +225,35 @@ export default function LocalPrograms() {
   );
 }
 
-function Detail({ p, facts, gone, newer, onPick, onAct, onNewVersion }) {
+// 원문에서 조건의 근거 문장을 칠한다 (마우스를 올린 조건의 근거는 진하게)
+function SourceText({ text, evidences, active }) {
+  const found = [];
+  evidences.forEach((ev, i) => {
+    if (!ev) return;
+    for (const part of ev.split(/\s\/\s|…|\.\.\./).map((x) => x.trim()).filter(Boolean)) {
+      let at = text.indexOf(part), len = part.length;
+      if (at < 0) { const head = part.slice(0, 16); at = text.indexOf(head); len = head.length; }
+      if (at >= 0) found.push({ s: at, e: at + len, i });
+    }
+  });
+  found.sort((a, b) => a.s - b.s);
+  const out = []; let pos = 0;
+  for (const r of found) {
+    if (r.s < pos) continue;
+    if (r.s > pos) out.push(text.slice(pos, r.s));
+    out.push(<mark key={r.s} className={`ev ${r.i === active ? "active" : ""}`}>{text.slice(r.s, r.e)}</mark>);
+    pos = r.e;
+  }
+  out.push(text.slice(pos));
+  return <pre className="lp-source-text">{out}</pre>;
+}
+
+// 금액 설명을 항목별로 나눈다 (예: "0~12개월 20만 원, 13~24개월 10만 원" → 두 줄)
+const amountParts = (t) => String(t || "").split(/\s*(?:,(?!\d{3})|[;·\n])\s*|\s+\/\s+/).map((x) => x.trim()).filter(Boolean);
+
+function Detail({ p, facts, gone, newer, onPick, onAct, onNewVersion, prev, next: nextItem }) {
+  const [hover, setHover] = useState(null);
+  const [ask, setAsk] = useState(null); // 반려·중지 사유 창
   const [monthly, setMonthly] = useState(p.amount?.monthly ?? 0);
   const [reason, setReason] = useState("");
   const [later, setLater] = useState(() => new Set(p.apply_checks || []));
@@ -217,13 +265,28 @@ function Detail({ p, facts, gone, newer, onPick, onAct, onNewVersion }) {
   const toggle = (i) => setLater((s) => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n; });
   const editableAmount = p.status === "검토 대기" && p.amount?.type === "fixed" && !p.amount.param;
   const next = TRANSITIONS[p.status] || [];
+  const unknownCount = (p.conditions || []).filter((x, i) => !facts.includes(x.field) && !later.has(i)).length;
+  const run = (t, why) => onAct(t, { reason: why ?? reason, monthly: editableAmount ? monthly : undefined, amount: isFormula && pending ? formula : undefined, applyChecks: pending ? [...later] : undefined });
+  const parts = amountParts(p.amount_text);
   return (
     <section className="card lp-detail">
+      <div className="lp-nav">
+        <button type="button" className="btn sm" disabled={!prev} onClick={() => prev && onPick(prev.id)}>← 이전</button>
+        <button type="button" className="btn sm" disabled={!nextItem} onClick={() => nextItem && onPick(nextItem.id)}>다음 →</button>
+      </div>
       <div className="card-head">
-        <h2 className="card-title">{p.name}</h2>
+        <h2 className="card-title lp-title">{p.name}</h2>
         <span className={`pill ${STATUS_CLASS[p.status]}`}>{p.status}</span>
       </div>
-      <p className="hint">{p.region || p.sido} · {KIND_LABEL[p.kind] || p.kind} · 출처: {p.source || "—"}</p>
+      <p className="hint">{p.region || p.sido} · {KIND_LABEL[p.kind] || p.kind} · 출처: {p.source || "—"}{p.origin?.collected_at ? ` · ${String(p.origin.collected_at).slice(0, 10)} 자동 수집` : ""}</p>
+      {/* AI 판정을 가장 먼저: 무엇을 판단하지 못했는지 */}
+      {p.origin?.type === "ai" && (
+        <div className={`lp-ai ${p.origin.judgeable && unknownCount === 0 ? "ok" : "check"}`}>
+          <b>AI 판정: {p.origin.judgeable && unknownCount === 0 ? "자동 계산 가능" : "담당자 확인 필요"}</b>
+          <span>{p.origin.not_judgeable_reason || (unknownCount > 0 ? `계산할 수 없는 조건 ${unknownCount}개가 있어요. 원문과 비교해 '신청 시 확인'으로 둘지 정해 주세요.` : "모든 조건을 앱 입력으로 계산할 수 있어요. 원문과 맞는지만 확인해 주세요.")}</span>
+          <small>{String(p.origin.model || "").startsWith("claude") ? "Claude" : "GPT-5"} · {p.origin.prompt} 프롬프트</small>
+        </div>
+      )}
       {outdated && (
         <p className="warn">이 제도의 더 새 버전 초안이 있어요 ({newer.status}). 원문이 바뀌기 전 내용이라 승인할 수 없어요. 반려하고 새 버전을 검토해 주세요 ·{" "}
           <button type="button" className="link-btn" onClick={() => onPick(newer.id)}>새 버전 보기</button></p>
@@ -232,43 +295,53 @@ function Detail({ p, facts, gone, newer, onPick, onAct, onNewVersion }) {
         <p className="warn">복지로 목록에서 {gone.since}부터 보이지 않아요 (3일 연속). 폐지됐거나, 이름·서비스 번호가 바뀌었을 수 있어요.
           {p.status === "승인" ? " 폐지가 맞으면 사유를 적고 '계산에서 빼기(중지)'를 눌러 주세요." : " 승인하기 전에 제도가 아직 있는지 확인해 주세요."}</p>
       )}
-      {p.origin?.type === "ai" && (
-        <p className={p.origin.judgeable ? "hint" : "warn"}>
-          AI({String(p.origin.model || "").startsWith("claude") ? "Claude" : "GPT-5"}, {p.origin.prompt} 프롬프트) 판단: 판정 {p.origin.judgeable ? "가능" : "불가"}{p.origin.not_judgeable_reason ? ` — ${p.origin.not_judgeable_reason}` : ""}
-        </p>
-      )}
-      <h3 className="card-title">조건</h3>
+      <div className={`lp-compare ${p.text ? "two" : ""}`}>
+      <div>
+      <h3 className="card-title">조건 검토 <small className="hint">마우스를 올리면 원문의 근거가 진해져요</small></h3>
       <ul className="cond-list">
         {(p.conditions || []).map((x, i) => {
           const known = facts.includes(x.field);
           const atApply = later.has(i);
+          const kind = known ? ["자동 계산 가능", "s-ok"] : atApply ? ["신청 시 확인", "s-warn"] : ["수동 확인 필요", "s-bad"];
           return (
-            <li key={i} className="cond">
+            <li key={i} className={`cond lp-cond ${known ? "k-auto" : atApply ? "k-apply" : "k-manual"}`} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)}>
               <div className="cond-head">
-                <span className="cond-field">{FIELD_LABEL[x.field] || x.field}</span>
+                <span className="cond-type">조건 유형</span><span className="cond-field">{FIELD_LABEL[x.field] || x.field}</span>
                 {x.group && <span className="pill s-group">하나 이상: {x.group}</span>}
-                <span className={`pill ${known ? "s-ok" : atApply ? "s-warn" : "s-bad"}`}>{known ? "계산 가능" : atApply ? "신청할 때 확인" : "계산 불가"}</span>
+                <span className={`pill ${kind[1]} lp-kind`}>{kind[0]}</span>
               </div>
-              {!known && x.field === "other" && pending && (
-                <label className="check-later"><input type="checkbox" checked={atApply} onChange={() => toggle(i)} /> 신청할 때 확인하는 조건으로 두기 (계산에서 빼고 결과에 안내)</label>
-              )}
               <div className="cond-value"><b>{x.value}</b> {OP_LABEL[x.op] ?? x.op}</div>
-              {x.evidence && <div className="cond-ev">“{x.evidence}”</div>}
+              {!known && atApply && <p className="hint" style={{ margin: 0 }}>계산에서 빼고, 결과 화면에 '신청할 때 확인'으로 안내해요.</p>}
+              {!known && x.field === "other" && pending && (
+                <label className="check-later"><input type="checkbox" checked={atApply} onChange={() => toggle(i)} /> 신청할 때 확인하는 조건으로 두기</label>
+              )}
+              {x.evidence && <div className="cond-ev">원문: “{x.evidence}”</div>}
             </li>
           );
         })}
       </ul>
-      <h3 className="card-title">금액</h3>
+      <h3 className="card-title">지원 금액</h3>
       {isFormula ? <FormulaReview amount={formula} editable={pending} onChange={setFormula} /> : editableAmount ? (
         <label className="field"><span>월 금액 (원) <small className="hint">{p.amount_text || ""}</small></span>
           <input type="number" min="0" step="1000" value={monthly} onChange={(e) => setMonthly(e.target.value)} />
         </label>
       ) : <p>{p.amount?.type === "fixed" ? `월 ${won(p.amount.param ? 0 : p.amount.monthly || 0)}` : `계산식 (${p.amount?.type})`} · {p.note}</p>}
-      {p.text && <details className="lp-text"><summary>복지로 원문 보기</summary><pre>{p.text}</pre></details>}
+      {parts.length > 1 && <ul className="lp-amount-parts">{parts.map((t) => <li key={t}>{t}</li>)}</ul>}
+      </div>
+      {p.text && (
+        <div className="lp-source">
+          <h3 className="card-title">복지로 원문 <small className="hint">AI 추출 조건과 나란히 비교</small></h3>
+          <SourceText text={p.text} evidences={(p.conditions || []).map((x) => x.evidence)} active={hover} />
+        </div>
+      )}
+      </div>
       {!c.ok && p.status === "검토 대기" && (
-        <p className="warn">{c.unknown.length > 0
-          ? <>계산할 수 없는 조건이 {c.unknown.length}개 있어요. 원문을 보고 신청 단계에서 확인할 조건이면 '신청할 때 확인'으로 두고, 자격의 핵심이라 계산 없이는 의미가 없으면 반려해 주세요.</>
-          : <>계산하는 조건이 하나도 없어요. 거주 지역만으로는 모든 주민이 받는 것으로 계산되므로 승인할 수 없어요.</>}</p>
+        <div className="lp-warn">
+          <b>추가 확인이 필요한 조건이 있습니다.</b>
+          <span>{c.unknown.length > 0
+            ? `계산할 수 없는 조건 ${c.unknown.length}개가 포함되어 있습니다. 원문과 비교해 '신청 시 확인'으로 두거나, 자격의 핵심이면 반려해 주세요.`
+            : "계산하는 조건이 하나도 없어요. 거주 지역만으로는 모든 주민이 받는 것으로 계산되므로 승인할 수 없어요."}</span>
+        </div>
       )}
       {p.origin?.replaces && p.status === "검토 대기" && <p className="hint">기존 제도의 새 버전이에요. 승인하면 이전 버전은 자동으로 계산에서 빠져요.</p>}
       {p.status === "승인" && onNewVersion && (
@@ -276,21 +349,27 @@ function Detail({ p, facts, gone, newer, onPick, onAct, onNewVersion }) {
       )}
       {next.length > 0 && (
         <div className="lp-actions">
-          {next.some((t) => t === "반려" || t === "중지") && (
-            <label className="field"><span>사유 (반려·중지 시 필수)</span><input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="예: 원문의 소득 기준이 조건에 빠짐" /></label>
-          )}
           <div className="lp-buttons">
             {next.map((t) => (
-              <button key={t} type="button" className={`btn ${t === "승인" ? "primary" : ""}`}
+              <button key={t} type="button" className={`btn lg ${t === "승인" ? "primary" : t === "반려" || t === "중지" ? "outline-danger" : ""}`}
                 disabled={t === "승인" && (!c.ok || outdated)} title={t === "승인" && outdated ? "더 새 버전 초안이 있어요" : t === "승인" && !c.ok ? "계산할 수 없는 조건이 있어요" : ""}
-                onClick={() => onAct(t, { reason, monthly: editableAmount ? monthly : undefined, amount: isFormula && pending ? formula : undefined, applyChecks: pending ? [...later] : undefined })}>{ACTION_LABEL[t]}</button>
+                onClick={() => (t === "반려" || t === "중지" ? (setReason(""), setAsk(t)) : run(t))}>{ACTION_LABEL[t]}</button>
             ))}
           </div>
+          {next.includes("반려") && <p className="hint" style={{ margin: 0 }}>반려·중지는 사유를 적어야 해요.</p>}
         </div>
+      )}
+      {ask && (
+        <ConfirmModal title={ask === "반려" ? "이 제도를 반려할까요?" : "계산에서 뺄까요?"} target={p.name}
+          body={ask === "반려" ? "반려한 초안은 계산기에 들어가지 않아요. 사유는 검토 이력에 남아요." : "중지하면 계산기에서 바로 빠져요. 사유는 검토 이력에 남아요."}
+          confirmLabel={ACTION_LABEL[ask]} confirmDisabled={!reason.trim()}
+          onCancel={() => setAsk(null)} onConfirm={() => { const t = ask; setAsk(null); run(t, reason.trim()); }}>
+          <label className="field"><span>사유 (필수)</span><input autoFocus value={reason} onChange={(e) => setReason(e.target.value)} placeholder="예: 원문의 소득 기준이 조건에 빠짐" /></label>
+        </ConfirmModal>
       )}
       {(p.history || []).length > 0 && (
         <>
-          <h3 className="card-title">이력</h3>
+          <h3 className="card-title">검토 이력</h3>
           <ul className="lp-history">
             {p.history.map((h, i) => <li key={i}>{h.at.slice(0, 16).replace("T", " ")} · {h.by} · {h.from} → {h.to}{h.reason ? ` (${h.reason})` : ""}</li>)}
           </ul>
