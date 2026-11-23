@@ -1,7 +1,7 @@
 """AI가 변환한 지자체 서비스 규칙을 '검토 대기' 초안으로 내보낸다 (관리자 화면 지자체 제도 검토용).
 
-입력: pipeline/raw/{t,n}*.txt (원문, '# 제공주체:'로 지역 확인)
-      pipeline/runs_v3_gpt5_rules/*.json (3차 프롬프트) → 없으면 runs_test_gpt5_rules/*.json (2차)
+입력: pipeline/raw/{t,n,u}*.txt (원문, '# 제공주체:'로 지역 확인. u_* = 매일 변경 확인에서 잡힌 새 제도·바뀐 제도)
+      pipeline/runs_watch_rules/*.json (매일 변경 확인) → runs_v3_gpt5_rules/*.json (3차 프롬프트) → runs_test_gpt5_rules/*.json (2차)
 출력: pipeline/local_drafts.json (oreum-web의 npm run sync-data가 public/data로 복사)
 
 초안은 계산에 쓰지 않는다. 해당 지자체 담당자가 원문과 대조해 승인한 것만 계산에 들어간다.
@@ -15,7 +15,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 PIPE = ROOT / "pipeline"
-RUNS = [("3차", PIPE / "runs_v3_gpt5_rules"), ("2차", PIPE / "runs_test_gpt5_rules")]
+RUNS = [("자동 수집", PIPE / "runs_watch_rules"), ("3차", PIPE / "runs_v3_gpt5_rules"), ("2차", PIPE / "runs_test_gpt5_rules")]
 KIND = {"cash": "cash", "inkind": "inkind", "loan": "access", "none": "access"}
 
 
@@ -27,7 +27,7 @@ def header(text: str, key: str) -> str:
 def main() -> None:
     regions = json.loads((ROOT / "data" / "rules.json").read_text(encoding="utf-8"))["regions"]
     drafts = []
-    for raw in sorted((PIPE / "raw").glob("[tn]*.txt")):
+    for raw in sorted((PIPE / "raw").glob("[tnu]*.txt")):
         sid = raw.stem
         text = raw.read_text(encoding="utf-8")
         region = header(text, "제공주체")
@@ -53,7 +53,7 @@ def main() -> None:
             "note": b.get("amount_text", ""),
             "status": "검토 대기",
             "source": header(text, "출처"),
-            "origin": {"type": "ai", "model": "gpt-5-2025-08-07", "prompt": version, "service_id": sid,
+            "origin": {"type": "ai", "model": ai.get("_meta", {}).get("model") or "gpt-5-2025-08-07", "prompt": version, "service_id": sid,
                        "judgeable": ai.get("judgeable", True), "not_judgeable_reason": ai.get("not_judgeable_reason", "")},
             "text": re.sub(r"^#.*\n", "", text, flags=re.M).strip(),
         })
