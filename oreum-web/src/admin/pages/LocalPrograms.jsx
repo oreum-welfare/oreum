@@ -314,7 +314,7 @@ function FormulaReview({ amount, editable, onChange }) {
   };
   return (
     <div className="formula">
-      <p><b>AI 설명:</b> {amount?.explanation || "—"} <small className="hint">({amount?.unit === "annual" ? "연 금액 → 12로 나눠 월 금액" : "월 금액"})</small></p>
+      <p><b>설명:</b> {amount?.explanation || "—"} <small className="hint">({amount?.unit === "annual" ? "연 금액 → 12로 나눠 월 금액" : "월 금액"})</small></p>
       <label className="field"><span>계산식</span>
         <textarea rows={2} value={amount?.expr || ""} readOnly={!editable} onChange={(e) => onChange({ ...amount, expr: e.target.value })} spellCheck={false} /></label>
       <label className="field"><span>표 (lookup에서 쓰는 값)</span>

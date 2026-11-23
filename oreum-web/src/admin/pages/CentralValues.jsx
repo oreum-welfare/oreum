@@ -186,7 +186,7 @@ function Detail({ r, current, today, onAct }) {
         <span className={`pill ${STATUS_CLASS[r.status]}`}>{r.status}</span>
       </div>
       <p className="hint">
-        {n.name} · {n.number ? `제${String(n.number).replace(/^제|호$/g, "")}호` : ""} · 발령 {ymd(n.issued)} · <b>시행 {r.effective_from}</b>
+        {[n.name, n.number && `제${String(n.number).replace(/^제|호$/g, "")}호`, n.issued && `발령 ${ymd(n.issued)}`].filter(Boolean).join(" · ")} · <b>시행 {r.effective_from}</b>
         {n.serial && <> · <a href={`https://www.law.go.kr/LSW/admRulInfoP.do?admRulSeq=${encodeURIComponent(n.serial)}`} target="_blank" rel="noreferrer">원문 보기 (국가법령정보센터)</a></>}
       </p>
       {pending && (
