@@ -452,3 +452,23 @@
 .admin .modal .field input { width: 100%; padding: 8px 12px; border: 1px solid var(--line-2); border-radius: var(--radius-sm); font: inherit; }
 @media (max-width: 1100px) { .admin .lp-compare.two { grid-template-columns: 1fr; } .admin .lp-source { position: static; } }
 @media (max-width: 760px) { .admin .lp-cols { grid-template-columns: 1fr; } .admin .lp-side { position: static; } .admin .lp-stats { grid-template-columns: 1fr 1fr; } }
+
+/* 중앙 기준값: 변경 요약 · 증감 표 · 승인 확인 */
+.admin .cv-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 14px 0; }
+.admin .cv-summary > div { background: var(--soft); border-radius: 12px; padding: 10px 14px; }
+.admin .cv-summary span { display: block; font-size: 12px; color: var(--muted); }
+.admin .cv-summary b { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+.admin .cv-summary .up b { color: var(--green); }
+.admin .cv-summary .down b { color: #c2621d; }
+.admin .cv-diff { font-size: 14px; }
+.admin .cv-diff .r { text-align: right; }
+.admin .cv-diff td.num { font-variant-numeric: tabular-nums; }
+.admin .cv-diff input { width: 120px; text-align: right; }
+.admin .cv-diff tr.up .delta { color: var(--green); font-weight: 700; }
+.admin .cv-diff tr.down .delta { color: #c2621d; font-weight: 700; }
+.admin .cv-diff tr.same td { color: var(--faint); }
+.admin .cv-diff tbody tr:hover td { background: #f3faf5; }
+.admin .cv-confirm { list-style: none; padding: 0; margin: 8px 0 0; display: flex; flex-direction: column; gap: 4px; font-size: 13px; max-height: 220px; overflow: auto; }
+.admin .cv-confirm li { display: flex; justify-content: space-between; gap: 12px; background: var(--soft); border-radius: 8px; padding: 6px 10px; }
+.admin .btn.primary.danger-solid { background: var(--red); border-color: var(--red); }
+@media (max-width: 760px) { .admin .cv-summary { grid-template-columns: 1fr 1fr; } }
