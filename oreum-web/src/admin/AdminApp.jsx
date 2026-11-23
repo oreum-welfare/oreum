@@ -11,14 +11,15 @@ import Review from "./pages/Review.jsx";
 import Settings from "./pages/Settings.jsx";
 import { SessionProvider, useSession } from "./session.jsx";
 
+// [경로, 이름, 시스템 관리자만]. 관리자 전용 탭은 담당자·로그인 전에는 메뉴에서 숨긴다 (주소로 들어와도 페이지가 다시 막음)
 const TABS = [
   ["analysis", "데이터 분석"],
   ["ai", "AI 성능"],
   ["review", "AI 검수"],
   ["local", "지자체 제도 검토"],
-  ["central", "중앙 기준값"],
-  ["accounts", "계정 관리"],
-  ["settings", "운영 설정"],
+  ["central", "중앙 기준값", true],
+  ["accounts", "계정 관리", true],
+  ["settings", "운영 설정", true],
 ];
 
 // 관리자(운영자) 화면: 정책 분석·AI 추출 성능·사람 검수
@@ -36,13 +37,13 @@ function AdminShell() {
             <span className="wordmark"><Logo height={24} /></span><span>관리자</span>
           </Link>
           <nav className="admin-tabs" aria-label="관리자 메뉴">
-            {TABS.map(([path, label]) => <NavLink key={path} to={`/admin/${path}`}>{label}</NavLink>)}
+            {TABS.filter(([, , adminOnly]) => !adminOnly || user?.role === "admin").map(([path, label]) => <NavLink key={path} to={`/admin/${path}`}>{label}</NavLink>)}
           </nav>
           <Link to="/" className="admin-exit">사용자 화면 →</Link>
         </div>
       </header>
       <div className="admin-body">
-        <p className="admin-note">분석·AI 성능은 공개 자료라 누구나 볼 수 있어요. 지자체 제도 검토·승인은 담당자, 중앙 기준값은 시스템 관리자 로그인이 필요해요{mode === "demo" ? " (지금은 데모 계정)" : ""}.{user ? ` 로그인: ${user.name}` : ""}</p>
+        <p className="admin-note">분석·AI 성능은 공개 자료라 누구나 볼 수 있어요. {user?.role === "admin" ? "중앙 기준값·계정 관리·운영 설정은 시스템 관리자만 볼 수 있어요" : "지자체 제도 검토·승인은 담당자 로그인이 필요해요"}{mode === "demo" ? " (지금은 데모 계정)" : ""}.{user ? ` 로그인: ${user.name}` : ""}</p>
         <Routes>
           <Route index element={<Navigate to="analysis" replace />} />
           <Route path="analysis" element={<Analysis />} />
