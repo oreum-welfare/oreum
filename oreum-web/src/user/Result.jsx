@@ -67,7 +67,6 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
           {cmp === inc
             ? <p className="compare-result">슬라이더를 움직이면 생활비가 어떻게 바뀌는지 보여 드려요</p>
             : <>
-                <div className="compare-diff"><span>지금보다 생활비</span><b className={diff.disp >= 0 ? "up" : "bad"}>{diff.disp >= 0 ? "+" : "−"}{manwon(Math.abs(diff.disp))} 원</b></div>
                 {(diff.lost.length > 0 || diff.gained.length > 0) && <p className="compare-result">
                   {diff.lost.length > 0 && <>{diff.lost.slice(0, 2).join(", ")}{diff.lost.length > 2 ? ` 외 ${diff.lost.length - 2}개` : ""} 끊김</>}
                   {diff.lost.length > 0 && diff.gained.length > 0 && <br />}

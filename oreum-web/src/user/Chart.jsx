@@ -95,7 +95,6 @@ export default function Chart({ sim, inc, cmp, cliffs, focus }) {
   const BASE = T + PLOT_H; // 가로축 위치
   const y = (v) => T + (1 - (v - (minY - pad)) / (maxY + pad - (minY - pad))) * PLOT_H;
   const path = xs.slice(i0, i1 + 1).map((v, k) => `${k ? "L" : "M"}${x(v).toFixed(1)},${y(ys[i0 + k]).toFixed(1)}`).join("");
-  const zoomed = x0 > 0 || x1 < maxX;
 
   const label = `월 ${manwon(inc)} 원일 때 월급과 혜택을 합친 돈은 ${manwon(ys[nowI])} 원` +
     (focus ? `. 월 ${manwon(focus.income)} 원부터 생활비가 ${drop > 0 ? `${manwon(drop)} 원 ` : ""}줄고` + (focus.recover != null ? `, 월 ${manwon(focus.recover)} 원에서 줄기 전 수준을 되찾아요` : "") : "");
@@ -105,7 +104,7 @@ export default function Chart({ sim, inc, cmp, cliffs, focus }) {
         <h2 className="chart-title">소득에 따른 생활비 변화</h2>
         {zoom && <button type="button" className="link-btn" onClick={() => setFull((f) => !f)} aria-pressed={full}>{full ? "내 구간 크게 보기" : "전체 보기 →"}</button>}
       </div>
-      <p className="chart-sub">생활비 = 월급 + 받는 혜택. {zoomed ? `월급 ${manwon(x0)}~${manwon(x1)} 원 구간을 크게 보여 드려요` : "월급이 늘 때 한 달 생활비가 어떻게 바뀌는지 보여 드려요"}</p>
+      <p className="chart-sub">생활비 = 월급 + 받는 혜택</p>
       <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} role="img" aria-label={label}>
         {/* 생활비가 줄어든 구간 */}
         {cliffI != null && recI != null && inView(cliffI) && <rect x={x(xs[cliffI]) - 1} y={T} width={Math.max(2, x(xs[Math.min(recI, i1)]) - x(xs[cliffI]))} height={BASE - T} fill="#fdf3f1" />}
