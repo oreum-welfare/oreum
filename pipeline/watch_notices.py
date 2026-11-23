@@ -166,10 +166,12 @@ def main() -> None:
         print("기준 기록 모드: 지금 고시를 기록만 하고 AI 제안은 만들지 않습니다.")
     STATE_DIR.mkdir(exist_ok=True)
 
-    new, failed, missing = [], [], []
+    new, failed, missing, added = [], [], [], []
     for n in notices:
+        # 관리자 화면에서 새로 더한 고시(기록 없음)는 이번엔 시행 중인 버전을 기준으로만 기록한다
+        first = n["key"] not in state
         try:
-            ver = latest_version(oc, n, in_force_only=init)
+            ver = latest_version(oc, n, in_force_only=init or first)
         except RuntimeError as e:
             failed.append(f"{n['key']} ({e})")
             continue
@@ -183,7 +185,9 @@ def main() -> None:
             continue
         if not init and int(ver["issued"] or 0) < int(old.get("issued") or 0):
             continue  # 더 옛 버전이 검색되면 무시
-        if not init:
+        if first and not init:
+            added.append(n["key"])  # 새로 더한 고시: 기준만 기록, 다음 실행부터 새 버전을 잡는다
+        elif not init:
             try:
                 stem = save_body(oc, n, ver)
             except RuntimeError as e:
@@ -200,14 +204,15 @@ def main() -> None:
     if init:
         lines.append(f"처음 실행이라 지금 고시 {len(state)}건을 기준으로 기록했어요. 내일부터 새 고시만 잡아요.")
     elif new:
-        lines += ["새 고시가 올라왔어요. AI가 바뀐 값을 제안했고, **원문과 대조한 뒤 시행일에 맞춰 합쳐 주세요** "
-                  "(합치는 순간 계산기에 반영돼요).", "",
+        lines += ["새 고시가 올라왔어요. AI가 바뀐 값을 관리자 화면 **중앙 기준값**에 제안해요. 원문과 대조해 승인하면 시행일부터 반영돼요.", "",
                   "| 출처 | 고시 | 발령 | 시행일 |", "|---|---|---|---|"]
         lines += [f"| {x['source']} | {x['name']} | {x['issued']} {x['number']} | {x['effective']} |" for x in new]
-    else:
+    elif not added:
         lines.append("새 고시가 없어요.")
+    if added:
+        lines += ["", "새로 감시하기 시작한 고시 (지금 시행 중인 버전을 기준으로 기록): " + ", ".join(added)]
     if missing:
-        lines += ["", "검색되지 않은 고시 (이름이 바뀌었을 수 있어요, `pipeline/notices.json` 확인): " + ", ".join(missing)]
+        lines += ["", "검색되지 않은 고시 (이름이 바뀌었을 수 있어요, 관리자 화면 '운영 설정'에서 확인): " + ", ".join(missing)]
     if failed:
         lines += ["", "확인하지 못한 것 (다음 실행 때 다시): " + ", ".join(failed)]
     SUMMARY.write_text("\n".join(lines) + "\n", encoding="utf-8")
