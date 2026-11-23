@@ -91,12 +91,19 @@ create or replace function public.guard_program_change() returns trigger
 language plpgsql security definer set search_path = public as $$
 declare me public.profiles := public.my_profile();
 begin
-  if new.region is distinct from old.region or new.sido is distinct from old.sido or new.conditions is distinct from old.conditions then
-    raise exception '지역·조건은 결정 화면에서 바꿀 수 없어요 (새 초안으로 올려 주세요)';
+  if new.region is distinct from old.region or new.sido is distinct from old.sido or new.conditions is distinct from old.conditions
+     or new.name is distinct from old.name or new.kind is distinct from old.kind or new.text is distinct from old.text
+     or new.source is distinct from old.source or new.origin is distinct from old.origin or new.effective_from is distinct from old.effective_from then
+    raise exception '지역·조건·원문은 결정 화면에서 바꿀 수 없어요 (새 초안으로 올려 주세요)';
   end if;
-  if new.apply_checks is distinct from old.apply_checks and old.status <> '검토 대기' then
-    raise exception '신청할 때 확인 조건은 검토 대기 상태에서만 정할 수 있어요';
+  -- 금액·신청할 때 확인은 검토 대기 → 승인·반려 결정과 함께만 정한다 (승인된 제도의 금액을 몰래 바꾸지 못하게)
+  if (new.apply_checks is distinct from old.apply_checks or new.amount is distinct from old.amount)
+     and not (old.status = '검토 대기' and new.status is distinct from old.status) then
+    raise exception '금액·신청할 때 확인 조건은 검토 대기 제도를 결정할 때만 정할 수 있어요';
   end if;
+  -- 승인자·승인일은 화면이 보내는 값을 믿지 않는다 (승인할 때만 아래에서 DB가 채운다)
+  new.approved_by := old.approved_by;
+  new.approved_at := old.approved_at;
   if new.status is distinct from old.status then
     if not ((old.status = '검토 대기' and new.status in ('승인', '반려'))
          or (old.status = '반려' and new.status = '검토 대기')

@@ -65,12 +65,17 @@ export default function LocalPrograms() {
     const res = decide(user, picked, to, { ...opts, facts });
     if (res.error) { setMsg(res.error); return; }
     if (mode === "supabase") {
-      const sb = await supabaseClient();
       const p = res.program;
-      const { error } = await sb.from("local_programs").update({
-        status: p.status, amount: p.amount, apply_checks: p.apply_checks ?? [], reason: p.reason ?? null, approved_by: p.approved_by ?? null, approved_at: p.approved_at ?? null,
-      }).eq("id", p.id);
-      if (error) { setMsg(`저장하지 못했어요: ${error.message}`); return; }
+      try {
+        const sb = await supabaseClient();
+        // 승인자·승인일은 DB 트리거가 채운다
+        const { error } = await sb.from("local_programs").update({
+          status: p.status, amount: p.amount, apply_checks: p.apply_checks ?? [], reason: p.reason ?? null,
+        }).eq("id", p.id);
+        if (error) { setMsg(`저장하지 못했어요: ${error.message}`); return; }
+      } catch {
+        setMsg("서버에 연결하지 못했어요. 잠시 뒤 다시 해 주세요."); return;
+      }
     } else {
       const overlay = loadOverlay();
       overlay[res.program.id] = res.program;
