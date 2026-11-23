@@ -35,3 +35,6 @@
 6. Vercel → Project → Settings → Environment Variables에 `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`(공개용 anon 키)를 넣고 다시 배포합니다.
 7. (선택) 매일 변경 확인(`.github/workflows/policy-watch.yml`)이 새 초안을 올리고 폐지 의심을 표시하게 하려면,
    GitHub 저장소 Secrets에 `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`를 넣습니다. 폐지 의심 표시는 `mark_gone.mjs`가 하고, 상태(승인·중지)는 바꾸지 않습니다.
+8. **중앙 기준값**(기준 중위소득·기준임대료 등 고시 값): `schema.sql` 6절의 `central_values`. 새 고시를 AI가 읽어 제안한 값을
+   시스템 관리자(`admin`)만 관리자 화면 **중앙 기준값**에서 승인합니다. 승인한 값은 시행일(`effective_from`)부터 계산기가 `rules.json` 위에 덮어 씁니다.
+   매일 고시 확인(`.github/workflows/notice-watch.yml`)이 `seed_central.mjs`로 '검토 대기'를 넣습니다.

@@ -1,0 +1,99 @@
+name: 중앙 고시 변경 확인 (매일)
+
+# 계산 기준값을 정하는 중앙 고시(pipeline/notices.json, 7종)에 새 버전이 올라왔는지 매일 확인한다.
+# 고시는 해마다 나오는 달이 다르고(기준 중위소득 8월, 교육급여 12월 등) 중간에 개정되기도 해서 매일 본다.
+# 1) 새 고시 감지·본문 저장 (국가법령정보 Open API) → 2) AI가 바뀐 기준값 제안, 코드가 모양 검사
+# → 3) 통과한 값을 관리자 화면 '중앙 기준값'(Supabase central_values)에 '검토 대기'로 올림. 시스템 관리자가 원문 대조 후 승인하면
+#    시행일부터 계산기에 자동 반영 (rules.json은 그대로). 기록은 auto/notice-updates → develop PR.
+#
+# 저장소 Settings → Secrets and variables → Actions (코드·채팅에 붙이지 않기)
+#   LAW_OC              국가법령정보 공동활용(open.law.go.kr) API 인증값 (필수)
+#   OPENAI_API_KEY      AI 제안 (gpt-5). 없으면 ANTHROPIC_API_KEY(Claude), 둘 다 없으면 새 고시 알림만 (키를 넣은 다음 날 이어서 제안)
+#   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY   관리자 화면에 '검토 대기'로 올릴 때 (없으면 PR 기록만)
+# Settings → Actions → General → "Allow GitHub Actions to create and approve pull requests" 켜기
+
+on:
+  schedule:
+    - cron: "15 21 * * *" # 매일 오전 6시 15분 (한국 시간)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: notice-watch
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    name: 새 중앙 고시 확인
+    runs-on: ubuntu-latest
+    env:
+      BRANCH: auto/notice-updates
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: develop
+          fetch-depth: 0
+
+      - name: 이전 확인 기록 이어받기
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git ls-remote --exit-code --heads origin "$BRANCH" > /dev/null; then
+            git checkout -B "$BRANCH" "origin/$BRANCH"
+            git merge --no-edit origin/develop || { git merge --abort; echo "::warning::develop과 충돌해 합치지 못했습니다. 고시 PR을 먼저 정리해 주세요."; }
+          else
+            git checkout -B "$BRANCH"
+          fi
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: 파이썬 패키지 설치
+        run: pip install "requests>=2.32" "openai>=1.60" "anthropic>=2.8"
+
+      - name: 새 고시 확인
+        env:
+          LAW_OC: ${{ secrets.LAW_OC }}
+        run: python pipeline/watch_notices.py
+
+      - name: AI가 바뀐 기준값 제안
+        continue-on-error: true # 실패해도 기록은 남긴다
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -z "$OPENAI_API_KEY" ] && [ -z "$ANTHROPIC_API_KEY" ]; then echo "::warning::AI 키가 없어 AI 제안을 건너뜁니다 (새 고시는 저장, 다음 실행 때 다시)"; exit 0; fi
+          python pipeline/propose_notice.py   # OPENAI_API_KEY가 있으면 OpenAI, 없으면 Claude
+          node oreum-web/scripts/sync-data.mjs
+
+      - name: 관리자 화면(Supabase)에 검토 대기로 올리기
+        continue-on-error: true
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then echo "Supabase 설정 없음 - PR 기록만 남깁니다"; exit 0; fi
+          node supabase/seed_central.mjs
+
+      - name: 기록 남기고 PR 열기
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p pipeline/notices
+          git add pipeline/state pipeline/notices pipeline/central_drafts.json oreum-web/public/data/central_drafts.json
+          if git diff --cached --quiet; then echo "바뀐 것 없음"; exit 0; fi
+          git commit -q -m "data: 중앙 고시 변경 확인 $(TZ=Asia/Seoul date +%F)"
+          git push origin "$BRANCH"
+          if [ -n "$(gh pr list --head "$BRANCH" --base develop --state open --json number -q '.[].number')" ]; then
+            gh pr comment "$BRANCH" --body-file pipeline/state/notice_summary.md
+          else
+            gh pr create --base develop --head "$BRANCH" --title "중앙 고시 변경 확인 (자동) - 관리자 화면에서 승인" --body-file pipeline/state/notice_summary.md
+          fi

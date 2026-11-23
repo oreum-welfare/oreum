@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { Sheet } from "../ui/index.jsx";
 import { applyInfo } from "./apply.js";
 import Chart from "./Chart.jsx";
-import { CHECK_LABEL, LEVEL_LABEL, STEP, about, iga, levelOf, localReady, manwon, short, sourceKeys, statusClass, won } from "./data.js";
+import { CHECK_LABEL, LEVEL_LABEL, STEP, about, baseYear, iga, levelOf, localReady, manwon, short, sourceKeys, statusClass, won } from "./data.js";
 
 // 데이터 출처 (결과 화면 아래와 계산 기준 시트에 함께 보여 준다)
 const SOURCES = [
@@ -114,8 +114,8 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
 
         <footer className="footer">
           <p style={{ margin: "0 0 8px" }}>{short(hh.region)} · {hh.age}세{hh.spouse ? " · 배우자" : ""}{hh.infants + hh.elem + hh.middle + hh.high ? ` · 자녀 ${hh.infants + hh.elem + hh.middle + hh.high}명` : ""}{hh.singleParent ? " · 한부모" : ""}</p>
-          <p style={{ margin: "0 0 8px" }}>데이터: 복지로 · 한국사회보장정보원 복지서비스 API, 보건복지부·국토교통부 고시 (2026년 기준) · <button type="button" className="link-btn" onClick={() => setSheet("basis")} style={{ fontSize: 13 }}>출처 자세히</button></p>
-          <p style={{ margin: "0 0 12px" }}>2026년 기준 참고용이에요. 실제 수급은 읍면동 행정복지센터에서 결정돼요.</p>
+          <p style={{ margin: "0 0 8px" }}>데이터: 복지로 · 한국사회보장정보원 복지서비스 API, 보건복지부·국토교통부 고시 ({baseYear(data)}년 기준) · <button type="button" className="link-btn" onClick={() => setSheet("basis")} style={{ fontSize: 13 }}>출처 자세히</button></p>
+          <p style={{ margin: "0 0 12px" }}>{baseYear(data)}년 기준 참고용이에요. 실제 수급은 읍면동 행정복지센터에서 결정돼요.</p>
           <button type="button" className="link-btn" onClick={onRestart} style={{ fontSize: 13 }}>처음부터 다시</button>
         </footer>
       </div>
@@ -318,7 +318,11 @@ function BasisSheet({ data, benefits, hasAssets, close }) {
   const checks = Object.entries(data.verification);
   const cnt = (k) => levels.filter((l) => l === k).length;
   return (
-    <Sheet title="계산 기준" sub="2026년 기준 · 참고용" onClose={close}>
+    <Sheet title="계산 기준" sub={`${baseYear(data)}년 기준 · 참고용`} onClose={close}>
+      {(data.central_applied || []).length > 0 && <>
+        <p className="group-title" style={{ marginTop: 4 }}>새 고시 반영</p>
+        {data.central_applied.map((a) => <div className="src" key={a.key}><b>{a.effective_from}부터</b><span>{a.notice || a.key}</span></div>)}
+      </>}
       <p className="group-title" style={{ marginTop: 4 }}>데이터 출처</p>
       {SOURCES.map(([k, v]) => <div className="src" key={k}><b>{k}</b><span>{v}</span></div>)}
       <p className="group-title">받는 혜택의 근거</p>

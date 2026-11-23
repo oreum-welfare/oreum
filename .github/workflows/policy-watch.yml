@@ -7,7 +7,7 @@ name: 지자체 제도 변경 확인 (매일)
 #
 # 저장소 Settings → Secrets and variables → Actions 에 넣을 값 (코드·채팅에 붙이지 않기)
 #   DATA_GO_KR_KEY             공공데이터포털 일반인증키 (필수)
-#   ANTHROPIC_API_KEY          AI 초안 변환 (없으면 원문만 저장하고, 키를 넣은 다음 날 이어서 변환)
+#   OPENAI_API_KEY             AI 초안 변환 (gpt-5). 없으면 ANTHROPIC_API_KEY(Claude), 둘 다 없으면 원문만 저장하고 키를 넣은 다음 날 이어서 변환
 #   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY   관리자 화면 DB에 바로 올릴 때 (없으면 PR만)
 # 그리고 Settings → Actions → General → "Allow GitHub Actions to create and approve pull requests" 켜기
 
@@ -58,7 +58,7 @@ jobs:
           node-version: "20"
 
       - name: 파이썬 패키지 설치
-        run: pip install "requests>=2.32" "anthropic>=2.8"
+        run: pip install "requests>=2.32" "openai>=1.60" "anthropic>=2.8"
 
       - name: 바뀐 제도 확인
         env:
@@ -68,13 +68,15 @@ jobs:
       - name: AI 초안 만들기 (초안이 아직 없는 원문만)
         continue-on-error: true # 실패해도 아래 '기록 남기기'는 실행 (그날 확인 기록이 사라지지 않게)
         env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           # 키가 없으면 시도 횟수를 세지 않고 건너뛴다 (키를 넣은 다음 날 이어서 변환)
-          if [ -z "$ANTHROPIC_API_KEY" ]; then echo "::warning::ANTHROPIC_API_KEY가 없어 AI 변환을 건너뜁니다 (원문은 저장, 다음 실행 때 다시 시도)"; exit 0; fi
+          if [ -z "$OPENAI_API_KEY" ] && [ -z "$ANTHROPIC_API_KEY" ]; then echo "::warning::AI 키가 없어 AI 변환을 건너뜁니다 (원문은 저장, 다음 실행 때 다시 시도)"; exit 0; fi
           PENDING="$(python pipeline/watch_updates.py --pending)"
           if [ -z "$PENDING" ]; then echo "변환할 원문 없음"; exit 0; fi
-          python pipeline/convert.py --only $PENDING --out pipeline/runs_watch_rules
+          PROVIDER=claude; [ -n "$OPENAI_API_KEY" ] && PROVIDER=openai   # OpenAI 키가 있으면 gpt-5
+          python pipeline/convert.py --provider "$PROVIDER" --only $PENDING --out pipeline/runs_watch_rules
 
       - name: 검토 대기 초안 목록 갱신
         run: |

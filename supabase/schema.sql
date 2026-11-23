@@ -162,3 +162,109 @@ grant select on public.profiles to authenticated;                       -- 본�
 grant select on public.program_events to authenticated;                 -- 담당 지역 이력만 (RLS)
 grant all on public.local_programs, public.profiles, public.program_events to service_role; -- seed·관리용
 grant execute on function public.can_review(text, text), public.my_profile() to anon, authenticated;
+
+-- 6. 중앙 기준값 (기준 중위소득·기준임대료 등 고시 값). 새 고시를 AI가 읽어 제안 → 시스템 관리자가 원문 대조 후 승인.
+-- 계산기는 '승인'된 값 중 시행일(effective_from)이 오늘 이전인 가장 최근 값을 rules.json 위에 덮어 쓴다
+-- → 2027년 값을 미리 승인해 두면 2027-01-01에 자동으로 바뀐다. 계산식은 바꿀 수 없고 값만.
+create table if not exists public.central_values (
+  id text primary key,                 -- <고시>_<행정규칙일련번호>_<값 키>
+  key text not null,                   -- rules.json 경로 (예: lines.saeng_32, params.rent)
+  value jsonb not null,                -- 지금 값과 같은 모양
+  effective_from date not null,        -- 시행일
+  notice jsonb not null,               -- 고시 이름·발령번호·발령일·일련번호·출처 번호
+  evidence text,
+  location text,
+  proposed_by text,                    -- 예: ai:claude-opus-5-5
+  status text not null default '검토 대기' check (status in ('검토 대기', '승인', '반려', '중지')),
+  reason text,
+  approved_by text,
+  approved_at date,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+alter table public.central_values enable row level security;
+
+-- 중앙 기준값은 전국에 영향을 주므로 시스템 관리자(admin)만 보고 결정한다
+create or replace function public.is_admin() returns boolean
+language sql stable security definer set search_path = public as $$
+  select coalesce((select role = 'admin' from public.profiles where id = auth.uid()), false)
+$$;
+
+drop policy if exists "승인 기준값은 누구나 읽기" on public.central_values;
+create policy "승인 기준값은 누구나 읽기" on public.central_values for select using (status = '승인');
+drop policy if exists "관리자는 전체 읽기" on public.central_values;
+create policy "관리자는 전체 읽기" on public.central_values for select using (public.is_admin());
+drop policy if exists "관리자 결정" on public.central_values;
+create policy "관리자 결정" on public.central_values for update using (public.is_admin()) with check (public.is_admin());
+-- 등록(insert)은 매일 고시 확인(서비스 키)만 한다: 화면에서 넣는 정책 없음
+
+create table if not exists public.central_events (
+  id bigint generated always as identity primary key,
+  value_id text not null references public.central_values (id) on delete cascade,
+  actor uuid,
+  actor_name text,
+  from_status text,
+  to_status text not null,
+  reason text,
+  at timestamptz not null default now()
+);
+alter table public.central_events enable row level security;
+drop policy if exists "관리자 이력 읽기" on public.central_events;
+create policy "관리자 이력 읽기" on public.central_events for select using (public.is_admin());
+
+create or replace function public.guard_central_change() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare me public.profiles := public.my_profile();
+begin
+  if auth.uid() is null then  -- SQL Editor·서비스 키 = 시스템 관리 작업
+    new.updated_at := now();
+    return new;
+  end if;
+  if new.key is distinct from old.key or new.notice is distinct from old.notice
+     or new.evidence is distinct from old.evidence or new.proposed_by is distinct from old.proposed_by then
+    raise exception '고시·근거는 바꿀 수 없어요';
+  end if;
+  -- 시행일도 값처럼 검토 대기 상태에서 결정할 때만 고칠 수 있다 (부칙에서 값별 시행일이 다른 경우 등)
+  if new.effective_from is distinct from old.effective_from and not (old.status = '검토 대기' and new.status is distinct from old.status) then
+    raise exception '시행일은 검토 대기 기준값을 결정할 때만 고칠 수 있어요';
+  end if;
+  -- 값은 검토 대기 상태에서 결정할 때만 고칠 수 있다 (AI가 잘못 읽은 칸을 원문대로 바로잡기). 모양(최상위 형식)은 그대로
+  if new.value is distinct from old.value then
+    if not (old.status = '검토 대기' and new.status is distinct from old.status) then
+      raise exception '값은 검토 대기 기준값을 결정할 때만 고칠 수 있어요';
+    end if;
+    if jsonb_typeof(new.value) <> jsonb_typeof(old.value) then
+      raise exception '값의 형식이 달라요';
+    end if;
+  end if;
+  new.approved_by := old.approved_by;
+  new.approved_at := old.approved_at;
+  if new.status is distinct from old.status then
+    if not ((old.status = '검토 대기' and new.status in ('승인', '반려'))
+         or (old.status = '반려' and new.status = '검토 대기')
+         or (old.status = '승인' and new.status = '중지')
+         or (old.status = '중지' and new.status = '검토 대기')) then
+      raise exception '상태를 %에서 %(으)로 바꿀 수 없어요', old.status, new.status;
+    end if;
+    if new.status in ('반려', '중지') and coalesce(btrim(new.reason), '') = '' then
+      raise exception '반려·중지에는 사유가 필요해요';
+    end if;
+    if new.status = '승인' then
+      new.approved_by := coalesce(me.name, 'unknown');
+      new.approved_at := current_date;
+    end if;
+    insert into public.central_events (value_id, actor, actor_name, from_status, to_status, reason)
+    values (new.id, auth.uid(), me.name, old.status, new.status, new.reason);
+  end if;
+  new.updated_at := now();
+  return new;
+end $$;
+drop trigger if exists guard_central_change on public.central_values;
+create trigger guard_central_change before update on public.central_values
+  for each row execute function public.guard_central_change();
+
+grant select on public.central_values to anon;                   -- 계산기: '승인' 값만 (RLS)
+grant select, update on public.central_values to authenticated;  -- 관리자만 (RLS·트리거)
+grant select on public.central_events to authenticated;
+grant all on public.central_values, public.central_events to service_role;
+grant execute on function public.is_admin() to anon, authenticated;

@@ -1,0 +1,54 @@
+{
+ "stem": "education_20260918_2100000285242",
+ "notice": {
+  "notice": "education",
+  "source": "S06",
+  "keys": [
+   "params.edu_annual"
+  ],
+  "serial": "2100000285242",
+  "name": "2027년 교육급여의 선정기준 및 최저보장수준",
+  "issued": "20260918",
+  "number": "2026-21",
+  "effective": "20270101",
+  "kind": "전부개정",
+  "tables": [],
+  "table_pdfs": []
+ },
+ "model": "gpt-5-2025-08-07",
+ "related": true,
+ "effective_date": "2027-03-01",
+ "items": [
+  {
+   "key": "params.edu_annual",
+   "value": {
+    "elem": 513000,
+    "middle": 714000,
+    "high": 945000
+   },
+   "changes": [
+    [
+     "params.edu_annual.elem",
+     502000,
+     513000
+    ],
+    [
+     "params.edu_annual.middle",
+     699000,
+     714000
+    ],
+    [
+     "params.edu_annual.high",
+     860000,
+     945000
+    ]
+   ],
+   "evidence": "[이미지 169491569] 초등학생 교육활동지원비 513,000원 / 중학생 714,000원 / 고등학생 945,000원; 지급횟수: 연 1회",
+   "location": "조문 1. 2) 최저보장수준"
+  }
+ ],
+ "rejected": [],
+ "rejected_raw": {},
+ "unreadable": "",
+ "notes": "부칙: \"이 고시는 2027년 1월 1일부터 시행한다. 다만, 2) 최저보장수준은 2027년 3월 1일부터 시행한다.\"에 따라 최저보장수준(교육활동지원비)의 적용일을 2027-03-01로 기재함."
+}
