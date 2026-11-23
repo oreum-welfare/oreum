@@ -25,6 +25,7 @@ create table if not exists public.local_programs (
   kind text not null check (kind in ('cash', 'inkind', 'access')),
   conditions jsonb not null default '[]',
   apply_checks jsonb not null default '[]',  -- 담당자가 '신청할 때 확인'으로 둔 조건 번호 (계산에서 제외, 안내만)
+  facts jsonb,          -- 제도별 계산 보조값 (예: 북구 건강보험료 {"nhis_premium_rate": "bukgu_nhis_rate"})
   amount jsonb not null,
   amount_text text,
   note text,
@@ -39,6 +40,7 @@ create table if not exists public.local_programs (
   updated_at timestamptz not null default now(),
   check (region is not null or sido is not null)
 );
+alter table public.local_programs add column if not exists facts jsonb;  -- 예전에 만든 DB에도 추가
 alter table public.local_programs enable row level security;
 
 -- 지금 로그인한 사람의 권한
@@ -91,8 +93,13 @@ create or replace function public.guard_program_change() returns trigger
 language plpgsql security definer set search_path = public as $$
 declare me public.profiles := public.my_profile();
 begin
+  -- 로그인한 담당자(화면·API)에게만 적용한다. SQL Editor·서비스 키(auth.uid() 없음)는 시스템 관리 작업으로 본다
+  if auth.uid() is null then
+    new.updated_at := now();
+    return new;
+  end if;
   if new.region is distinct from old.region or new.sido is distinct from old.sido or new.conditions is distinct from old.conditions
-     or new.name is distinct from old.name or new.kind is distinct from old.kind or new.text is distinct from old.text
+     or new.facts is distinct from old.facts or new.name is distinct from old.name or new.kind is distinct from old.kind or new.text is distinct from old.text
      or new.source is distinct from old.source or new.origin is distinct from old.origin or new.effective_from is distinct from old.effective_from then
     raise exception '지역·조건·원문은 결정 화면에서 바꿀 수 없어요 (새 초안으로 올려 주세요)';
   end if;
@@ -115,6 +122,22 @@ begin
       raise exception '반려·중지에는 사유가 필요해요';
     end if;
     if new.status = '승인' then
+      -- 계산할 수 있는 조건만 남아야 하고, 거주 지역 말고 조건이 하나 이상 있어야 한다 (permissions.js computable과 같은 규칙)
+      if exists (
+        select 1 from jsonb_array_elements(new.conditions) with ordinality as c(cond, n)
+        where not (new.apply_checks @> to_jsonb(c.n - 1))
+          and not (c.cond->>'field' = any (array['age','household_size','income_recognized_pct_median','income_recognized_won',
+            'total_income_annual','assets','recipient_status','basic_pension_recipient','residence_months','child_count','newborn',
+            'school_enrolled','disabled','single_parent','senior_in_household','nhis_premium','third_child_7to18','child_birth_order','residence_region']))
+      ) then
+        raise exception '계산할 수 없는 조건이 남아 있어요 (신청할 때 확인으로 두거나 반려해 주세요)';
+      end if;
+      if not exists (
+        select 1 from jsonb_array_elements(new.conditions) with ordinality as c(cond, n)
+        where not (new.apply_checks @> to_jsonb(c.n - 1)) and c.cond->>'field' <> 'residence_region'
+      ) then
+        raise exception '계산하는 조건이 하나도 없어요 (거주 지역 말고 소득·나이 같은 조건이 필요해요)';
+      end if;
       new.approved_by := coalesce(me.name, 'unknown');
       new.approved_at := current_date;
     end if;

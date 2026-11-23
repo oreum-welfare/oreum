@@ -35,10 +35,20 @@ export default function LocalPrograms() {
     if (!user || !data) return;
     (async () => {
       if (mode === "supabase") {
-        const sb = await supabaseClient();
-        const { data: rows, error } = await sb.from("local_programs").select("*").order("region");
-        setPrograms(error ? [] : rows);
-        if (error) setMsg("제도 목록을 불러오지 못했어요.");
+        try {
+          const sb = await supabaseClient();
+          const [{ data: rows, error }, { data: events }] = await Promise.all([
+            sb.from("local_programs").select("*").order("region"),
+            sb.from("program_events").select("*").order("at"), // 결정 이력 (RLS: 담당 지역 것만)
+          ]);
+          if (error) throw error;
+          const history = {};
+          for (const e of events || []) (history[e.program_id] ||= []).push({ at: e.at, by: e.actor_name || "", from: e.from_status, to: e.to_status, reason: e.reason || "" });
+          setPrograms(rows.map((p) => ({ ...p, history: history[p.id] || [] })));
+        } catch {
+          setPrograms([]);
+          setMsg("제도 목록을 불러오지 못했어요.");
+        }
       } else if (draftFile) {
         setPrograms(mergePrograms(data.local_programs, draftFile.drafts, loadOverlay()));
       }

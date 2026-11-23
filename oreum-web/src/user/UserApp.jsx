@@ -16,7 +16,8 @@ export default function UserApp() {
   // 지자체 제도는 담당자가 '승인'한 것만 (데모: 이 브라우저의 승인 결정, Supabase: DB의 승인 제도)
   const [programs, setPrograms] = useState(null);
   useEffect(() => { if (rules) publishedPrograms(rules).then(setPrograms); }, [rules]);
-  const data = useMemo(() => (rules ? { ...rules, local_programs: programs || rules.local_programs } : null), [rules, programs]);
+  // 승인 제도를 받기 전에는 계산하지 않는다 (먼저 rules.json으로 계산하면 DB에서 중지한 제도가 잠깐 보였다 사라진다)
+  const data = useMemo(() => (rules && programs ? { ...rules, local_programs: programs } : null), [rules, programs]);
   const engine = useMemo(() => (data ? createEngine(data) : null), [data]);
   const [params, setParams] = useSearchParams();
   const [editing, setEditing] = useState(false); // false 또는 수정을 시작할 질문 번호

@@ -24,6 +24,7 @@ export function SessionProvider({ children }) {
     if (!authUser) { setUser(null); return; }
     const { data, error: e } = await sb.from("profiles").select("name, role, region, sido").eq("id", authUser.id).single();
     if (e || !data) { setError("권한 정보가 없는 계정이에요. 시스템 관리자에게 권한을 요청하세요."); setUser(null); return; }
+    setError("");
     setUser({ id: authUser.id, email: authUser.email, ...data });
   }, []);
 
@@ -31,11 +32,15 @@ export function SessionProvider({ children }) {
     let off = () => {};
     (async () => {
       if (mode === "supabase") {
-        const sb = await supabaseClient();
-        const { data } = await sb.auth.getSession();
-        await loadProfile(sb, data.session?.user);
-        const sub = sb.auth.onAuthStateChange((_e, s) => { loadProfile(sb, s?.user); });
-        off = () => sub.data.subscription.unsubscribe();
+        try {
+          const sb = await supabaseClient();
+          const { data } = await sb.auth.getSession();
+          await loadProfile(sb, data.session?.user);
+          const sub = sb.auth.onAuthStateChange((_e, s) => { loadProfile(sb, s?.user).catch(() => setError("서버에 연결하지 못했어요.")); });
+          off = () => sub.data.subscription.unsubscribe();
+        } catch {
+          setError("서버에 연결하지 못했어요. 인터넷 연결을 확인하고 새로고침해 주세요.");
+        }
       } else {
         try { setUser(DEMO_USERS.find((u) => u.id === sessionStorage.getItem(SESSION_KEY)) || null); } catch { /* 저장 불가 */ }
       }
@@ -47,9 +52,13 @@ export function SessionProvider({ children }) {
   const signIn = async (arg) => {
     setError("");
     if (mode === "supabase") {
-      const sb = await supabaseClient();
-      const { error: e } = await sb.auth.signInWithPassword({ email: arg.email, password: arg.password });
-      if (e) setError("이메일이나 비밀번호가 맞지 않아요.");
+      try {
+        const sb = await supabaseClient();
+        const { error: e } = await sb.auth.signInWithPassword({ email: arg.email, password: arg.password });
+        if (e) setError(e.status === 400 ? "이메일이나 비밀번호가 맞지 않아요." : "로그인하지 못했어요. 잠시 뒤 다시 해 주세요.");
+      } catch {
+        setError("서버에 연결하지 못했어요. 인터넷 연결을 확인해 주세요.");
+      }
       return;
     }
     const u = DEMO_USERS.find((x) => x.id === arg.demoId);

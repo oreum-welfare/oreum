@@ -41,9 +41,9 @@ export async function publishedPrograms(data) {
       const sb = await supabaseClient();
       const { data: rows, error } = await sb.from("local_programs").select("*").eq("status", "승인");
       if (error) throw error;
-      // DB에 제도가 들어 있으면 DB만 믿는다. 기본 제도를 섞으면 DB에서 '중지'한 제도가 계속 계산된다
-      // (로그인 없는 계산기는 RLS 때문에 '승인' 행만 보여서 중지 여부를 알 수 없다). 아직 seed 전이면 기본 제도.
-      return rows.length ? rows : base;
+      // DB에 연결되면 DB만 믿는다. 기본 제도를 섞으면 DB에서 '중지'한 제도가 계속 계산된다
+      // (로그인 없는 계산기는 RLS 때문에 '승인' 행만 보여서 중지 여부를 알 수 없다). 승인 제도가 0건이면 0건 그대로.
+      return rows;
     } catch {
       return base; // 연결이 안 되면 저장소에 들어 있는 승인 제도만
     }

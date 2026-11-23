@@ -17,7 +17,7 @@ if (!url || !key) {
 }
 const rules = JSON.parse(readFileSync(join(root, "data/rules.json"), "utf8"));
 const drafts = JSON.parse(readFileSync(join(root, "pipeline/local_drafts.json"), "utf8")).drafts;
-const cols = ["id", "name", "region", "sido", "kind", "conditions", "apply_checks", "amount", "amount_text", "note", "source", "origin", "text", "status", "approved_by", "approved_at", "effective_from"];
+const cols = ["id", "name", "region", "sido", "kind", "conditions", "apply_checks", "facts","amount", "amount_text", "note", "source", "origin", "text", "status", "approved_by", "approved_at", "effective_from"];
 const rows = [...rules.local_programs.map((p) => ({ ...p, origin: p.origin || { type: "rules" } })), ...drafts]
   .map((p) => Object.fromEntries(cols.map((c) => [c, p[c] ?? (c === "apply_checks" ? [] : null)])));
 
