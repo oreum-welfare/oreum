@@ -96,7 +96,6 @@ export default function Chart({ sim, inc, cmp, cliffs, focus }) {
   const y = (v) => T + (1 - (v - (minY - pad)) / (maxY + pad - (minY - pad))) * PLOT_H;
   const path = xs.slice(i0, i1 + 1).map((v, k) => `${k ? "L" : "M"}${x(v).toFixed(1)},${y(ys[i0 + k]).toFixed(1)}`).join("");
   const zoomed = x0 > 0 || x1 < maxX;
-  const nearNext = next && nextDrop > 0 && next.income - after <= maxX * 0.25;
 
   const label = `월 ${manwon(inc)} 원일 때 월급과 혜택을 합친 돈은 ${manwon(ys[nowI])} 원` +
     (focus ? `. 월 ${manwon(focus.income)} 원부터 생활비가 ${drop > 0 ? `${manwon(drop)} 원 ` : ""}줄고` + (focus.recover != null ? `, 월 ${manwon(focus.recover)} 원에서 줄기 전 수준을 되찾아요` : "") : "");
@@ -145,22 +144,40 @@ export default function Chart({ sim, inc, cmp, cliffs, focus }) {
         <text x={W / 2} y={BASE + 16} fontSize="11" fontWeight="600" fill="#6b7684" textAnchor="middle">월급 →</text>
       </svg>
 
-      <div className="chart-points">
-        <p className="cp-title">주요 변화 지점</p>
-        <ul>
-          <li><i style={{ background: PIN.now }} /><b>현재 월급</b><span>월 {manwon(inc)} 원 · 생활비 {manwon(ys[nowI])} 원</span></li>
-          {focus && <li><i style={{ background: PIN.cliff }} /><b>감소 시작</b><span>월 {manwon(focus.income)} 원 · 생활비 <em className="bad">{drop > 0 ? `${manwon(drop)} 원 ` : ""}감소</em></span></li>}
-          {focus?.recover != null && <li><i style={{ background: PIN.recover }} /><b>회복</b><span>월 {manwon(focus.recover)} 원 · 줄기 전만큼 돌아와요</span></li>}
-        </ul>
-        {(cmpI !== nowI || nearNext) && <>
-          <p className="cp-title sub">추가 비교</p>
-          <ul className="cp-extra">
-            {cmpI !== nowI && <li><i className="hollow" />비교 소득 월 {manwon(cmp)} 원 · 생활비 {manwon(ys[cmpI])} 원</li>}
-            {nearNext && <li><i className="dash" />그다음 월 {manwon(next.income)} 원에서 한 번 더 {manwon(nextDrop)} 원 줄어요
-              {zoom && !full && <> · <button type="button" className="link-btn" onClick={() => setFull(true)}>전체 보기</button></>}</li>}
-          </ul>
-        </>}
-      </div>
     </figure>
+  );
+}
+
+// 주요 변화 지점: 그래프의 이름표(현재 월급·감소 시작·회복)를 짧은 정보 행으로. 결과 화면 오른쪽 요약 아래에 둔다
+export function ChangePoints({ sim, inc, cmp, cliffs, focus, curLoss }) {
+  const xs = sim.incomes, ys = sim.disposable;
+  const maxX = xs[xs.length - 1] || 1;
+  const at = (v) => Math.min(xs.length - 1, Math.max(0, Math.round((v / maxX) * (xs.length - 1))));
+  const nowI = at(inc), cmpI = at(cmp);
+  const cliffI = focus ? at(focus.income) : null;
+  const drop = cliffI != null && cliffI > 0 ? ys[cliffI - 1] - ys[cliffI] : 0;
+  const after = focus ? Math.max(focus.recover ?? focus.income, focus.income) : null;
+  const next = focus ? cliffs.find((c) => c.income > after) : null;
+  const nextDrop = next && next.index > 0 ? ys[next.index - 1] - ys[next.index] : 0;
+  const nearNext = next && nextDrop > 0 && next.income - after <= maxX * 0.25;
+  const rows = [
+    { key: "now", at: inc, el: <li key="now"><i style={{ background: PIN.now }} /><b>현재 월급</b><span>월 {manwon(inc)} 원 · 생활비 {manwon(ys[nowI])} 원{curLoss ? <> · <em className="bad">줄기 전보다 {manwon(curLoss.shortfall)} 원 적어요</em></> : null}</span></li> },
+    focus && { key: "cliff", at: focus.income, el: <li key="cliff"><i style={{ background: PIN.cliff }} /><b>감소 시작</b><span>월 {manwon(focus.income)} 원 · 생활비 <em className="bad">{drop > 0 ? `${manwon(drop)} 원 ` : ""}감소</em></span></li> },
+    focus?.recover != null && { key: "rec", at: focus.recover, el: <li key="rec"><i style={{ background: PIN.recover }} /><b>회복</b><span>월 {manwon(focus.recover)} 원 · 줄기 전만큼 돌아와요</span></li> },
+  ].filter(Boolean).sort((a, b) => a.at - b.at);
+  return (
+    <section className="chart-points" aria-label="주요 변화 지점">
+      <p className="cp-title">주요 변화 지점</p>
+      <ul>{rows.map((r) => r.el)}</ul>
+      {!focus && <p className="cp-calm">앞으로 생활비가 줄어드는 구간은 없어요. 소득이 늘수록 생활비도 늘어나요.</p>}
+      {focus && focus.recover == null && <p className="cp-calm">계산 범위 안에서는 줄기 전만큼 돌아오지 않아요.</p>}
+      {(cmpI !== nowI || nearNext) && <>
+        <p className="cp-title sub">추가 비교</p>
+        <ul className="cp-extra">
+          {cmpI !== nowI && <li><i className="hollow" />비교 소득 월 {manwon(cmp)} 원 · 생활비 {manwon(ys[cmpI])} 원</li>}
+          {nearNext && <li><i className="dash" />그다음 월 {manwon(next.income)} 원에서 한 번 더 {manwon(nextDrop)} 원 줄어요</li>}
+        </ul>
+      </>}
+    </section>
   );
 }

@@ -291,14 +291,16 @@ a { color: inherit; }
   .user .mobile-bottom { display: none; }
   .user .footer { padding-bottom: 48px; }
 
-  /* 왼쪽 그래프 ↔ 오른쪽 요약·혜택을 비슷한 높이로, 아래 한 줄 전체에 넘는 방법·지역·기준 */
-  .user .r-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); grid-template-rows: auto 1fr auto; grid-template-areas: "chart main" "chart side" "more more"; column-gap: 48px; align-items: start; padding-top: 16px; }
+  /* 왼쪽 그래프 ↔ 오른쪽 요약·변화 지점·넘는 방법을 비슷한 높이로, 아래 전체 너비에 혜택·이유, 지역·기준 */
+  .user .r-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); grid-template-areas: "chart main" "side side" "more more"; column-gap: 48px; align-items: start; padding-top: 16px; }
   .user .r-main { grid-area: main; }
-  .user .r-side { grid-area: side; margin-top: 20px; }
+  .user .r-side { grid-area: side; margin-top: 24px; }
+  .user .cards.r-side > .card-link.wide { grid-column: auto; }
   .user .r-chart { grid-area: chart; align-self: stretch; background: var(--surface); border-radius: 24px; padding: 28px 28px 24px; }
   .user .r-more { grid-area: more; margin-top: 8px; }
-  .user .r-more .cards { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr); }
-  .user .r-more .cards > .card-link.wide { grid-column: auto; }
+  .user .r-more { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 10px; align-items: stretch; }
+  .user .r-more .cards { margin-top: 0; }
+  .user .r-more .share { margin-top: 0; }
   .user .r-chart .chart { margin-top: 0 !important; }
   .user .r-chart .compare { background: var(--bg); }
   .user .desk-actions { display: flex; gap: 8px; margin-top: 24px; }
@@ -360,7 +362,8 @@ a { color: inherit; }
 .user .chart-title { font-size: 17px; font-weight: 700; margin: 0; letter-spacing: -0.02em; }
 .user .chart-head .link-btn { font-size: 13px; color: var(--text-3); white-space: nowrap; }
 .user .chart-sub { font-size: 13px; color: var(--text-3); margin: 4px 0 12px; }
-.user .chart-points { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+.user .chart-points { margin-top: 20px; padding: 16px 18px; background: var(--surface); border-radius: var(--radius); }
+.user .cp-calm { font-size: 14px; color: var(--brand-ink); margin: 8px 0 0; font-weight: 600; }
 .user .cp-title { font-size: 13px; font-weight: 700; color: var(--text-2); margin: 0 0 6px; }
 .user .cp-title.sub { margin-top: 12px; color: var(--text-3); font-weight: 600; }
 .user .chart-points ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
@@ -388,3 +391,14 @@ a { color: inherit; }
 .user .card-link .cl-preview small { font-size: 12px; color: var(--text-3); }
 /* 넘는 방법: 이 화면의 핵심 행동 */
 .user .card-link.path.key { border: 1.5px solid var(--brand); }
+/* 복지 절벽 넘는 방법: 결과 화면의 핵심 행동 (초록 바탕으로 크게) */
+.user .path-cta { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; width: 100%; margin-top: 12px; padding: 20px; text-align: left;
+  border: 0; border-radius: var(--radius); background: var(--brand-strong); color: #fff; cursor: pointer; box-shadow: 0 4px 14px rgba(75, 164, 104, 0.25); }
+.user .path-cta:hover { filter: brightness(0.96); }
+.user .path-cta .pc-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.user .path-cta .pc-title { font-size: 15px; font-weight: 700; opacity: 0.95; }
+.user .path-cta b { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.25; }
+.user .path-cta .pc-sub { font-size: 13px; opacity: 0.9; word-break: keep-all; }
+.user .path-cta .pc-go { flex: none; font-size: 14px; font-weight: 700; background: rgba(255, 255, 255, 0.2); padding: 8px 12px; border-radius: 999px; white-space: nowrap; }
+.user .path-cta.calm { background: var(--brand-soft); color: var(--brand-ink); box-shadow: none; }
+.user .path-cta.calm .pc-go { background: #fff; }
