@@ -306,3 +306,4 @@ a { color: inherit; }
 .screen .field .select { margin-left: auto; }
 .screen .field label.field-name { white-space: nowrap; margin-right: 12px; }
 .kv .tag { display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 6px; background: var(--brand-soft); color: var(--brand-ink); font-size: 11px; font-weight: 600; vertical-align: middle; }
+.chart-zoom { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 13px; color: var(--text-3, #8b95a1); margin-bottom: 4px; }
