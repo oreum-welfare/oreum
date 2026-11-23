@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Sheet } from "../ui/index.jsx";
 import { applyInfo } from "./apply.js";
 import { freshnessText, useFreshness } from "../lib/freshness.js";
@@ -13,10 +13,27 @@ const SOURCES = [
   ["금액 근거", "보건복지부·국토교통부 고시, 한국에너지공단 지침, 국세청, 지자체 조례·추진계획, 2024 건강보험통계"],
 ];
 
+// PC에서 왼쪽 그래프 칸을 고정할 때, 칸이 화면보다 길면 아래 끝(슬라이더)까지 보인 뒤에 고정되도록 top을 맞춘다
+function useStickyFit(gap = 72) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const fit = () => { el.style.top = `${Math.min(gap, window.innerHeight - el.offsetHeight - 16)}px`; };
+    const ro = new ResizeObserver(fit);
+    ro.observe(el);
+    window.addEventListener("resize", fit);
+    fit();
+    return () => { ro.disconnect(); window.removeEventListener("resize", fit); };
+  }, [gap]);
+  return ref;
+}
+
 // 결과 화면: 숫자 하나 → 조심할 곳 한 줄 → 다시 좋아지는 곳 → 그래프 → 비교 → 자세히(시트)
 export default function Result({ data, hh, income, r, includeInkind, setIncludeInkind, setCompare, adoptCompare, onEdit, onRestart }) {
   const freshness = freshnessText(useFreshness()); // 매일 자동 확인 상태 (지자체 제도·중앙 고시)
   const [sheet, setSheet] = useState(null);
+  const chartRef = useStickyFit();
   const close = useCallback(() => setSheet(null), []);
   const { inc, total, benefits, cliff, curLoss, cmp, diff, maxIncome } = r;
   const hasAssets = hh.housingAsset + hh.financialAsset + hh.debt > 0;
@@ -75,7 +92,7 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
         </button>
         </div>
 
-        <div className="r-chart">
+        <div className="r-chart" ref={chartRef}>
         {/* 4. 그래프 */}
         <Chart sim={r.sim} inc={inc} cmp={cmp} cliffs={r.cliffs}
           focus={focus} />
