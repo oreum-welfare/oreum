@@ -316,3 +316,15 @@ a { color: inherit; }
 .user .tag.ai { background: #eef3ff; color: #3b5bdb; }
 .user .item-detail .prov { font-size: 13px; color: var(--text-3, #6b7684); margin: 0 0 6px; }
 .user .ai-note { font-size: 13px; }
+/* 왜 이 금액? */
+.user .why { background: var(--surface, #f9fafb); border-radius: 12px; padding: 10px 12px; margin: 8px 0; }
+.user .why-title { font-size: 13px; font-weight: 700; margin: 0 0 6px; color: var(--text); }
+.user .why-table { width: 100%; border-collapse: collapse; font-size: 13px; color: var(--text-2); }
+.user .why-table td { padding: 3px 0; vertical-align: top; }
+.user .why-table .why-mark { width: 18px; color: var(--text-3, #8b95a1); font-weight: 700; }
+.user .why-table .why-val { text-align: right; white-space: nowrap; padding-left: 8px; font-variant-numeric: tabular-nums; }
+.user .why-table tr.total td { border-top: 1px solid var(--line, #e5e8eb); padding-top: 6px; font-weight: 700; color: var(--text); }
+.user .why-table tr.cond .why-mark { color: var(--brand-strong, #3d9a5d); }
+.user .why-table small { color: var(--text-3, #8b95a1); margin-left: 4px; }
+.user .why-sub { margin-top: 6px; font-size: 13px; }
+.user .why-sub summary { cursor: pointer; color: var(--text-3, #6b7684); }

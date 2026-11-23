@@ -158,7 +158,7 @@ function BenefitsSheet({ data, benefits, total, inc, soonLost, hasAssets, includ
                   <small>{b.level} · {b.kind === "cash" ? "현금" : b.kind === "inkind" ? "감면·현물" : "자격·융자"}</small></span>
                 <span className="item-amt">{b.kind === "access" ? "자격" : won(b.monthly)}</span>
               </button>
-              {open === b.id && <div className="item-detail"><p className="prov">{pv.text}</p><p>{b.note}</p><Apply id={b.id} soon={soonLost.has(b.name)} /><Evidence data={data} id={b.id} hasAssets={hasAssets} /></div>}
+              {open === b.id && <div className="item-detail"><p className="prov">{pv.text}</p><WhyAmount steps={b.steps} /><p>{b.note}</p><Apply id={b.id} soon={soonLost.has(b.name)} /><Evidence data={data} id={b.id} hasAssets={hasAssets} /></div>}
             </li>
           );
         })}
@@ -196,6 +196,35 @@ function ShareBox() {
 }
 
 // 신청 안내: 어디서·어떻게, 문의처, 복지로 바로가기
+// "왜 이 금액?": 계산 단계를 위에서 아래로 (기준선 − 소득인정액 = 금액 처럼). 소득인정액 계산은 접어서 따로
+const MARK = { "-": "−", "+": "+", "=": "=", x: "×", ok: "✓" };
+function StepRows({ rows }) {
+  return (
+    <table className="why-table">
+      <tbody>
+        {rows.map((r, i) => (
+          <tr key={i} className={r.mark === "=" ? "total" : r.mark === "ok" ? "cond" : ""}>
+            <td className="why-mark">{MARK[r.mark] || ""}</td>
+            <td>{r.label}{r.mark === "ok" && typeof r.value === "number" ? <small> 이하라서 해당</small> : null}</td>
+            <td className="why-val">{typeof r.value === "number" ? won(Math.round(r.value)) : r.value}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+function WhyAmount({ steps }) {
+  if (!steps?.length) return null;
+  const rows = steps.filter((s) => !s.sub), subs = steps.filter((s) => s.sub);
+  return (
+    <div className="why">
+      <p className="why-title">왜 이 금액?</p>
+      <StepRows rows={rows} />
+      {subs.map((s) => <details key={s.sub} className="why-sub"><summary>{s.sub}</summary><StepRows rows={s.rows} /></details>)}
+    </div>
+  );
+}
+
 function Apply({ id, soon }) {
   const a = applyInfo(id);
   return (

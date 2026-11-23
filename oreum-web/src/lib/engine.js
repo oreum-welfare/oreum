@@ -101,14 +101,17 @@ export function createEngine(data) {
     return { basic, pension, eitcFactor };
   }
 
-  function evaluate(hh, earned) {
+  // explain=true면 혜택마다 '왜 이 금액?' 계산 단계(steps)를 붙인다 (결과 화면용. 그래프 계산은 false라 빠르다)
+  function evaluate(hh, earned, explain = false) {
     hh = normalize(hh);
     const d = derive(hh);
     const size = d.size;
     const m = medianIncome(size);
     const region = data.regions[hh.region];
     const out = [];
-    const add = (id, name, level, kind, monthly, note) => out.push({ id, name, level, kind, monthly, note });
+    const add = (id, name, level, kind, monthly, note, steps) => out.push(explain && steps ? { id, name, level, kind, monthly, note, steps: steps() } : { id, name, level, kind, monthly, note });
+    // 단계 한 줄: [설명, 금액(원) 또는 글, 표시]  표시: "=" 결과, "-" 빼기, "+" 더하기, "x" 곱하기, "ok"/"no" 조건
+    const S = (label, value, mark = "") => ({ label, value, mark });
     const asset = assetIncomes(hh, region);
 
     // 기초연금 (소득인정액 계산에 들어가므로 먼저)
@@ -121,7 +124,16 @@ export function createEngine(data) {
         bp = d.seniors === 2
           ? 2 * P.basic_pension_amount * (1 - P.basic_pension_couple_cut)
           : P.basic_pension_amount;
-        add("basic_pension", "기초연금", "중앙", "cash", bp, "소득인정액이 선정기준액 이하");
+        add("basic_pension", "기초연금", "중앙", "cash", bp, "소득인정액이 선정기준액 이하", () => [
+          S("월급에서 근로소득 공제 뺀 금액 × 70%", 0.7 * Math.max(0, earned - P.basic_pension_earned_deduction)),
+          S(`(근로소득 공제 월 ${won(P.basic_pension_earned_deduction)}원)`, ""),
+          S("재산의 소득환산액 (기초연금 방식)", asset.pension, "+"),
+          S("기초연금 소득인정액", evalIncome, "="),
+          S(`선정기준액 (${couple ? "부부" : "단독"} 가구)`, line, "ok"),
+          S("기준연금액", P.basic_pension_amount),
+          ...(d.seniors === 2 ? [S(`부부가 함께 받으면 각각 ${Math.round(P.basic_pension_couple_cut * 100)}% 감액 × 2명`, "", "x")] : []),
+          S("기초연금", bp, "="),
+        ]);
       }
     }
 
@@ -141,15 +153,35 @@ export function createEngine(data) {
     else if (sd && (hh.age >= sd.age_min || d.disabled)) flat = sd.flat;
     const evalEarned = Math.max(0, earned - flat);
     const ri = evalEarned * (1 - P.earned_deduction_rate) + asset.basic + bp + dpBasic;
+    const riSteps = () => [
+      S("월급 (근로·사업소득)", earned),
+      ...(flat ? [S(hh.age <= (yd?.age_max ?? 0) ? "청년 추가 공제" : "노인·장애인 추가 공제", flat, "-")] : []),
+      S(`근로소득 공제 ${Math.round(P.earned_deduction_rate * 100)}%`, evalEarned * P.earned_deduction_rate, "-"),
+      ...(asset.basic ? [S("재산의 소득환산액", asset.basic, "+")] : []),
+      ...(bp ? [S("기초연금 (소득으로 봄)", bp, "+")] : []),
+      ...(dpBasic ? [S("장애인연금 기초급여 (소득으로 봄)", dpBasic, "+")] : []),
+      S("소득인정액", ri, "="),
+    ];
 
     const sLine = saengLine(size);
     const saeng = Math.max(0, sLine - ri);
-    if (saeng > 0) add("saeng", "생계급여", "중앙", "cash", saeng, "중위 32% − 소득인정액 (기초연금은 소득으로 차감됨)");
+    if (saeng > 0) add("saeng", "생계급여", "중앙", "cash", saeng, "중위 32% − 소득인정액 (기초연금은 소득으로 차감됨)", () => [
+      S(`생계급여 선정기준 (기준 중위소득 32%, ${size}인)`, sLine),
+      S("소득인정액", ri, "-"),
+      S("생계급여", saeng, "="),
+      { sub: "소득인정액은 이렇게 계산했어요", rows: riSteps() },
+    ]);
 
     // 의료급여: 일반 근로소득공제 30%는 생계·주거·교육급여에만 적용. 의료급여는 유형별 공제(34세 이하·65세 이상·장애인 등)만 (2026 사업안내)
     const riMedical = (flat ? evalEarned * (1 - P.earned_deduction_rate) : earned) + asset.basic + bp + dpBasic;
     const medical = riMedical <= 0.4 * m;
-    if (medical) add("medical", "의료급여", "중앙", "inkind", P.medical_value_per_person * size, "소득인정액 ≤ 중위 40%, 건강보험 전환 시 본인부담 추정 1인당 월 46,450원");
+    if (medical) add("medical", "의료급여", "중앙", "inkind", P.medical_value_per_person * size, "소득인정액 ≤ 중위 40%, 건강보험 전환 시 본인부담 추정 1인당 월 46,450원", () => [
+      S("소득인정액 (의료급여 방식: 일반 30% 공제 없음)", riMedical),
+      S(`의료급여 선정기준 (기준 중위소득 40%, ${size}인)`, 0.4 * m, "ok"),
+      S("의료비 본인부담을 덜어 주는 가치 (1인당 추정)", P.medical_value_per_person),
+      S(`× ${size}명`, "", "x"),
+      S("의료급여 가치 (월, 추정)", P.medical_value_per_person * size, "="),
+    ]);
 
     // 주거급여: 기준선 이하여도 자기부담분이 기준임대료보다 크면 지급액이 0원 → 수급자로 보지 않는다
     let jugeoElig = false;
@@ -159,14 +191,31 @@ export function createEngine(data) {
       const jugeo = Math.max(0, rent - deduct);
       if (jugeo > 0) {
         jugeoElig = true;
-        add("jugeo", "주거급여", "중앙", "cash", jugeo, `소득인정액 ≤ 중위 48%, ${region.rent_grade} 기준임대료 (임차 가정)`);
+        add("jugeo", "주거급여", "중앙", "cash", jugeo, `소득인정액 ≤ 중위 48%, ${region.rent_grade} 기준임대료 (임차 가정)`, () => [
+          S("소득인정액", ri),
+          S(`주거급여 선정기준 (기준 중위소득 48%, ${size}인)`, jugeoLine(size), "ok"),
+          S(`기준임대료 (${region.rent_grade}, ${size}인)`, rent),
+          deduct ? S(`자기부담: (소득인정액 − 생계급여 기준 ${won(Math.round(sLine))}원) × ${Math.round(P.jugeo_self_share * 100)}%`, deduct, "-")
+            : S("소득인정액이 생계급여 기준 이하라 자기부담 없음", 0, "-"),
+          S("주거급여 (월세를 낸다고 가정)", jugeo, "="),
+          { sub: "소득인정액은 이렇게 계산했어요", rows: riSteps() },
+        ]);
       }
     }
 
     const eduElig = ri <= 0.5 * m && d.schoolKids > 0;
     if (eduElig) {
       const edu = (hh.elem * P.edu_annual.elem + hh.middle * P.edu_annual.middle + hh.high * P.edu_annual.high) / 12;
-      add("edu", "교육급여", "중앙", "cash", edu, "소득인정액 ≤ 중위 50%, 정액");
+      add("edu", "교육급여", "중앙", "cash", edu, "소득인정액 ≤ 중위 50%, 정액", () => [
+        S("소득인정액", ri),
+        S(`교육급여 선정기준 (기준 중위소득 50%, ${size}인)`, 0.5 * m, "ok"),
+        ...(hh.elem ? [S(`초등학생 ${hh.elem}명 × 연 ${won(P.edu_annual.elem)}원`, hh.elem * P.edu_annual.elem)] : []),
+        ...(hh.middle ? [S(`중학생 ${hh.middle}명 × 연 ${won(P.edu_annual.middle)}원`, hh.middle * P.edu_annual.middle, "+")] : []),
+        ...(hh.high ? [S(`고등학생 ${hh.high}명 × 연 ${won(P.edu_annual.high)}원`, hh.high * P.edu_annual.high, "+")] : []),
+        S("÷ 12개월", "", "x"),
+        S("교육급여 (월 환산)", edu, "="),
+        { sub: "소득인정액은 이렇게 계산했어요", rows: riSteps() },
+      ]);
     }
 
     const recipient = saeng > 0 || medical || jugeoElig || eduElig;
@@ -175,22 +224,35 @@ export function createEngine(data) {
     const trait = d.seniors > 0 || hh.infants > 0 || d.disabled || hh.singleParent || d.children >= 2;
     if (recipient && trait) {
       add("energy", "에너지바우처", "중앙", "inkind", P.energy_annual[Math.min(size, 4)] / 12,
-        "기초수급자 + 노인·영유아·장애인·한부모·다자녀 등");
+        "기초수급자 + 노인·영유아·장애인·한부모·다자녀 등", () => [
+          S("기초생활 수급자 + 노인·영유아·장애인·한부모·다자녀 가구", "", "ok"),
+          S(`${Math.min(size, 4)}인${size >= 4 ? " 이상" : ""} 가구 연 지원액`, P.energy_annual[Math.min(size, 4)]),
+          S("÷ 12개월", "", "x"),
+          S("에너지바우처 (월 환산)", P.energy_annual[Math.min(size, 4)] / 12, "="),
+        ]);
     }
 
     if (saeng > 0 || medical) {
-      add("telecom", "이동통신요금 감면", "중앙", "inkind", P.telecom_monthly.saeng_medical, "생계·의료급여 수급자 (월 최대)");
+      add("telecom", "이동통신요금 감면", "중앙", "inkind", P.telecom_monthly.saeng_medical, "생계·의료급여 수급자 (월 최대)", () => [
+        S("생계·의료급여 수급자", "", "ok"), S("월 최대 감면액", P.telecom_monthly.saeng_medical, "=")]);
     } else if (recipient || nearPoor) {
-      add("telecom", "이동통신요금 감면", "중앙", "inkind", P.telecom_monthly.housing_edu_nearpoor, "주거·교육급여 수급자, 차상위 (월 최대)");
+      add("telecom", "이동통신요금 감면", "중앙", "inkind", P.telecom_monthly.housing_edu_nearpoor, "주거·교육급여 수급자, 차상위 (월 최대)", () => [
+        S("주거·교육급여 수급자 또는 차상위", "", "ok"), S("월 최대 감면액", P.telecom_monthly.housing_edu_nearpoor, "=")]);
     } else if (bp > 0 || d.disabled) {
-      add("telecom", "이동통신요금 감면", "중앙", "inkind", P.telecom_monthly.pension_disabled, "기초연금 수급자, 장애인 (월 최대)");
+      add("telecom", "이동통신요금 감면", "중앙", "inkind", P.telecom_monthly.pension_disabled, "기초연금 수급자, 장애인 (월 최대)", () => [
+        S("기초연금 수급자 또는 장애인", "", "ok"), S("월 최대 감면액", P.telecom_monthly.pension_disabled, "=")]);
     }
 
     // 문화누리카드: 6세 이상 기초수급자·차상위, 1인당 연 15만 원 (영유아 제외)
     if (P.munhwa && (recipient || nearPoor)) {
       const n = 1 + (hh.spouse ? 1 : 0) + hh.elem + hh.middle + hh.high;
       add("munhwa", "문화누리카드", "중앙", "inkind", (P.munhwa.annual_per_person * n) / 12,
-        `기초수급자·차상위, 6세 이상 ${n}명 × 연 ${P.munhwa.annual_per_person.toLocaleString("ko-KR")}원`);
+        `기초수급자·차상위, 6세 이상 ${n}명 × 연 ${P.munhwa.annual_per_person.toLocaleString("ko-KR")}원`, () => [
+          S("기초생활 수급자 또는 차상위", "", "ok"),
+          S(`6세 이상 ${n}명 × 연 ${won(P.munhwa.annual_per_person)}원`, P.munhwa.annual_per_person * n),
+          S("÷ 12개월", "", "x"),
+          S("문화누리카드 (월 환산)", (P.munhwa.annual_per_person * n) / 12, "="),
+        ]);
     }
 
     // 장애인연금 = 기초급여 + 부가급여(소득계층별)
@@ -208,16 +270,37 @@ export function createEngine(data) {
     const typ = eitcType(hh, d);
     const annual = earned * 12;
     const e = eitc(annual, typ) * asset.eitcFactor;
-    if (e > 0) add("eitc", "근로장려금", "중앙", "cash", e / 12, "연 지급액을 월로 환산 (전년도 소득 기준 지급)");
+    if (e > 0) add("eitc", "근로장려금", "중앙", "cash", e / 12, "연 지급액을 월로 환산 (전년도 소득 기준 지급)", () => {
+      const [a, b2, c2, mx] = P.eitc[typ];
+      const band = annual < a ? `점증 구간: 최대액 × 연소득 ÷ ${won(a)}원` : annual <= b2 ? "평탄 구간: 최대액 그대로" : `점감 구간: 최대액 × (${won(c2)}원 − 연소득) ÷ ${won(c2 - b2)}원`;
+      return [
+        S("연 근로소득 (월급 × 12)", annual),
+        S(`가구 유형: ${typ === "single" ? "단독" : typ === "one" ? "홑벌이" : "맞벌이"} · 최대 연 ${won(mx)}원`, ""),
+        S(band, eitc(annual, typ)),
+        ...(asset.eitcFactor < 1 ? [S(`재산 요건 (재산 ${won(1.7e8)}원 이상이면 50%)`, "", "x")] : []),
+        S("÷ 12개월", "", "x"),
+        S("근로장려금 (월 환산)", e / 12, "="),
+      ];
+    });
     const c = ctc(annual, typ, d.children) * asset.eitcFactor;
-    if (c > 0) add("ctc", "자녀장려금", "중앙", "cash", c / 12, "연 지급액을 월로 환산");
+    if (c > 0) add("ctc", "자녀장려금", "중앙", "cash", c / 12, "연 지급액을 월로 환산", () => [
+      S("연 근로소득 (월급 × 12)", annual),
+      S(`자녀 ${d.children}명 × 최대 연 ${won(P.ctc_max_per_child)}원`, P.ctc_max_per_child * d.children),
+      ...(annual > P.ctc_full_until[typ] ? [S(`연소득이 ${won(P.ctc_full_until[typ])}원을 넘어 줄어든 금액`, ctc(annual, typ, d.children), "=")] : []),
+      S("÷ 12개월", "", "x"),
+      S("자녀장려금 (월 환산)", c / 12, "="),
+    ]);
 
     // 한부모가족 아동양육비: 소득인정액(근로소득 30% 공제) ≤ 중위 65%, 18세 미만 자녀 1인당 월 23만 원
     if (P.sp_child && hh.singleParent && d.children > 0) {
       const riSp = earned * (1 - P.earned_deduction_rate) + asset.basic;
       if (riSp <= (P.sp_child.pct_median / 100) * m) {
         add("sp_child", "한부모 아동양육비", "중앙", "cash", P.sp_child.monthly_per_child * d.children,
-          `한부모 + 소득인정액 ≤ 중위 ${P.sp_child.pct_median}%, 자녀 ${d.children}명 × 월 ${P.sp_child.monthly_per_child.toLocaleString("ko-KR")}원`);
+          `한부모 + 소득인정액 ≤ 중위 ${P.sp_child.pct_median}%, 자녀 ${d.children}명 × 월 ${P.sp_child.monthly_per_child.toLocaleString("ko-KR")}원`, () => [
+            S("소득인정액 (월급의 70% + 재산 환산)", riSp),
+            S(`한부모 아동양육비 기준 (기준 중위소득 ${P.sp_child.pct_median}%, ${size}인)`, (P.sp_child.pct_median / 100) * m, "ok"),
+            S(`자녀 ${d.children}명 × 월 ${won(P.sp_child.monthly_per_child)}원`, P.sp_child.monthly_per_child * d.children, "="),
+          ]);
       }
     }
 
@@ -240,12 +323,27 @@ export function createEngine(data) {
       if (!amt) continue; // 계산식이 잘못되면 계산에서 뺀다 (관리자 화면에서 승인 전에 막지만 한 번 더)
       const { monthly, vars } = amt;
       const later = (prog.conditions || []).filter((_, i) => skip.has(i)).map((c) => c.value);
-      add(prog.id, prog.name, "지자체", prog.kind, monthly, fillNote(prog.note, vars) + (later.length ? ` · 신청할 때 확인: ${later.join(", ")}` : ""));
+      add(prog.id, prog.name, "지자체", prog.kind, monthly, fillNote(prog.note, vars) + (later.length ? ` · 신청할 때 확인: ${later.join(", ")}` : ""), () => [
+        S("조건 충족: " + (prog.conditions || []).filter((_, i) => !skip.has(i)).map(condText).join(" · "), "", "ok"),
+        ...(prog.amount.type === "formula" ? [S(`계산식: ${prog.amount.expr}`, ""), ...(prog.amount.explanation ? [S(prog.amount.explanation, "")] : [])] : []),
+        S(`${prog.name} (월)`, monthly, "="),
+      ]);
     }
     return out;
   }
 
   // ---- 지자체 제도 (데이터) ----
+  // '왜 이 금액?'에 쓰는 조건 문장 (예: "나이 65 이상", "거주 지역 경상북도 경산시")
+  const FIELD_KO = { age: "나이", household_size: "가구원 수", income_recognized_pct_median: "소득인정액(기준 중위소득 %)", income_recognized_won: "소득인정액",
+    total_income_annual: "연간 총소득", assets: "재산", recipient_status: "수급 자격", basic_pension_recipient: "기초연금 받음", residence_months: "거주 기간(개월)",
+    child_count: "자녀 수", child_birth_order: "자녀 출생 순위", newborn: "신생아", school_enrolled: "초·중·고 재학", disabled: "장애인", single_parent: "한부모",
+    senior_in_household: "65세 이상 가구원", nhis_premium: "건강보험료", third_child_7to18: "셋째 이상 자녀(7~18세)", residence_region: "거주 지역" };
+  const OP_KO = { "<=": "이하", "<": "미만", ">=": "이상", ">": "초과", "==": "", in: "", not_in: "아님", between: "사이" };
+  const condText = (c) => {
+    const v = String(paramValue(c.value));
+    if (v === "true" && c.op === "==") return FIELD_KO[c.field] || c.field;
+    return [FIELD_KO[c.field] || c.field, /^\d+(\.\d+)?$/.test(v) ? won(v) : v, OP_KO[c.op] ?? c.op].filter(Boolean).join(" ");
+  };
   const won = (n) => Number(n).toLocaleString("ko-KR");
   const paramValue = (v) => (typeof v === "string" && v.startsWith("@") ? P[v.slice(1)] : v);
   function localProgramsFor(regionKey) {
