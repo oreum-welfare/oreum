@@ -350,34 +350,3 @@ a { color: inherit; }
 
 .user .card-link.wide { padding: 18px 40px 18px 18px; }
 .user .card-link.wide .cl-value { font-size: 24px; }
-/* 시작 화면: 예시 그래프 설명·예시 가구 카드·기능 소개 */
-.user .cliff-line .cl-note { font-size: 10.5px; fill: var(--text-3, #8b95a1); font-weight: 600; }
-.user .cliff-line .cl-note.bad { fill: #e5503c; }
-.user .presets-sub { font-size: 13px; color: var(--text-3); margin: -4px 0 10px; }
-.user .preset-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-.user .preset-card { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; background: #fff; border: 1px solid var(--surface-2); border-radius: 16px; padding: 14px; font: inherit; cursor: pointer; transition: border-color .15s, transform .15s; }
-.user .preset-card:hover { border-color: var(--brand); transform: translateY(-1px); }
-.user .pc-icon { font-size: 26px; line-height: 1.2; margin-bottom: 4px; }
-.user .pc-title { font-size: 15px; font-weight: 700; color: var(--text); }
-.user .pc-place { font-size: 13px; color: var(--text-3); }
-.user .pc-pay { font-size: 14px; font-weight: 700; color: var(--brand-ink); margin-top: 4px; }
-.user .features { margin: 40px 0 0; }
-.user .feature-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-.user .feature { background: var(--surface); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 4px; }
-.user .feature b { font-size: 15px; }
-.user .feature span:last-child { font-size: 13px; color: var(--text-3); line-height: 1.5; }
-.user .f-no { width: 24px; height: 24px; border-radius: 50%; background: #191f28; color: #fff; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 4px; }
-.user .f-no.bad { background: #e5503c; }
-.user .f-no.ok { background: #3d9a5d; }
-@media (max-width: 559px) { .user .feature-row { grid-template-columns: 1fr; } }
-/* 입력 단계: 선택 상태 더 또렷하게, 지역 확인 칸, 입력 요약 */
-.user .option { border: 2px solid transparent; transition: background .15s, border-color .15s; }
-.user .option.on { border-color: var(--brand-strong); font-weight: 700; }
-.user .region-pick { display: flex; flex-direction: column; gap: 2px; background: var(--surface); border-radius: 14px; padding: 12px 14px; margin: 4px 0 8px; }
-.user .region-pick span { font-size: 12px; color: var(--text-3); }
-.user .region-pick b { font-size: 16px; }
-.user .region-pick small { font-size: 13px; color: var(--text-3); }
-.user .region-pick.local { background: var(--brand-soft); }
-.user .region-pick.local small { color: var(--brand-ink); }
-.user .group-title small { font-weight: 400; font-size: 12px; color: var(--text-3); margin-left: 6px; }
-.user .answer-summary { margin: 8px 0 0; font-size: 13px; color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

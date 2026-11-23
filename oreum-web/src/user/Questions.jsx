@@ -25,15 +25,6 @@ export default function Questions({ regions, pilotRegions = [], residenceRegions
     return n;
   });
   const kids = hh.infants + hh.elem + hh.middle + hh.high;
-  // 셋째 이상 자녀(7~18세): 셋째부터는 나이가 어린 쪽이라, 초·중·고 자녀가 셋 이상이어야 셋째도 7~18세
-  // (예: 영유아 2명 + 초등 1명이면 셋째는 영유아) — 앞 단계 자녀 수로 자동 판단, 다시 묻지 않음
-  const thirdChild = hh.elem + hh.middle + hh.high >= 3;
-  useEffect(() => { if (hh.thirdChild7to18 !== thirdChild) setHh((h) => ({ ...h, thirdChild7to18: thirdChild })); }, [thirdChild, hh.thirdChild7to18]);
-  const noneSelected = !hh.singleParent && !hh.disabled && !hh.severeDisabled && !hh.newborn;
-  const clearTraits = () => { setHh((h) => ({ ...h, singleParent: false, disabled: false, severeDisabled: false, newborn: false })); setStep(step + 1); };
-  // 지금까지 입력한 정보 한 줄 요약 (2단계부터)
-  const summary = [short(hh.region), step > 2 && `${hh.age}세`, step > 2 && hh.spouse && "배우자", step > 2 && kids > 0 && `자녀 ${kids}명`,
-    step > 3 && hh.singleParent && "한부모", step > 3 && (hh.disabled || hh.severeDisabled) && "장애", step > 3 && hh.newborn && "출산"].filter(Boolean);
   const next = () => (step < TOTAL ? setStep(step + 1) : onFinish(hh, income));
   const noAsset = () => { setHasAsset(false); setHh((h) => ({ ...h, housingAsset: 0, financialAsset: 0, debt: 0 })); setStep(step + 1); };
   const bySido = regionsBySido(regions);
@@ -52,7 +43,7 @@ export default function Questions({ regions, pilotRegions = [], residenceRegions
           <section className="hero">
             <span className="badge intro" style={{ "--d": "0ms" }}>오름 · 복지 절벽 시뮬레이터</span>
             <h1><span className="intro" style={{ "--d": "120ms" }}>소득이 오르면,</span><br /><span className="intro" style={{ "--d": "260ms" }}>받는 복지는 <em>어떻게 바뀔까요?</em></span></h1>
-            <p className="intro" style={{ "--d": "420ms" }}>몇 가지만 알려 주시면 지금 받을 수 있는 복지부터, 소득이 늘 때 혜택이 한꺼번에 끊기는 <b>복지 절벽</b>까지 <b>한눈에 확인</b>할 수 있어요.</p>
+            <p className="intro" style={{ "--d": "420ms" }}>몇 가지만 알려 주시면 지금 받을 수 있는 복지와, 소득이 늘 때 혜택이 한꺼번에 끊기는 <b>복지 절벽</b>이 어디에 있는지 계산해 드려요.</p>
           </section>
           <button type="button" className="btn primary desk-cta intro" style={{ "--d": "560ms" }} onClick={() => setStep(1)}>내 상황 계산하기</button>
           <p className="privacy intro" style={{ "--d": "640ms" }}>입력한 내용은 서버로 보내지 않고, 이 기기 안에서만 계산해요. · <Link to="/data">어떻게 계산하나요? 데이터·분석 보기</Link></p>
@@ -69,32 +60,14 @@ export default function Questions({ regions, pilotRegions = [], residenceRegions
           )}
           <div className="presets intro" style={{ "--d": "700ms" }}>
             <p className="label">예시 가구로 먼저 보기</p>
-            <p className="presets-sub">내 상황과 비슷한 가구를 골라 결과를 먼저 볼 수 있어요</p>
-            <div className="preset-grid">
-              {PRESETS.map((p) => {
-                const [place, pay] = p.sub.split(" · ");
-                return (
-                  <button type="button" className="preset-card" key={p.key} onClick={() => onPreset(p)}>
-                    <span className="pc-icon" aria-hidden="true">{p.icon}</span>
-                    <b className="pc-title">{p.title}</b>
-                    <span className="pc-place">{place}</span>
-                    <span className="pc-pay">{pay} →</span>
-                  </button>
-                );
-              })}
-            </div>
+            {PRESETS.map((p) => (
+              <button type="button" className="preset" key={p.key} onClick={() => onPreset(p)}>
+                <b style={{ fontWeight: 600 }}>{p.title}</b><span>{p.sub} ›</span>
+              </button>
+            ))}
           </div>
           </div>
           </div>
-          {/* 오름으로 확인할 수 있는 것 (스크롤을 내리면) */}
-          <section className="features intro" style={{ "--d": "820ms" }} aria-label="오름으로 확인할 수 있어요">
-            <p className="label">오름으로 확인할 수 있어요</p>
-            <div className="feature-row">
-              <div className="feature"><span className="f-no">1</span><b>받는 복지</b><span>지금 받을 수 있는 혜택과 금액, 왜 그 금액인지</span></div>
-              <div className="feature"><span className="f-no bad">2</span><b>복지 절벽</b><span>소득이 늘 때 혜택이 끊겨 생활비가 줄어드는 구간</span></div>
-              <div className="feature"><span className="f-no ok">3</span><b>넘는 방법</b><span>줄어드는 구간을 넘는 데 도움이 되는 제도와 경로</span></div>
-            </div>
-          </section>
         </div>
         <div className="bottom mobile-bottom"><div className="col"><button type="button" className="btn primary" onClick={() => setStep(1)}>내 상황 계산하기</button></div></div>
       </div>
@@ -117,13 +90,12 @@ export default function Questions({ regions, pilotRegions = [], residenceRegions
             );
           })}
         </nav>
-        {step > 1 && summary.length > 0 && <p className="answer-summary" aria-label="지금까지 입력한 정보">{summary.join(" · ")}</p>}
       </div>
 
       <div className="screen-body col">
         {step === 1 && <>
           <h1 className="title">어디에 사세요?</h1>
-          <p className="desc">지금 사는 곳(주민등록 주소)을 골라 주세요. 사는 곳에 따라 주거급여와 지자체 혜택이 달라져요</p>
+          <p className="desc">사는 곳에 따라 주거급여와 지자체 혜택이 달라져요</p>
           <div className="field">
             <label className="field-name" htmlFor="q-sido">시·도</label>
             <select id="q-sido" className="select" value={sido} onChange={(e) => set("region", bySido[e.target.value][0])}>
@@ -136,22 +108,18 @@ export default function Questions({ regions, pilotRegions = [], residenceRegions
               {bySido[sido].map((k) => <option key={k} value={k}>{regions[k].sigungu}</option>)}
             </select>
           </div>}
-          <div className={`region-pick ${pilotRegions.includes(hh.region) ? "local" : ""}`}>
-            <span>선택한 지역</span><b>{hh.region}</b>
-            <small>{pilotRegions.includes(hh.region) ? "중앙 제도 + 이 지역 자체 혜택까지 계산해요" : "중앙 제도만 계산해요 (이 지역 자체 혜택은 아직 준비 중)"}</small>
-          </div>
           {pilotRegions.length > 0 && <>
-            <p className="group-title">지자체 자체 혜택까지 계산되는 곳 <small>사는 곳이 여기라면 눌러서 바로 고를 수 있어요</small></p>
+            <p className="group-title">지자체 자체 혜택까지 계산되는 곳</p>
             <div className="options">
               {pilotRegions.map((k) => <Option key={k} on={hh.region === k} onClick={() => set("region", k)} sub={k}>{short(k)}</Option>)}
             </div>
           </>}
-          <p className="note">중앙정부 복지(생계·의료·주거·교육급여, 기초연금, 근로장려금 등)는 전국 기준으로, 지자체 복지는 선택한 지역에서 제공하는 사업만 계산해요.</p>
+          <p className="note">중앙 제도(생계·의료·주거·교육급여, 기초연금, 근로장려금 등)는 전국 어디서나 계산해요. 지자체 자체 혜택은 담당자가 승인한 지역만 들어가요.</p>
         </>}
 
         {step === 2 && <>
           <h1 className="title">가족은 어떻게 되세요?</h1>
-          <p className="desc">함께 사는 가족을 입력해 주세요. 일부 혜택은 주민등록상 가구원 등 따로 정한 기준을 써요</p>
+          <p className="desc">함께 사는 가족 기준이에요</p>
           <div className="field"><span>본인 나이</span><Stepper label="본인 나이" value={hh.age} min={19} max={100} suffix="세" onChange={(v) => set("age", v)} /></div>
           <div className="field"><span>배우자</span><Seg label="배우자" options={[[false, "없음"], [true, "있음"]]} value={hh.spouse} onChange={(v) => set("spouse", v)} /></div>
           {hh.spouse && <>
@@ -166,19 +134,18 @@ export default function Questions({ regions, pilotRegions = [], residenceRegions
 
         {step === 3 && <>
           <h1 className="title">해당하는 게 있나요?</h1>
-          <p className="desc">여러 개 고를 수 있어요. 해당하는 게 없으면 '해당 없음'을 누르세요</p>
+          <p className="desc">없으면 그냥 넘어가도 돼요. 여러 개 고를 수 있어요</p>
           <div className="options">
             <Option on={hh.singleParent} onClick={() => set("singleParent", !hh.singleParent)} sub={hh.spouse ? "고르면 '배우자 있음'이 해제돼요" : null}>한부모 가구예요</Option>
-            <Option on={hh.disabled} onClick={() => set("disabled", !hh.disabled)} sub="본인 포함, 등록장애인인 가족">장애가 있는 가족이 있어요</Option>
-            <Option on={hh.severeDisabled} onClick={() => set("severeDisabled", !hh.severeDisabled)} sub="18~64세 본인이 심한 장애 (장애인연금 계산)">본인이 심한 장애예요</Option>
+            <Option on={hh.disabled} onClick={() => set("disabled", !hh.disabled)}>장애가 있는 가족이 있어요</Option>
+            <Option on={hh.severeDisabled} onClick={() => set("severeDisabled", !hh.severeDisabled)}>본인이 심한 장애예요</Option>
             <Option on={hh.newborn} onClick={() => set("newborn", !hh.newborn)}>올해 아이가 태어났어요</Option>
             {hh.newborn && <>
               <div className="field" style={{ paddingTop: 8 }}><span>몇째 아이인가요?</span><Seg label="출생 순위" options={[[1, "첫째"], [2, "둘째"], [3, "셋째"], [4, "넷째+"]]} value={hh.birthOrder} onChange={(v) => set("birthOrder", v)} /></div>
               {hh.birthOrder > kids && <p className="warn">자녀가 {kids}명으로 입력돼 있어요. {ORDINAL[hh.birthOrder]}라면 이전 화면에서 형제자매도 넣어 주세요.</p>}
             </>}
-            <Option on={noneSelected} onClick={clearTraits} sub="바로 다음으로 넘어가요">해당 없음</Option>
+            <Option on={hh.thirdChild7to18} onClick={() => set("thirdChild7to18", !hh.thirdChild7to18)} sub="7~18세 셋째 이상">자녀가 셋 이상이에요</Option>
           </div>
-          {thirdChild && <p className="note">초·중·고 자녀가 셋 이상이라 셋째 이상 자녀(7~18세) 혜택도 함께 계산해요.</p>}
           {askResidence && <div className="field"><span className="field-name">{short(hh.region)}에 산 기간<small>지자체 혜택에 거주 기간 조건이 있어요</small></span><Stepper label="거주 기간" value={Math.floor(hh.residenceMonths / 12)} max={50} suffix="년" onChange={(v) => set("residenceMonths", v * 12)} /></div>}
         </>}
 
@@ -227,17 +194,11 @@ export default function Questions({ regions, pilotRegions = [], residenceRegions
 // 시작 화면 그림: 소득이 오르면 생활비도 오르다가 혜택이 끊기는 곳에서 뚝 떨어지고 다시 오른다 (그려지는 애니메이션)
 function CliffLine() {
   return (
-    <svg className="cliff-line" viewBox="0 0 320 120" role="img" aria-label="월급이 오르는데 혜택이 끊기는 곳에서 생활비가 줄어드는 그래프">
-      <path className="cl-base" d="M8 98H312" />
-      <path className="cl-path" pathLength="1" d="M8 88 L60 76 L112 62 L164 46 L164 74 L216 62 L268 48 L312 36" />
-      {/* 떨어지는 폭 표시 */}
-      <path d="M176 46 V74" stroke="#e5503c" strokeWidth="1.5" strokeDasharray="3 3" />
-      <circle className="cl-dot" cx="164" cy="74" r="6" />
-      <circle className="cl-ring" cx="164" cy="74" r="6" />
-      <text x="146" y="28" className="cl-note bad" textAnchor="end">혜택이 끊기는 곳</text>
-      <text x="182" y="66" className="cl-note bad">생활비가 줄어요</text>
-      <text x="8" y="114" className="cl-note">월급이 오르면 →</text>
-      <text x="312" y="28" className="cl-note" textAnchor="end">월급 + 혜택</text>
+    <svg className="cliff-line" viewBox="0 0 320 96" aria-hidden="true">
+      <path className="cl-base" d="M8 88H312" />
+      <path className="cl-path" pathLength="1" d="M8 78 L60 66 L112 52 L164 36 L164 64 L216 52 L268 38 L312 26" />
+      <circle className="cl-dot" cx="164" cy="64" r="6" />
+      <circle className="cl-ring" cx="164" cy="64" r="6" />
     </svg>
   );
 }

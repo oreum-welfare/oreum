@@ -256,39 +256,3 @@
 .admin .admin-bar { gap: 20px; }
 .admin .admin-tabs { gap: 0; }
 .admin .admin-tabs a { padding: 0 10px; font-size: 14px; }
-/* 요약 숫자 */
-.admin .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 0 0 16px; }
-.admin .stat { background: var(--card); border-radius: var(--radius); padding: 16px 18px; display: flex; flex-direction: column; gap: 2px; }
-.admin .stat-label { font-size: 13px; color: var(--sub); }
-.admin .stat-value { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
-.admin .stat-note { font-size: 12px; color: var(--muted); }
-.admin .stat.ok .stat-value { color: var(--brand); }
-.admin .stat.warn .stat-value { color: var(--yellow-ink); }
-.admin .stat.bad .stat-value { color: var(--red-ink); }
-/* 위험 동작 */
-.admin .btn.danger { color: var(--red-ink); border-color: var(--red-soft); }
-.admin .btn.danger:hover { border-color: var(--red-ink); background: var(--red-soft); }
-.admin .btn.danger-solid { background: var(--red-ink); border-color: var(--red-ink); color: #fff; }
-.admin .btn:disabled { opacity: 0.45; cursor: not-allowed; }
-/* 확인 창 */
-.admin .modal-back { position: fixed; inset: 0; background: rgba(25, 31, 40, 0.4); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
-.admin .modal { background: #fff; border-radius: 16px; padding: 24px; width: min(420px, 100%); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18); }
-.admin .modal h2 { margin: 0 0 10px; font-size: 18px; }
-.admin .modal-target { font-weight: 700; margin: 0 0 6px; }
-.admin .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
-/* 목록 위 검색·필터 */
-.admin .list-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 10px 0; }
-.admin .list-tools input, .admin .list-tools select { border: 1px solid var(--line-2); border-radius: 10px; padding: 7px 10px; font: inherit; font-size: 13px; background: #fff; }
-.admin .list-tools input { flex: 1 1 200px; min-width: 0; }
-.admin .list-tools .count { font-size: 13px; color: var(--muted); margin-left: auto; }
-.admin .section-no { color: var(--brand); font-weight: 800; margin-right: 6px; }
-.admin .acc-main { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.admin .acc-title { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-.admin .acc-name { font-size: 15px; font-weight: 700; }
-.admin .acc-area { font-size: 14px; color: var(--sub); }
-.admin .pill.brand { background: var(--brand-soft); color: var(--brand); }
-.admin .add-box { background: var(--soft); border-radius: 12px; padding: 12px 14px; margin: 12px 0; display: flex; flex-direction: column; gap: 8px; }
-.admin .add-box > b { font-size: 13px; }
-.admin .nc-values { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 4px; }
-.admin .nc-label { font-size: 12px; color: var(--muted); margin-right: 2px; }
-.admin .nc-value { font-size: 12px; font-weight: 600; background: var(--brand-soft); color: var(--brand); border-radius: 8px; padding: 2px 8px; }
