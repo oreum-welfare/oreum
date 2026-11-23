@@ -144,7 +144,7 @@ export default function AiResults() {
           <h2 className="card-title">그래서 사람이 검수합니다</h2>
           <p>AI는 원문에 없는 조건이나 금액을 지어내는 경우가 거의 없고, 인용한 근거도 원문과 일치했습니다. 하지만 <b>앱 입력으로 판정할 수 없는 서비스를 가려내는 일</b>은 자주 틀렸습니다.
             이런 서비스를 '받을 수 있음'으로 보여 주면 잘못된 안내가 되므로, AI 결과는 검수 화면에서 사람이 승인한 것만 반영합니다.</p>
-          <Link className="btn" to="/admin/review">AI 검수 화면 보기 →</Link>
+          <Link className="btn" to="../review">AI 검수 화면 보기 →</Link>
           <p className="hint">결과 갱신일 {data.updated} · 자세한 실험 기록: GitHub 저장소 pipeline/RESULTS.md</p>
         </div>
       </main>

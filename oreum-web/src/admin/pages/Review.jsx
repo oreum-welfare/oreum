@@ -162,7 +162,7 @@ export default function Review() {
             <span className="hint">모델 {svc.meta.model || "-"}</span>
           </div>
           <RunCompare runs={data.runs} />
-          <p className="hint">2차는 1차 오류를 분석해 프롬프트를 고친 결과입니다. 같은 13건으로 고치고 다시 쟀기 때문에 실제보다 높게 나옵니다. 처음 보는 서비스로 잰 점수(2차 36% → 3차 81%)는 <Link to="/admin/ai">AI 성능</Link> 페이지에 있습니다.</p>
+          <p className="hint">2차는 1차 오류를 분석해 프롬프트를 고친 결과입니다. 같은 13건으로 고치고 다시 쟀기 때문에 실제보다 높게 나옵니다. 처음 보는 서비스로 잰 점수(2차 36% → 3차 81%)는 <Link to="../ai">AI 성능</Link> 페이지에 있습니다.</p>
         </section>
 
         <div className="review-layout">

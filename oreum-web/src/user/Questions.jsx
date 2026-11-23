@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { ManwonInput, Option, Seg, Stepper } from "../ui/index.jsx";
 import { ORDINAL, PRESETS, iga, manwon, regionsBySido, short } from "./data.js";
 
@@ -45,7 +46,7 @@ export default function Questions({ regions, pilotRegions = [], residenceRegions
             <p className="intro" style={{ "--d": "420ms" }}>몇 가지만 알려 주시면 지금 받을 수 있는 복지와, 소득이 늘 때 혜택이 한꺼번에 끊기는 <b>복지 절벽</b>이 어디에 있는지 계산해 드려요.</p>
           </section>
           <button type="button" className="btn primary desk-cta intro" style={{ "--d": "560ms" }} onClick={() => setStep(1)}>내 상황 계산하기</button>
-          <p className="privacy intro" style={{ "--d": "640ms" }}>입력한 내용은 서버로 보내지 않고, 이 기기 안에서만 계산해요.</p>
+          <p className="privacy intro" style={{ "--d": "640ms" }}>입력한 내용은 서버로 보내지 않고, 이 기기 안에서만 계산해요. · <Link to="/data">어떻게 계산하나요? 데이터·분석 보기</Link></p>
           </div>
           <div className="start-side">
           {example && (
