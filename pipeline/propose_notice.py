@@ -1,6 +1,6 @@
-"""새 중앙 고시 → AI가 바뀐 기준값 제안 → (검사 통과한 것만) rules.json에 반영할 초안 만들기
+"""새 중앙 고시 → AI가 바뀐 기준값 제안 → (검사 통과한 것만) 관리자 화면 '검토 대기'
 
-watch_notices.py가 저장한 새 고시(pipeline/notices/*.txt + 별표 PDF)를 Claude가 읽고,
+watch_notices.py가 저장한 새 고시(pipeline/notices/*.txt + 별표 PDF)를 AI(OpenAI gpt-5 또는 Claude)가 읽고,
 그 고시가 정하는 rules.json 값(pipeline/notices.json의 keys)을 지금 값과 같은 모양으로 다시 적어 준다.
 코드가 모양(항목·개수·숫자)을 검사하고, 지금 값과 다른 칸만 '바뀐 값'으로 뽑는다. AI가 계산식을 바꿀 수는 없다.
 
@@ -9,7 +9,7 @@ watch_notices.py가 저장한 새 고시(pipeline/notices/*.txt + 별표 PDF)를
 rules.json은 바꾸지 않는다 (다음 해 rules.json을 새로 만들 때 승인된 값을 옮긴다).
 
 실행 예:
-  $env:ANTHROPIC_API_KEY = "..."      # 또는 ant auth login
+  $env:OPENAI_API_KEY = Read-Host "OpenAI 키"   # 있으면 OpenAI(gpt-5), 없으면 ANTHROPIC_API_KEY로 Claude
   python pipeline/propose_notice.py            # 새 고시 제안 → proposals/*.json → central_drafts.json
   python pipeline/propose_notice.py --export   # AI 호출 없이 central_drafts.json만 다시 만들기
 """
@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 import base64
 import json
+import os
 import re
 import sys
 import time
@@ -33,7 +34,8 @@ NOTICE_DIR, PROPOSAL_DIR = HERE / "notices", HERE / "notices" / "proposals"
 STATE_DIR = HERE / "state"
 TRIES, SUMMARY = STATE_DIR / "notice_tries.json", STATE_DIR / "notice_summary.md"
 DRAFTS = HERE / "central_drafts.json"
-MODEL = "claude-opus-5-5"
+CLAUDE_MODEL = "claude-opus-5-5"
+OPENAI_MODEL = "gpt-5"  # convert.py와 같은 기본 모델
 MAX_TRIES = 3
 MAX_PDF_BYTES = 15 * 1024 * 1024
 
@@ -97,12 +99,40 @@ def pdf_blocks(urls: list[str]) -> list[dict]:
         except requests.RequestException:
             continue
         if r.ok and r.content[:4] == b"%PDF" and len(r.content) <= MAX_PDF_BYTES:
-            blocks.append({"type": "document", "source": {"type": "base64", "media_type": "application/pdf",
-                                                           "data": base64.standard_b64encode(r.content).decode()}})
+            blocks.append(base64.standard_b64encode(r.content).decode())  # 제공자별 형식은 ask_*에서
     return blocks
 
 
-def propose(client, stem: str, rules: dict, hints: dict) -> dict:
+def ask_claude(client, msg: str, pdfs: list[str], keys: list[str]) -> tuple[dict, str]:
+    docs = [{"type": "document", "source": {"type": "base64", "media_type": "application/pdf", "data": d}} for d in pdfs]
+    response = client.beta.messages.create(
+        model=CLAUDE_MODEL, max_tokens=16000,
+        system=[{"type": "text", "text": SYSTEM}],
+        output_config={"effort": "high", "format": {"type": "json_schema", "schema": schema(keys)}},
+        messages=[{"role": "user", "content": [*docs, {"type": "text", "text": msg}]}],
+    )
+    if response.stop_reason in ("refusal", "max_tokens"):
+        raise RuntimeError(f"AI 응답 중단: {response.stop_reason}")
+    return json.loads(next(b.text for b in response.content if b.type == "text")), response.model
+
+
+def ask_openai(client, msg: str, pdfs: list[str], keys: list[str]) -> tuple[dict, str]:
+    files = [{"type": "file", "file": {"filename": f"table{i + 1}.pdf", "file_data": f"data:application/pdf;base64,{d}"}}
+             for i, d in enumerate(pdfs)]
+    response = client.chat.completions.create(
+        model=OPENAI_MODEL,
+        messages=[{"role": "system", "content": SYSTEM}, {"role": "user", "content": [*files, {"type": "text", "text": msg}]}],
+        response_format={"type": "json_schema", "json_schema": {"name": "notice_values", "schema": schema(keys), "strict": True}},
+    )
+    choice = response.choices[0]
+    if choice.message.refusal:
+        raise RuntimeError(f"AI가 거절함: {choice.message.refusal}")
+    if choice.finish_reason == "length":
+        raise RuntimeError("AI 응답이 길이 제한에서 잘림")
+    return json.loads(choice.message.content), response.model
+
+
+def propose(client, stem: str, rules: dict, hints: dict, ask=ask_claude) -> dict:
     meta = json.loads((NOTICE_DIR / f"{stem}.json").read_text(encoding="utf-8"))
     hint = hints.get(meta["notice"], "")
     text = (NOTICE_DIR / f"{stem}.txt").read_text(encoding="utf-8")
@@ -111,15 +141,7 @@ def propose(client, stem: str, rules: dict, hints: dict) -> dict:
     msg = (f"고시: {meta['name']} (발령 {meta['issued']} {meta['number']}, 시행 {meta['effective']})\n"
            f"값 설명: {hint}\n\n지금 값 (이 모양 그대로 새 값을 적으세요):\n{json.dumps(current, ensure_ascii=False, indent=1)}\n\n"
            f"<원문>\n{text}\n</원문>\n" + (f"\n별표 PDF {len(pdfs)}개를 함께 첨부했습니다." if pdfs else "\n별표 PDF는 받지 못했습니다."))
-    response = client.beta.messages.create(
-        model=MODEL, max_tokens=16000,
-        system=[{"type": "text", "text": SYSTEM}],
-        output_config={"effort": "high", "format": {"type": "json_schema", "schema": schema(meta["keys"])}},
-        messages=[{"role": "user", "content": [*pdfs, {"type": "text", "text": msg}]}],
-    )
-    if response.stop_reason in ("refusal", "max_tokens"):
-        raise RuntimeError(f"AI 응답 중단: {response.stop_reason}")
-    out = json.loads(next(b.text for b in response.content if b.type == "text"))
+    out, model = ask(client, msg, pdfs, meta["keys"])
 
     # AI 제안을 그대로 믿지 않는다: 모양이 같고 숫자인 것만, 지금 값과 다른 칸만 뽑는다
     checked, rejected = [], []
@@ -135,7 +157,7 @@ def propose(client, stem: str, rules: dict, hints: dict) -> dict:
             continue
         changes = diff(cur, new, it["key"])
         checked.append({"key": it["key"], "value": new, "changes": changes, "evidence": it["evidence"], "location": it["location"]})
-    result = {"stem": stem, "notice": meta, "model": response.model, "related": out["related"],
+    result = {"stem": stem, "notice": meta, "model": model, "related": out["related"],
               "effective_date": out["effective_date"], "items": checked, "rejected": rejected,
               "unreadable": out["unreadable"], "notes": out["notes"]}
     PROPOSAL_DIR.mkdir(parents=True, exist_ok=True)
@@ -181,6 +203,8 @@ def export_drafts() -> list[dict]:
 def main() -> None:
     ap = argparse.ArgumentParser(description="새 고시 → AI가 바뀐 기준값 제안")
     ap.add_argument("--export", action="store_true", help="AI 호출 없이 central_drafts.json만 다시 만들기")
+    ap.add_argument("--provider", default="auto", choices=["auto", "claude", "openai"],
+                    help="auto: OPENAI_API_KEY가 있으면 OpenAI, 아니면 Claude")
     args = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8")
     if args.export:
@@ -194,16 +218,24 @@ def main() -> None:
         export_drafts()
         return
 
-    import anthropic
-    client = anthropic.Anthropic()
+    provider = args.provider
+    if provider == "auto":
+        provider = "openai" if os.environ.get("OPENAI_API_KEY") else "claude"
+    if provider == "openai":
+        import openai as sdk
+        client, ask = sdk.OpenAI(), ask_openai
+    else:
+        import anthropic as sdk
+        client, ask = sdk.Anthropic(), ask_claude
+    print(f"AI 제공자: {provider}")
     rules = json.loads(RULES.read_text(encoding="utf-8"))
     results, failed = [], []
     for stem in todo:
         tries[stem] = tries.get(stem, 0) + 1
         try:
-            results.append(propose(client, stem, rules, hints))
+            results.append(propose(client, stem, rules, hints, ask))
             print(f"[{stem}] 제안 완료")
-        except (anthropic.APIError, RuntimeError, json.JSONDecodeError, KeyError) as e:
+        except (sdk.APIError, RuntimeError, json.JSONDecodeError, KeyError) as e:
             failed.append(f"{stem} ({type(e).__name__})")
             print(f"[{stem}] 실패: {type(e).__name__}")
         time.sleep(1)

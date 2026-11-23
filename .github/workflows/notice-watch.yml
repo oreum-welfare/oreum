@@ -8,7 +8,7 @@ name: 중앙 고시 변경 확인 (매일)
 #
 # 저장소 Settings → Secrets and variables → Actions (코드·채팅에 붙이지 않기)
 #   LAW_OC              국가법령정보 공동활용(open.law.go.kr) API 인증값 (필수)
-#   ANTHROPIC_API_KEY   AI 제안 (없으면 새 고시 알림만, 키를 넣은 다음 날 이어서 제안)
+#   OPENAI_API_KEY      AI 제안 (gpt-5). 없으면 ANTHROPIC_API_KEY(Claude), 둘 다 없으면 새 고시 알림만 (키를 넣은 다음 날 이어서 제안)
 #   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY   관리자 화면에 '검토 대기'로 올릴 때 (없으면 PR 기록만)
 # Settings → Actions → General → "Allow GitHub Actions to create and approve pull requests" 켜기
 
@@ -57,7 +57,7 @@ jobs:
           node-version: "20"
 
       - name: 파이썬 패키지 설치
-        run: pip install "requests>=2.32" "anthropic>=2.8"
+        run: pip install "requests>=2.32" "openai>=1.60" "anthropic>=2.8"
 
       - name: 새 고시 확인
         env:
@@ -67,10 +67,11 @@ jobs:
       - name: AI가 바뀐 기준값 제안
         continue-on-error: true # 실패해도 기록은 남긴다
         env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          if [ -z "$ANTHROPIC_API_KEY" ]; then echo "::warning::ANTHROPIC_API_KEY가 없어 AI 제안을 건너뜁니다 (새 고시는 저장, 다음 실행 때 다시)"; exit 0; fi
-          python pipeline/propose_notice.py
+          if [ -z "$OPENAI_API_KEY" ] && [ -z "$ANTHROPIC_API_KEY" ]; then echo "::warning::AI 키가 없어 AI 제안을 건너뜁니다 (새 고시는 저장, 다음 실행 때 다시)"; exit 0; fi
+          python pipeline/propose_notice.py   # OPENAI_API_KEY가 있으면 OpenAI, 없으면 Claude
           node oreum-web/scripts/sync-data.mjs
 
       - name: 관리자 화면(Supabase)에 검토 대기로 올리기
