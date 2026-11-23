@@ -127,3 +127,13 @@ end $$;
 drop trigger if exists guard_program_change on public.local_programs;
 create trigger guard_program_change before update on public.local_programs
   for each row execute function public.guard_program_change();
+
+-- 5. 표 접근 권한 (새 Supabase 프로젝트는 SQL로 만든 표에 자동으로 권한을 주지 않는다)
+-- 어떤 행을 보고 바꿀 수 있는지는 위의 RLS·트리거가 다시 막는다. 여기서는 표 단위 출입만 연다.
+grant usage on schema public to anon, authenticated, service_role;
+grant select on public.local_programs to anon;                          -- 계산기: '승인' 제도만 (RLS)
+grant select, insert, update on public.local_programs to authenticated; -- 담당자: 자기 지역만 (RLS·트리거)
+grant select on public.profiles to authenticated;                       -- 본인 권한만 (RLS)
+grant select on public.program_events to authenticated;                 -- 담당 지역 이력만 (RLS)
+grant all on public.local_programs, public.profiles, public.program_events to service_role; -- seed·관리용
+grant execute on function public.can_review(text, text), public.my_profile() to anon, authenticated;
