@@ -89,3 +89,17 @@ export const levelOf = (data, id, hasAssets) => {
   const st = sourceKeys(data, id, hasAssets).map((k) => statusClass(data.verification[k].status));
   return st.includes("est") ? "est" : st.includes("part") ? "part" : "ok";
 };
+
+// 이 혜택을 어떻게 계산했나 (AI를 어디에 썼는지 밝힌다)
+// 중앙 제도: 법령·고시 기준값으로 계산 (새 고시 값은 AI 판독 후 관리자 승인), 지자체 제도: AI 초안을 담당자가 승인했거나 담당자가 직접 입력
+export function provenance(data, b) {
+  if (b.level !== "지자체") {
+    return (data.central_applied || []).length
+      ? { ai: true, text: "고시 기준 계산 · 새 고시 값은 AI가 읽고 관리자가 승인" }
+      : { ai: false, text: "법령·고시 기준 계산 · AI 미사용" };
+  }
+  const t = (data.local_programs || []).find((p) => p.id === b.id)?.origin?.type;
+  if (t === "ai") return { ai: true, text: "AI가 원문에서 만든 초안 · 지자체 담당자 승인" };
+  if (t === "manual") return { ai: false, text: "지자체 담당자가 직접 입력 · 승인 · AI 미사용" };
+  return { ai: false, text: "조례 기준 · 지자체 담당자 확인 · AI 미사용" };
+}

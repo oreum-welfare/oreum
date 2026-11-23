@@ -313,3 +313,6 @@ a { color: inherit; }
 .user .chart-legend li.next-cliff { flex-wrap: wrap; gap: 4px 8px; color: var(--text-3, #6b7684); font-size: 13px; }
 .user .chart-legend i.dash { width: 20px; height: 0; border-radius: 0; border-top: 2px dashed #e5503c; opacity: 0.6; }
 .user .freshness::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--brand-strong, #3d9a5d); margin-right: 6px; vertical-align: 1px; }
+.user .tag.ai { background: #eef3ff; color: #3b5bdb; }
+.user .item-detail .prov { font-size: 13px; color: var(--text-3, #6b7684); margin: 0 0 6px; }
+.user .ai-note { font-size: 13px; }

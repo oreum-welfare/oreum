@@ -4,7 +4,7 @@ import { Sheet } from "../ui/index.jsx";
 import { applyInfo } from "./apply.js";
 import { freshnessText, useFreshness } from "../lib/freshness.js";
 import Chart from "./Chart.jsx";
-import { CHECK_LABEL, LEVEL_LABEL, STEP, about, baseYear, iga, levelOf, localReady, manwon, short, sourceKeys, statusClass, won } from "./data.js";
+import { CHECK_LABEL, LEVEL_LABEL, STEP, about, baseYear, provenance, iga, levelOf, localReady, manwon, short, sourceKeys, statusClass, won } from "./data.js";
 
 // 데이터 출처 (결과 화면 아래와 계산 기준 시트에 함께 보여 준다)
 const SOURCES = [
@@ -150,18 +150,20 @@ function BenefitsSheet({ data, benefits, total, inc, soonLost, hasAssets, includ
       <ul className="list">
         {benefits.map((b) => {
           const lv = levelOf(data, b.id, hasAssets);
+          const pv = provenance(data, b);
           return (
             <li className="item" key={b.id}>
               <button type="button" className="item-btn" aria-expanded={open === b.id} onClick={() => setOpen(open === b.id ? null : b.id)}>
-                <span className="item-name">{b.name}{soonLost.has(b.name) && <span className="tag red">곧 끊김</span>}{lv !== "ok" && <span className="tag gray">{LEVEL_LABEL[lv]}</span>}
+                <span className="item-name">{b.name}{soonLost.has(b.name) && <span className="tag red">곧 끊김</span>}{lv !== "ok" && <span className="tag gray">{LEVEL_LABEL[lv]}</span>}{pv.ai && b.level === "지자체" && <span className="tag ai">AI 초안·승인</span>}
                   <small>{b.level} · {b.kind === "cash" ? "현금" : b.kind === "inkind" ? "감면·현물" : "자격·융자"}</small></span>
                 <span className="item-amt">{b.kind === "access" ? "자격" : won(b.monthly)}</span>
               </button>
-              {open === b.id && <div className="item-detail"><p>{b.note}</p><Apply id={b.id} soon={soonLost.has(b.name)} /><Evidence data={data} id={b.id} hasAssets={hasAssets} /></div>}
+              {open === b.id && <div className="item-detail"><p className="prov">{pv.text}</p><p>{b.note}</p><Apply id={b.id} soon={soonLost.has(b.name)} /><Evidence data={data} id={b.id} hasAssets={hasAssets} /></div>}
             </li>
           );
         })}
       </ul>
+      <p className="note ai-note">AI 사용: 중앙 제도는 법령·고시 기준값으로 계산해요 (AI 미사용). 지자체 제도는 AI가 원문에서 만든 초안을 그 지자체 담당자가 확인·승인한 것만 계산해요.</p>
       <p className="membership">내 실제 소득·재산으로 정확히 확인하려면 <a href="https://www.bokjiro.go.kr/ssis-tbu/index.do" target="_blank" rel="noopener noreferrer">복지로</a>의 <b>맞춤형급여안내(복지멤버십)</b>에 가입해 보세요. 동의하면 받을 수 있는 복지를 정부가 직접 알려 줘요.</p>
       <label style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 12, fontSize: 15 }}>
         <input type="checkbox" checked={includeInkind} onChange={(e) => setIncludeInkind(e.target.checked)} style={{ width: 20, height: 20, accentColor: "var(--brand-strong)" }} />
