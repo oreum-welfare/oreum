@@ -1,0 +1,17 @@
+{
+ "notice": "housing",
+ "source": "S05",
+ "keys": [
+  "lines.jugeo_48",
+  "params.rent",
+  "params.jugeo_self_share"
+ ],
+ "serial": "2100000284670",
+ "name": "2027년 주거급여 선정기준 및 최저보장수준",
+ "issued": "20260831",
+ "number": "2026-455",
+ "effective": "20270101",
+ "kind": "제정",
+ "tables": [],
+ "table_pdfs": []
+}
