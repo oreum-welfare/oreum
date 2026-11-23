@@ -376,3 +376,9 @@ insert into public.watched_notices (key, source, query, match, keys, hint, added
 on conflict (key) do nothing;
 grant select, insert, update, delete on public.watched_notices to authenticated;
 grant all on public.watched_notices to service_role;
+
+-- 10. 중앙 기준값 직접 입력: 감시 고시 밖의 값(에너지바우처·통신요금 감면·근로장려금 등)은 시스템 관리자가 근거와 함께 입력한다.
+-- 입력하면 '검토 대기'로 들어가고, 승인해야 시행일부터 반영된다 (6절 규칙 그대로)
+drop policy if exists "관리자 직접 입력" on public.central_values;
+create policy "관리자 직접 입력" on public.central_values for insert with check (public.is_admin() and status = '검토 대기');
+grant insert on public.central_values to authenticated;

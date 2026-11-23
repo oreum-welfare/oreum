@@ -86,6 +86,29 @@ export default function CentralValues() {
       : `'${to}'(으)로 바꿨어요.`);
   };
 
+  // 직접 입력: 감시 고시 밖의 값을 근거와 함께 '검토 대기'로 올린다 (승인은 위와 같은 절차)
+  const submitManual = async (row) => {
+    setMsg("");
+    if (mode === "supabase") {
+      try {
+        const sb = await supabaseClient();
+        const { error } = await sb.from("central_values").insert(row);
+        if (error) { setMsg(`저장하지 못했어요: ${error.message}`); return false; }
+      } catch {
+        setMsg("서버에 연결하지 못했어요."); return false;
+      }
+    } else {
+      const overlay = loadCentralOverlay();
+      overlay[row.id] = row;
+      if (!saveCentralOverlay(overlay)) { setMsg("이 브라우저에 저장할 수 없어요."); return false; }
+    }
+    setRows((all) => [row, ...(all || [])]);
+    setStatus("검토 대기");
+    setPickedId(row.id);
+    setMsg("'검토 대기'로 올렸어요. 근거와 값을 다시 확인한 뒤 승인해 주세요 (가능하면 다른 관리자가).");
+    return true;
+  };
+
   const counts = Object.fromEntries(STATUS.map((s) => [s, (rows || []).filter((r) => r.status === s).length]));
   return (
     <div className="page">
@@ -105,6 +128,7 @@ export default function CentralValues() {
         ))}
       </div>
       {msg && <p className="notice" role="status">{msg}</p>}
+      {rules && <ManualEntry rules={rules} user={user} today={today} onSubmit={submitManual} />}
       {!rows || !rules ? <p className="hint">불러오는 중…</p> : rows.length === 0 ? <p className="empty">아직 제안된 기준값이 없어요. 새 고시가 올라오면 매일 확인에서 자동으로 들어와요.</p> : (
         <div className="lp-cols">
           <ul className="lp-list" aria-label={`${status} 기준값`}>
@@ -214,5 +238,60 @@ function Detail({ r, current, today, onAct }) {
       )}
       {r.approved_at && <p className="hint">승인: {r.approved_by} · {r.approved_at}</p>}
     </section>
+  );
+}
+
+// 직접 입력 폼: 값 고르기 → 지금 값을 바탕으로 숫자만 고치기 → 근거·시행일 → '검토 대기'
+function ManualEntry({ rules, user, today, onSubmit }) {
+  const [key, setKey] = useState("");
+  const [value, setValue] = useState(null);
+  const [eff, setEff] = useState(today);
+  const [source, setSource] = useState("");
+  const [evidence, setEvidence] = useState("");
+  const current = key ? getPath(rules, key) : undefined;
+  const pick = (k) => { setKey(k); setValue(k ? getPath(rules, k) : null); };
+  const changed = key && value != null ? diffLeaves(current, value) : [];
+  const ok = key && changed.length > 0 && sameShape(current, value) && /^\d{4}-\d{2}-\d{2}$/.test(eff) && source.trim() && evidence.trim();
+  const submit = async () => {
+    const row = {
+      id: `manual_${key}_${Date.now().toString(36)}`, key, value, effective_from: eff,
+      notice: { key: "manual", source: "직접 입력", name: source.trim() }, evidence: evidence.trim().slice(0, 500), location: "",
+      proposed_by: `manual:${user.name}`, status: "검토 대기", history: [],
+    };
+    if (await onSubmit(row)) { pick(""); setSource(""); setEvidence(""); setEff(today); }
+  };
+  return (
+    <details className="lp-text card">
+      <summary>값 직접 입력 (감시 고시 밖의 값: 에너지바우처·통신요금 감면·근로장려금 등)</summary>
+      <div className="cv-form">
+        <label className="field"><span>바꿀 값</span>
+          <select value={key} onChange={(e) => pick(e.target.value)}>
+            <option value="">값 고르기</option>
+            {Object.entries(KEY_LABEL).filter(([k]) => getPath(rules, k) !== undefined).map(([k, label]) => <option key={k} value={k}>{label}</option>)}
+          </select></label>
+        {key && value != null && (
+          <table className="cv-table">
+            <thead><tr><th>항목</th><th>지금 값</th><th>새 값</th></tr></thead>
+            <tbody>
+              {leaves(value).map(([p, v]) => {
+                const cur = Object.fromEntries(leaves(current))[p];
+                return (
+                  <tr key={p} className={cur !== v ? "changed" : ""}>
+                    <td>{p || key}</td><td>{num(cur)}</td>
+                    <td>{typeof v === "number"
+                      ? <input type="number" min="0" step="any" value={v} aria-label={`${p} 새 값`} onChange={(e) => setValue((old) => setLeaf(old, p, e.target.value === "" ? 0 : Number(e.target.value)))} />
+                      : <span className="hint">{num(v)}</span>}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+        <label className="field"><span>시행일</span><input type="date" value={eff} onChange={(e) => setEff(e.target.value)} /></label>
+        <label className="field"><span>근거 자료 이름 (예: 2027년 에너지바우처 사업 지침)</span><input value={source} onChange={(e) => setSource(e.target.value)} /></label>
+        <label className="field"><span>근거 문구·위치 (원문에서 그대로)</span><textarea rows={3} value={evidence} onChange={(e) => setEvidence(e.target.value)} /></label>
+        <button type="button" className="btn primary" disabled={!ok} onClick={submit}>{key && changed.length === 0 ? "바뀐 칸이 없어요" : "검토 대기로 올리기"}</button>
+      </div>
+    </details>
   );
 }

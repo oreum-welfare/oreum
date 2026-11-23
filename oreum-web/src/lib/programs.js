@@ -91,7 +91,11 @@ export function saveCentralOverlay(overlay) {
 export function resetCentralOverlay() {
   try { localStorage.removeItem(CENTRAL_KEY); } catch { /* 저장 불가 환경 */ }
 }
-export const mergeCentral = (drafts = [], overlay = {}) => drafts.map((r) => overlay[r.id] || r);
+// AI 제안 + 이 브라우저의 결정. 직접 입력한 값(제안 목록에 없는 id)도 함께
+export const mergeCentral = (drafts = [], overlay = {}) => {
+  const ids = new Set(drafts.map((r) => r.id));
+  return [...drafts.map((r) => overlay[r.id] || r), ...Object.values(overlay).filter((r) => !ids.has(r.id))];
+};
 
 // 계산기에 넣을 '승인' 기준값 (시행일 고르기는 central.js applyCentral)
 export async function publishedCentral() {
