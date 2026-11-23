@@ -1,5 +1,4 @@
 import { useCallback, useState } from "react";
-import { Link } from "react-router-dom";
 import { Sheet } from "../ui/index.jsx";
 import { applyInfo } from "./apply.js";
 import Chart from "./Chart.jsx";
@@ -118,8 +117,6 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
           <p style={{ margin: "0 0 8px" }}>데이터: 복지로 · 한국사회보장정보원 복지서비스 API, 보건복지부·국토교통부 고시 (2026년 기준) · <button type="button" className="link-btn" onClick={() => setSheet("basis")} style={{ fontSize: 13 }}>출처 자세히</button></p>
           <p style={{ margin: "0 0 12px" }}>2026년 기준 참고용이에요. 실제 수급은 읍면동 행정복지센터에서 결정돼요.</p>
           <button type="button" className="link-btn" onClick={onRestart} style={{ fontSize: 13 }}>처음부터 다시</button>
-          <span style={{ margin: "0 8px" }}>·</span>
-          <Link to="/admin" style={{ fontSize: 13 }}>관리자 화면</Link>
         </footer>
       </div>
 
