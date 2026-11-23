@@ -5,7 +5,8 @@
 | 파일 | 내용 | 관리 방법 |
 |---|---|---|
 | [sources.csv](sources.csv) | 데이터·문서 22개: 구분, 제공기관, 문서번호, 발령일, 적용 기준일, URL | 직접 수정 (원본) |
-| [value_checks.csv](value_checks.csv) | 계산에 쓰는 숫자 29개: 사용 값, 근거 자료, 원문 위치, 근거 수준, 팀 확인 칸 | 직접 수정 (원본) |
+| [value_checks.csv](value_checks.csv) | 계산에 쓰는 숫자 30개: 사용 값, 근거 자료, 원문 위치, 근거 수준, 팀 확인 칸 | 직접 수정 (원본) |
+| [regions.csv](regions.csv) | 전국 시군구 230곳과 유형(자치구·시·군·특례시 등). `python data/build_regions.py`가 지역별 기준값을 rules.json에 만든다 | 직접 수정 (원본) |
 | [services_collected.csv](services_collected.csv) | AI 규칙 변환에 쓴 복지서비스 원문 69건: 서비스 ID, 복지로 URL, 수집일 | 스크립트가 생성 |
 | [오름_데이터_출처.xlsx](오름_데이터_출처.xlsx) | 위 세 표 + 분석 결과 2개를 시트별로 모은 Excel | 스크립트가 생성 |
 | `../../analysis/output/*.xlsx` | 분석 결과 CSV의 Excel 판 | 스크립트가 생성 |

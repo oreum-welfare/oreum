@@ -14,6 +14,12 @@ export function createEngine(data) {
   };
   const medianIncome = (size) => Math.round(lineAt(L.saeng_32, size) / 0.32);
   const saengLine = (size) => lineAt(L.saeng_32, size);
+  // 기준임대료 (고시): 7인은 6인과 같고, 8인부터 2인 늘 때마다 6인 기준의 10%를 더한다
+  const rentFor = (grade, size) => {
+    const row = P.rent[grade];
+    if (size <= 7) return row[Math.min(Math.max(1, size), 6)];
+    return row[6] + (row[6] * Math.floor((size - 6) / 2)) / 10;
+  };
   const jugeoLine = (size) => (size <= 6 && L.jugeo_48[size] != null ? L.jugeo_48[Math.max(1, size)] : Math.round(medianIncome(size) * 0.48));
 
   // 입력값 정리: 자녀 수·나이는 0 이상의 정수(소수·음수·빈 값이면 NaN이 퍼짐), 배우자가 있으면 한부모 가구가 아님
@@ -146,7 +152,7 @@ export function createEngine(data) {
     // 주거급여: 기준선 이하여도 자기부담분이 기준임대료보다 크면 지급액이 0원 → 수급자로 보지 않는다
     let jugeoElig = false;
     if (ri <= jugeoLine(size)) {
-      const rent = P.rent[region.rent_grade][Math.min(size, 6)]; // 7인 이상은 6인 기준임대료 적용 (추정)
+      const rent = rentFor(region.rent_grade, size);
       const deduct = ri <= sLine ? 0 : P.jugeo_self_share * (ri - sLine);
       const jugeo = Math.max(0, rent - deduct);
       if (jugeo > 0) {
@@ -213,30 +219,78 @@ export function createEngine(data) {
       }
     }
 
-    // ---- 지자체 ----
-    if (hh.region === "경상북도 경산시") {
-      if (d.seniors > 0) add("gs_clinic", "65세 이상 진료비 감면", "지자체", "inkind", P.gs_clinic_value * d.seniors, "경산시 주민등록 65세 이상, 보건기관 내과");
-      if (hh.newborn) {
-        const [amt, months] = P.gs_birth_monthly[Math.min(hh.birthOrder, 4)];
-        add("gs_birth", "출산장려금", "지자체", "cash", amt,
-          `월 ${amt.toLocaleString("ko-KR")}원 × ${months}개월 + 출산축하금 ${P.gs_birth_lump.toLocaleString("ko-KR")}원(일시)`);
-      }
-      if (saeng > 0 || medical || jugeoElig) add("gs_loan", "저소득주민생활안정자금(융자)", "지자체", "access", 0, "생계·의료·주거 수급자, 최대 1,200만 원 융자");
-      if (hh.thirdChild7to18 && hh.residenceMonths >= 36) {
-        // 셋째(막내 쪽)의 나이를 알 수 없어, 초·중학생이 있으면 7~15세, 고등학생만 있으면 16~18세 금액으로 본다
-        const band = hh.elem + hh.middle > 0 ? "7-15" : "16-18";
-        add("gs_multichild", "다자녀가정 지원", "지자체", "cash", P.gs_multichild_annual[band] / 12,
-          `셋째 이상 + 3년 이상 거주, 연 ${(P.gs_multichild_annual[band] / 10000).toLocaleString("ko-KR")}만 원(${band === "7-15" ? "7~15세" : "16~18세"}) 월 환산`);
-      }
-    } else if (hh.region === "대구광역시 북구") {
-      const qualifying = d.seniors > 0 || d.disabled || hh.singleParent;
-      const premium = earned * P.bukgu_nhis_rate;
-      if (qualifying && !medical && premium <= P.bukgu_min_premium) {
-        add("bk_nhis", "건강보험료지원", "지자체", "inkind", P.bukgu_nhis_value, "의료급여 수급권자 아님 + 최저보험료 이하 + 노인·장애인·한부모, 건강·장기요양보험료 전액 (조례)");
-      }
+    // ---- 지자체 (rules.json local_programs 중 이 지역의 '승인' 제도만) ----
+    const recipientStatus = [saeng > 0 && "생계", medical && "의료", jugeoElig && "주거", eduElig && "교육", nearPoor && "차상위"].filter(Boolean);
+    const facts = {
+      age: hh.age, household_size: size, income_recognized_pct_median: (ri / m) * 100, income_recognized_won: ri,
+      total_income_annual: earned * 12, assets: hh.housingAsset + hh.financialAsset, recipient_status: recipientStatus,
+      basic_pension_recipient: bp > 0, residence_months: hh.residenceMonths, child_count: d.children, newborn: hh.newborn,
+      school_enrolled: d.schoolKids > 0, disabled: d.disabled, single_parent: hh.singleParent, senior_in_household: d.seniors > 0,
+      third_child_7to18: hh.thirdChild7to18, child_birth_order: hh.birthOrder,
+      residence_region: [hh.region, region.sido, region.sigungu].filter(Boolean),
+    };
+    for (const prog of localProgramsFor(hh.region)) {
+      const f = { ...facts };
+      if (prog.facts?.nhis_premium_rate) f.nhis_premium = earned * P[prog.facts.nhis_premium_rate];
+      const skip = new Set(prog.apply_checks || []); // 담당자가 '신청할 때 확인'으로 둔 조건 (계산에서 제외, 안내만)
+      if (!conditionsMet(prog.conditions, f, skip)) continue;
+      const { monthly, vars } = programAmount(prog.amount, hh, d);
+      const later = (prog.conditions || []).filter((_, i) => skip.has(i)).map((c) => c.value);
+      add(prog.id, prog.name, "지자체", prog.kind, monthly, fillNote(prog.note, vars) + (later.length ? ` · 신청할 때 확인: ${later.join(", ")}` : ""));
     }
     return out;
   }
+
+  // ---- 지자체 제도 (데이터) ----
+  const won = (n) => Number(n).toLocaleString("ko-KR");
+  const paramValue = (v) => (typeof v === "string" && v.startsWith("@") ? P[v.slice(1)] : v);
+  function localProgramsFor(regionKey) {
+    const region = data.regions[regionKey];
+    return (data.local_programs || []).filter((p) => p.status === "승인"
+      && (p.region ? p.region === regionKey : p.sido && region && p.sido === region.sido));
+  }
+  // 조건 하나: 판정할 수 없는 항목(other 등)이면 거짓
+  function conditionOk(c, facts) {
+    if (!(c.field in facts) || facts[c.field] === undefined) return false;
+    const fact = facts[c.field];
+    const raw = paramValue(c.value);
+    const list = String(raw).split(",").map((s) => s.trim());
+    if (c.op === "in" || c.op === "not_in") {
+      const hit = Array.isArray(fact) ? fact.some((x) => list.includes(String(x))) : list.includes(String(fact));
+      return c.op === "in" ? hit : !hit;
+    }
+    if (Array.isArray(fact)) return c.op === "==" && fact.some((x) => list.includes(String(x))); // 거주 지역 등 이름 목록
+    if (typeof fact === "boolean") return c.op === "==" && fact === (String(raw) === "true");
+    const x = Number(fact);
+    if (c.op === "between") return x >= Number(list[0]) && x <= Number(list[1]);
+    const v = Number(raw);
+    return c.op === "<=" ? x <= v : c.op === "<" ? x < v : c.op === ">=" ? x >= v : c.op === ">" ? x > v : c.op === "==" ? x === v : false;
+  }
+  // group이 빈 조건은 모두 충족, 같은 group끼리는 하나 이상 충족
+  function conditionsMet(conds, facts, skip = new Set()) {
+    const groups = {};
+    for (const [i, c] of (conds || []).entries()) {
+      if (skip.has(i)) continue;
+      if (!c.group) { if (!conditionOk(c, facts)) return false; }
+      else (groups[c.group] ||= []).push(c);
+    }
+    return Object.values(groups).every((g) => g.some((c) => conditionOk(c, facts)));
+  }
+  function programAmount(a, hh, d) {
+    if (a.type === "per_senior") return { monthly: P[a.param] * d.seniors, vars: {} };
+    if (a.type === "by_birth_order") {
+      const [amt, months] = P[a.param][Math.min(hh.birthOrder, 4)];
+      return { monthly: amt, vars: { amount: won(amt), months, lump: won(P[a.lump_param] ?? 0) } };
+    }
+    if (a.type === "child_band_annual") {
+      // 셋째(막내 쪽)의 나이를 알 수 없어, 초·중학생이 있으면 7~15세, 고등학생만 있으면 16~18세 금액으로 본다
+      const band = hh.elem + hh.middle > 0 ? "7-15" : "16-18";
+      const annual = P[a.param][band];
+      return { monthly: annual / 12, vars: { annual_man: won(annual / 10000), band_label: band === "7-15" ? "7~15세" : "16~18세" } };
+    }
+    return { monthly: a.param ? P[a.param] : a.monthly || 0, vars: {} }; // fixed
+  }
+  const fillNote = (note, vars) => (note || "").replace(/\{(\w+)\}/g, (_, k) => (vars[k] ?? `{${k}}`));
 
   const counted = (b, includeInkind) => b.kind === "cash" || (includeInkind && b.kind === "inkind");
 
@@ -272,5 +326,5 @@ export function createEngine(data) {
     return cliffs;
   }
 
-  return { medianIncome, normalize, derive, evaluate, simulate, findCliffs, counted };
+  return { medianIncome, normalize, derive, evaluate, simulate, findCliffs, counted, localProgramsFor, conditionsMet };
 }

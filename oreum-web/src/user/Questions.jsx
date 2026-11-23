@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react";
 import { ManwonInput, Option, Seg, Stepper } from "../ui/index.jsx";
-import { ORDINAL, PRESETS, iga, manwon, short } from "./data.js";
+import { ORDINAL, PRESETS, iga, manwon, regionsBySido, short } from "./data.js";
 
 const TOTAL = 5;
 const STEPS = ["사는 곳", "가족", "해당하는 것", "재산", "소득"];
-const GS = "경상북도 경산시";
 const QUICK = [0, 100, 200, 300, 400];
 
 // 시작 화면 + 질문 5개 (한 화면에 하나). editing이면 소개 없이 바로 질문부터 (startStep: 특정 질문부터)
-export default function Questions({ regions, initial, initialIncome, editing, startStep, example, onFinish, onPreset, onCancel }) {
+export default function Questions({ regions, pilotRegions = [], residenceRegions = [], initial, initialIncome, editing, startStep, example, onFinish, onPreset, onCancel }) {
   const [step, setStep] = useState(editing ? startStep || 1 : 0);
   const [hh, setHh] = useState(initial);
   const [income, setIncome] = useState(initialIncome);
@@ -27,7 +26,10 @@ export default function Questions({ regions, initial, initialIncome, editing, st
   const kids = hh.infants + hh.elem + hh.middle + hh.high;
   const next = () => (step < TOTAL ? setStep(step + 1) : onFinish(hh, income));
   const noAsset = () => { setHasAsset(false); setHh((h) => ({ ...h, housingAsset: 0, financialAsset: 0, debt: 0 })); setStep(step + 1); };
-  const askResidence = hh.region === GS && hh.thirdChild7to18; // 거주 기간은 경산 다자녀 지원(3년 이상 거주)에만 쓰인다
+  const bySido = regionsBySido(regions);
+  const sido = regions[hh.region]?.sido || Object.keys(bySido)[0];
+  // 거주 기간은 이 지역의 승인된 지자체 제도가 거주 기간을 조건으로 쓸 때만 묻는다 (예: 경산 다자녀 지원 3년 이상 거주)
+  const askResidence = residenceRegions.includes(hh.region) && hh.thirdChild7to18;
   // 첫 질문에서 뒤로: 처음 계산이면 시작 화면, 수정 중이면 결과 화면으로
   const back = () => (step > 1 || (step === 1 && !editing) ? setStep(step - 1) : onCancel());
 
@@ -92,10 +94,25 @@ export default function Questions({ regions, initial, initialIncome, editing, st
         {step === 1 && <>
           <h1 className="title">어디에 사세요?</h1>
           <p className="desc">사는 곳에 따라 주거급여와 지자체 혜택이 달라져요</p>
-          <div className="options">
-            {regions.map((r) => <Option key={r} on={hh.region === r} onClick={() => set("region", r)} sub={r}>{short(r)}</Option>)}
+          <div className="field">
+            <label className="field-name" htmlFor="q-sido">시·도</label>
+            <select id="q-sido" className="select" value={sido} onChange={(e) => set("region", bySido[e.target.value][0])}>
+              {Object.keys(bySido).map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
           </div>
-          <p className="note">지금은 대구 북구와 경산시만 계산할 수 있어요</p>
+          {bySido[sido].length > 1 && <div className="field">
+            <label className="field-name" htmlFor="q-sgg">시·군·구</label>
+            <select id="q-sgg" className="select" value={hh.region} onChange={(e) => set("region", e.target.value)}>
+              {bySido[sido].map((k) => <option key={k} value={k}>{regions[k].sigungu}</option>)}
+            </select>
+          </div>}
+          {pilotRegions.length > 0 && <>
+            <p className="group-title">지자체 자체 혜택까지 계산되는 곳</p>
+            <div className="options">
+              {pilotRegions.map((k) => <Option key={k} on={hh.region === k} onClick={() => set("region", k)} sub={k}>{short(k)}</Option>)}
+            </div>
+          </>}
+          <p className="note">중앙 제도(생계·의료·주거·교육급여, 기초연금, 근로장려금 등)는 전국 어디서나 계산해요. 지자체 자체 혜택은 담당자가 승인한 지역만 들어가요.</p>
         </>}
 
         {step === 2 && <>
@@ -127,7 +144,7 @@ export default function Questions({ regions, initial, initialIncome, editing, st
             </>}
             <Option on={hh.thirdChild7to18} onClick={() => set("thirdChild7to18", !hh.thirdChild7to18)} sub="7~18세 셋째 이상">자녀가 셋 이상이에요</Option>
           </div>
-          {askResidence && <div className="field"><span className="field-name">경산시에 산 기간<small>3년 이상이면 다자녀가정 지원 대상</small></span><Stepper label="거주 기간" value={Math.floor(hh.residenceMonths / 12)} max={50} suffix="년" onChange={(v) => set("residenceMonths", v * 12)} /></div>}
+          {askResidence && <div className="field"><span className="field-name">{short(hh.region)}에 산 기간<small>지자체 혜택에 거주 기간 조건이 있어요</small></span><Stepper label="거주 기간" value={Math.floor(hh.residenceMonths / 12)} max={50} suffix="년" onChange={(v) => set("residenceMonths", v * 12)} /></div>}
         </>}
 
         {step === 4 && <>

@@ -23,3 +23,6 @@ tests/py_out.json
 .DS_Store
 Thumbs.db
 .claude/
+
+# 매일 변경 확인 요약 (PR 본문용, 날마다 바뀌므로 저장소에 남기지 않음)
+pipeline/state/summary.md

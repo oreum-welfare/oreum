@@ -21,12 +21,12 @@ jobs:
         with:
           node-version: "20"
           cache: npm
-          cache-dependency-path: oreum-app/package-lock.json
+          cache-dependency-path: oreum-web/package-lock.json
 
       - name: 파이썬 패키지 설치
         run: pip install "pandas>=2.2"
 
-      - name: 엔진 일치 검사 (rules.py · oreum-app)
+      - name: 엔진 일치 검사 (rules.py · oreum-web)
         run: |
           python tests/parity_py.py
           node tests/parity.mjs
@@ -34,10 +34,11 @@ jobs:
       - name: 엔진 기대값 · AI 채점기 검사
         run: |
           node tests/engine_checks.mjs
+          node tests/admin_checks.mjs
           python tests/grader_checks.py
 
       - name: React 앱 빌드
-        working-directory: oreum-app
+        working-directory: oreum-web
         run: |
           npm ci
           npm run build

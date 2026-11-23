@@ -6,7 +6,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const { createEngine } = await import(pathToFileURL(join(root, "oreum-app/src/lib/engine.js")));
+const { createEngine } = await import(pathToFileURL(join(root, "oreum-web/src/lib/engine.js")));
 const eng = createEngine(JSON.parse(readFileSync(join(root, "data/rules.json"), "utf8")));
 const cases = JSON.parse(readFileSync(join(root, "tests/cases.json"), "utf8"));
 const py = JSON.parse(readFileSync(join(root, "tests/py_out.json"), "utf8"));
@@ -27,7 +27,7 @@ cases.forEach((c, i) => {
   console.log(`가구 ${i + 1}: ${ok ? "일치" : "불일치"} (구간 ${sim.disposable.length}개, 최대 차이 ${maxDiff.toFixed(4)}원, 절벽 ${cl.length}개)`);
 });
 if (bad) {
-  console.error(`${bad}개 가구에서 JS와 파이썬 결과가 다릅니다. oreum-app/src/lib/engine.js와 rules.py를 함께 고쳤는지 확인하세요.`);
+  console.error(`${bad}개 가구에서 JS와 파이썬 결과가 다릅니다. oreum-web/src/lib/engine.js와 rules.py를 함께 고쳤는지 확인하세요.`);
   process.exit(1);
 }
 console.log(`모두 일치: 테스트 가구 ${cases.length}개`);

@@ -4,16 +4,24 @@ import "./admin.css";
 import Logo from "../ui/Logo.jsx";
 import AiResults from "./pages/AiResults.jsx";
 import Analysis from "./pages/Analysis.jsx";
+import LocalPrograms from "./pages/LocalPrograms.jsx";
 import Review from "./pages/Review.jsx";
+import { SessionProvider, useSession } from "./session.jsx";
 
 const TABS = [
   ["analysis", "데이터 분석"],
   ["ai", "AI 성능"],
   ["review", "AI 검수"],
+  ["local", "지자체 제도 검토"],
 ];
 
 // 관리자(운영자) 화면: 정책 분석·AI 추출 성능·사람 검수
 export default function AdminApp() {
+  return <SessionProvider><AdminShell /></SessionProvider>;
+}
+
+function AdminShell() {
+  const { user, mode } = useSession();
   return (
     <div className="admin">
       <header className="admin-top">
@@ -28,12 +36,13 @@ export default function AdminApp() {
         </div>
       </header>
       <div className="admin-body">
-        <p className="admin-note">운영자용 화면이에요. 데모라 로그인 없이 열려 있어요.</p>
+        <p className="admin-note">분석·AI 성능은 공개 자료라 누구나 볼 수 있어요. 지자체 제도 검토·승인은 담당자 로그인이 필요해요{mode === "demo" ? " (지금은 데모 계정)" : ""}.{user ? ` 로그인: ${user.name}` : ""}</p>
         <Routes>
           <Route index element={<Navigate to="analysis" replace />} />
           <Route path="analysis" element={<Analysis />} />
           <Route path="ai" element={<AiResults />} />
           <Route path="review" element={<Review />} />
+          <Route path="local" element={<LocalPrograms />} />
           <Route path="*" element={<Navigate to="analysis" replace />} />
         </Routes>
       </div>

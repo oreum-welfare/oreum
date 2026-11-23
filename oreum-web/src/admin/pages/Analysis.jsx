@@ -34,7 +34,7 @@ function toHh(snake, region) {
 }
 
 function runAll(data, engine) {
-  const regions = Object.keys(data.regions);
+  const regions = data.analysis_regions || Object.keys(data.regions); // 분석 대상 지역 (제안서 분석)
   const cases = [];
   for (const t of data.analysis_households) {
     for (const region of regions) {
@@ -76,7 +76,7 @@ function buildSensitivity(data, engine) {
   const rows = [];
 
   for (const type of data.analysis_households) {
-    for (const region of Object.keys(data.regions)) {
+    for (const region of data.analysis_regions || Object.keys(data.regions)) {
       const base = toHh(type.hh, region);
       const baseSize = engine.derive(base).size;
       const baseMedian = engine.medianIncome(baseSize);

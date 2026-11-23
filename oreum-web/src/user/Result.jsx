@@ -1,9 +1,8 @@
 import { useCallback, useState } from "react";
-import { Link } from "react-router-dom";
 import { Sheet } from "../ui/index.jsx";
 import { applyInfo } from "./apply.js";
 import Chart from "./Chart.jsx";
-import { CHECK_LABEL, LEVEL_LABEL, STEP, about, iga, levelOf, manwon, short, sourceKeys, statusClass, won } from "./data.js";
+import { CHECK_LABEL, LEVEL_LABEL, STEP, about, iga, levelOf, localReady, manwon, short, sourceKeys, statusClass, won } from "./data.js";
 
 // 데이터 출처 (결과 화면 아래와 계산 기준 시트에 함께 보여 준다)
 const SOURCES = [
@@ -34,6 +33,7 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
             ? <><p className="big">월 {manwon(total)} 원</p><p className="desc" style={{ margin: 0 }}>복지 혜택을 받을 수 있어요</p></>
             : <><p className="big" style={{ fontSize: 30 }}>받을 수 있는 복지가 없어요</p><p className="desc" style={{ margin: 0 }}>이 소득에서는 계산되는 혜택이 없어요</p></>}
           {!hasAssets && total > 0 && <p className="asset-hint">재산 0원으로 계산했어요 · <button type="button" className="link-btn" onClick={() => onEdit(4)}>재산 넣기</button></p>}
+          {!localReady(data, hh.region) && <p className="notice">{short(hh.region)}의 지자체 자체 혜택은 아직 반영되지 않았어요. 전국 공통인 중앙 제도만 계산했어요.</p>}
           {r.capped && <p className="notice">입력한 소득(월 {manwon(income)} 원)이 너무 커서, 계산할 수 있는 가장 큰 소득(월 {manwon(maxIncome)} 원) 기준으로 보여 드려요.</p>}
         </section>
 
@@ -117,8 +117,6 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
           <p style={{ margin: "0 0 8px" }}>데이터: 복지로 · 한국사회보장정보원 복지서비스 API, 보건복지부·국토교통부 고시 (2026년 기준) · <button type="button" className="link-btn" onClick={() => setSheet("basis")} style={{ fontSize: 13 }}>출처 자세히</button></p>
           <p style={{ margin: "0 0 12px" }}>2026년 기준 참고용이에요. 실제 수급은 읍면동 행정복지센터에서 결정돼요.</p>
           <button type="button" className="link-btn" onClick={onRestart} style={{ fontSize: 13 }}>처음부터 다시</button>
-          <span style={{ margin: "0 8px" }}>·</span>
-          <Link to="/admin" style={{ fontSize: 13 }}>관리자 화면</Link>
         </footer>
       </div>
 
@@ -130,7 +128,7 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
       {sheet === "benefits" && <BenefitsSheet {...{ data, benefits, total, inc, soonLost, hasAssets, includeInkind, setIncludeInkind, close }} />}
       {sheet === "cliff" && cliff && <CliffSheet cliff={cliff} cliffs={r.cliffs} m={r.m} close={close} />}
       {sheet === "path" && <PathSheet programs={r.programs} cliff={cliff} curLoss={curLoss} gains={r.gains} close={close} />}
-      {sheet === "region" && <RegionSheet regions={r.regions} hh={hh} close={close} />}
+      {sheet === "region" && <RegionSheet data={data} regions={r.regions} hh={hh} close={close} />}
       {sheet === "basis" && <BasisSheet data={data} benefits={benefits} hasAssets={hasAssets} close={close} />}
     </div>
   );
@@ -299,17 +297,17 @@ function PathSheet({ programs, cliff, curLoss, gains, close }) {
   );
 }
 
-function RegionSheet({ regions, hh, close }) {
+function RegionSheet({ data, regions, hh, close }) {
   const here = regions.find((x) => x.region === hh.region);
   return (
     <Sheet title="다른 지역이라면?" sub="같은 가족·같은 소득일 때" onClose={close}>
       {regions.map((x) => (
         <div className="kv" key={x.region}>
-          <span>{short(x.region)}{x.region === hh.region ? " (지금)" : ""}</span>
+          <span>{short(x.region)}{x.region === hh.region ? " (지금)" : ""}{localReady(data, x.region) ? <small className="tag">지자체 혜택 포함</small> : null}</span>
           <b>월 {manwon(x.total)} 원{x.region !== hh.region && here ? <span style={{ color: "var(--text-3)", fontWeight: 400 }}> ({x.total - here.total >= 0 ? "+" : "−"}{manwon(Math.abs(x.total - here.total))})</span> : null}</b>
         </div>
       ))}
-      <p className="note">주거급여 기준임대료와 지자체 혜택이 지역마다 달라요.</p>
+      <p className="note">주거급여 기준임대료(서울·경기·광역시·그 외 지역), 재산 공제액, 지자체 혜택이 지역마다 달라요. 지역별 대표 지역과 비교했어요.</p>
     </Sheet>
   );
 }
