@@ -43,7 +43,7 @@ export default function Questions({ regions, pilotRegions = [], residenceRegions
           <section className="hero">
             <span className="badge intro" style={{ "--d": "0ms" }}>오름 · 복지 절벽 시뮬레이터</span>
             <h1><span className="intro" style={{ "--d": "120ms" }}>소득이 오르면,</span><br /><span className="intro" style={{ "--d": "260ms" }}>받는 복지는 <em>어떻게 바뀔까요?</em></span></h1>
-            <p className="intro" style={{ "--d": "420ms" }}>몇 가지만 알려 주시면 지금 받을 수 있는 복지와, 소득이 늘 때 혜택이 한꺼번에 끊기는 <b>복지 절벽</b>이 어디에 있는지 계산해 드려요.</p>
+            <p className="intro" style={{ "--d": "420ms" }}>몇 가지만 알려 주시면 지금 받을 수 있는 복지부터, 소득이 늘 때 혜택이 한꺼번에 끊기는 <b>복지 절벽</b>까지 <b>한눈에 확인</b>할 수 있어요.</p>
           </section>
           <button type="button" className="btn primary desk-cta intro" style={{ "--d": "560ms" }} onClick={() => setStep(1)}>내 상황 계산하기</button>
           <p className="privacy intro" style={{ "--d": "640ms" }}>입력한 내용은 서버로 보내지 않고, 이 기기 안에서만 계산해요. · <Link to="/data">어떻게 계산하나요? 데이터·분석 보기</Link></p>
@@ -60,14 +60,32 @@ export default function Questions({ regions, pilotRegions = [], residenceRegions
           )}
           <div className="presets intro" style={{ "--d": "700ms" }}>
             <p className="label">예시 가구로 먼저 보기</p>
-            {PRESETS.map((p) => (
-              <button type="button" className="preset" key={p.key} onClick={() => onPreset(p)}>
-                <b style={{ fontWeight: 600 }}>{p.title}</b><span>{p.sub} ›</span>
-              </button>
-            ))}
+            <p className="presets-sub">내 상황과 비슷한 가구를 골라 결과를 먼저 볼 수 있어요</p>
+            <div className="preset-grid">
+              {PRESETS.map((p) => {
+                const [place, pay] = p.sub.split(" · ");
+                return (
+                  <button type="button" className="preset-card" key={p.key} onClick={() => onPreset(p)}>
+                    <span className="pc-icon" aria-hidden="true">{p.icon}</span>
+                    <b className="pc-title">{p.title}</b>
+                    <span className="pc-place">{place}</span>
+                    <span className="pc-pay">{pay} →</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
           </div>
           </div>
+          {/* 오름으로 확인할 수 있는 것 (스크롤을 내리면) */}
+          <section className="features intro" style={{ "--d": "820ms" }} aria-label="오름으로 확인할 수 있어요">
+            <p className="label">오름으로 확인할 수 있어요</p>
+            <div className="feature-row">
+              <div className="feature"><span className="f-no">1</span><b>받는 복지</b><span>지금 받을 수 있는 혜택과 금액, 왜 그 금액인지</span></div>
+              <div className="feature"><span className="f-no bad">2</span><b>복지 절벽</b><span>소득이 늘 때 혜택이 끊겨 생활비가 줄어드는 구간</span></div>
+              <div className="feature"><span className="f-no ok">3</span><b>넘는 방법</b><span>줄어드는 구간을 넘는 데 도움이 되는 제도와 경로</span></div>
+            </div>
+          </section>
         </div>
         <div className="bottom mobile-bottom"><div className="col"><button type="button" className="btn primary" onClick={() => setStep(1)}>내 상황 계산하기</button></div></div>
       </div>
@@ -194,11 +212,17 @@ export default function Questions({ regions, pilotRegions = [], residenceRegions
 // 시작 화면 그림: 소득이 오르면 생활비도 오르다가 혜택이 끊기는 곳에서 뚝 떨어지고 다시 오른다 (그려지는 애니메이션)
 function CliffLine() {
   return (
-    <svg className="cliff-line" viewBox="0 0 320 96" aria-hidden="true">
-      <path className="cl-base" d="M8 88H312" />
-      <path className="cl-path" pathLength="1" d="M8 78 L60 66 L112 52 L164 36 L164 64 L216 52 L268 38 L312 26" />
-      <circle className="cl-dot" cx="164" cy="64" r="6" />
-      <circle className="cl-ring" cx="164" cy="64" r="6" />
+    <svg className="cliff-line" viewBox="0 0 320 120" role="img" aria-label="월급이 오르는데 혜택이 끊기는 곳에서 생활비가 줄어드는 그래프">
+      <path className="cl-base" d="M8 98H312" />
+      <path className="cl-path" pathLength="1" d="M8 88 L60 76 L112 62 L164 46 L164 74 L216 62 L268 48 L312 36" />
+      {/* 떨어지는 폭 표시 */}
+      <path d="M176 46 V74" stroke="#e5503c" strokeWidth="1.5" strokeDasharray="3 3" />
+      <circle className="cl-dot" cx="164" cy="74" r="6" />
+      <circle className="cl-ring" cx="164" cy="74" r="6" />
+      <text x="146" y="28" className="cl-note bad" textAnchor="end">혜택이 끊기는 곳</text>
+      <text x="182" y="66" className="cl-note bad">생활비가 줄어요</text>
+      <text x="8" y="114" className="cl-note">월급이 오르면 →</text>
+      <text x="312" y="28" className="cl-note" textAnchor="end">월급 + 혜택</text>
     </svg>
   );
 }

@@ -11,12 +11,12 @@ export const DEFAULT_HH = {
 };
 
 export const PRESETS = [
-  { key: "single-parent", title: "한부모 + 자녀 2명", sub: "경산시 · 월 300만 원", income: 3000000,
+  { key: "single-parent", icon: "👩‍👧‍👦", title: "한부모 + 자녀 2명", sub: "경산시 · 월 300만 원", income: 3000000,
     hh: { region: "경상북도 경산시", age: 38, singleParent: true, elem: 1, middle: 1 } },
-  { key: "senior-couple", title: "어르신 부부", sub: "대구 북구 · 월 150만 원", income: 1500000,
+  { key: "senior-couple", icon: "👵👴", title: "어르신 부부", sub: "대구 북구 · 월 150만 원", income: 1500000,
     hh: { region: "대구광역시 북구", age: 70, spouse: true, spouse65: true } },
-  { key: "youth", title: "1인 청년", sub: "경산시 · 월 100만 원", income: 1000000, hh: { region: "경상북도 경산시", age: 29 } },
-  { key: "family", title: "4인 가구", sub: "경산시 · 월 250만 원", income: 2500000,
+  { key: "youth", icon: "🧑", title: "1인 청년", sub: "경산시 · 월 100만 원", income: 1000000, hh: { region: "경상북도 경산시", age: 29 } },
+  { key: "family", icon: "👨‍👩‍👧‍👦", title: "4인 가구", sub: "경산시 · 월 250만 원", income: 2500000,
     hh: { region: "경상북도 경산시", age: 36, spouse: true, infants: 1, elem: 1 } },
 ];
 
