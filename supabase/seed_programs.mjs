@@ -8,7 +8,9 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const url = process.env.SUPABASE_URL, key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+// URL 끝의 / 나 /rest/v1 은 떼어 낸다 (대시보드에서 API URL을 통째로 복사해도 되게)
+const url = (process.env.SUPABASE_URL || "").trim().replace(/\/+$/, "").replace(/\/rest\/v1$/, "");
+const key = (process.env.SUPABASE_SERVICE_ROLE_KEY || "").trim();
 if (!url || !key) {
   console.error("SUPABASE_URL과 SUPABASE_SERVICE_ROLE_KEY 환경변수를 먼저 설정하세요.");
   process.exit(1);
