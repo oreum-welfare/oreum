@@ -193,7 +193,7 @@ def ask_openai(client, msg: str, pdfs: list[str], keys: list[str], images=()) ->
 
 def propose(client, stem: str, rules: dict, hints: dict, ask=ask_claude) -> dict:
     meta = json.loads((NOTICE_DIR / f"{stem}.json").read_text(encoding="utf-8"))
-    hint = hints.get(meta["notice"], "")
+    hint = meta.get("hint") or hints.get(meta["notice"], "")  # 관리자 화면에서 더한 고시는 meta에 설명이 들어 있다
     text = (NOTICE_DIR / f"{stem}.txt").read_text(encoding="utf-8")
     current = {k: get_path(rules, k) for k in meta["keys"]}
     pdfs = pdf_blocks(meta.get("table_pdfs", []))

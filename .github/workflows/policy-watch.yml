@@ -63,6 +63,8 @@ jobs:
       - name: 바뀐 제도 확인
         env:
           DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}                       # 감시 지역(관리자 화면 '운영 설정')을 읽음
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: python pipeline/watch_updates.py
 
       - name: AI 초안 만들기 (초안이 아직 없는 원문만)

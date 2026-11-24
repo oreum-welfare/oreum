@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { won } from "../../lib/format.js";
 import { useJson } from "../../lib/useJson.js";
 import { PageHead } from "../adminUi.jsx";
@@ -107,6 +107,23 @@ function RunCompare({ runs }) {
   );
 }
 
+// 원문에서 고른 문장과 연결된 AI 규칙 (원문 아래에 크게)
+function LinkedRule({ c, d }) {
+  const value = d?.type === "edit" ? d.value : c.value;
+  const unit = c.field === "income_recognized_pct_median" ? "%" : "";
+  const [label, cls] = STATUS_LABEL[c.status];
+  return (
+    <div className="rv-linked">
+      <p className="rv-linked-head">↓ 선택한 문장과 연결된 AI 규칙</p>
+      <div className="rv-linked-card">
+        <div className="rv-linked-top"><b>{FIELD_LABEL[c.field] || c.field}</b><span className={`pill ${c.grounded ? "s-done" : "s-bad"}`}>{c.grounded ? "원문 연결" : "근거 불일치"}</span></div>
+        <p className="rv-linked-value">{value}{unit}{OP_LABEL[c.op] && c.field !== "other" ? ` ${OP_LABEL[c.op]}` : ""}</p>
+        <p className="hint">{label} · {c.field === "other" ? "사람 확인 필요" : "자동 계산 가능"}{d?.type ? ` · ${{ approve: "승인함", edit: "수정함", reject: "삭제함" }[d.type]}` : ""}</p>
+      </div>
+    </div>
+  );
+}
+
 export default function Review() {
   const { data, error } = useJson("/data/review.json");
   const [store, setStore] = useState(loadStore);
@@ -119,7 +136,9 @@ export default function Review() {
   const [draft, setDraft] = useState("");
 
   useEffect(() => { saveStore(store); }, [store]);
-  useEffect(() => { if (data && !sel) setSel(data.services[0].id); }, [data, sel]);
+  const [params] = useSearchParams();
+  // ?s=서비스id 로 들어오면 그 서비스를 먼저 연다 (AI 성능 화면에서 바로 이동)
+  useEffect(() => { if (data && !sel) { const want = params.get("s"); setSel(data.services.some((x) => x.id === want) ? want : data.services[0].id); } }, [data, sel, params]);
 
   const svc = useMemo(() => data?.services.find((s) => s.id === sel), [data, sel]);
   const conds = useMemo(() => (svc ? conditionStatus(svc) : []), [svc]);
@@ -157,28 +176,39 @@ export default function Review() {
           <span className="pill brand">학습용 서비스 13건</span>
         </PageHead>
         <section className="card">
+          <h2 className="card-title">현재 검수 현황</h2>
+          <div className="rv-status">
+            <div><span>전체 서비스</span><b>{data.services.length}건</b></div>
+            <div className="done"><span>검수 완료</span><b>{doneCount}건</b></div>
+            <div className="wait"><span>검수 대기</span><b>{data.services.length - doneCount}건</b></div>
+          </div>
+          <div className="rv-progress-head"><span>검수 진행률</span><b>{Math.round((doneCount / data.services.length) * 100)}%</b></div>
+          <div className="rv-progress"><i style={{ width: `${(doneCount / data.services.length) * 100}%` }} /></div>
+        </section>
+
+        <section className="card">
           <div className="card-head">
             <h2 className="card-title">이 화면의 13건: 1차 → 2차 정확도 (사람이 만든 정답과 비교)</h2>
             <span className="hint">모델 {svc.meta.model || "-"}</span>
           </div>
           <RunCompare runs={data.runs} />
-          <p className="hint">2차는 1차 오류를 분석해 프롬프트를 고친 결과입니다. 같은 13건으로 고치고 다시 쟀기 때문에 실제보다 높게 나옵니다. 처음 보는 서비스로 잰 점수(2차 36% → 3차 81%)는 <Link to="/admin/ai">AI 성능</Link> 페이지에 있습니다.</p>
+          <p className="hint">2차는 1차 오류를 분석해 프롬프트를 고친 결과입니다. 같은 13건으로 고치고 다시 쟀기 때문에 실제보다 높게 나옵니다. 처음 보는 서비스로 잰 점수(2차 36% → 3차 81%)는 <Link to="../ai">AI 성능</Link> 페이지에 있습니다.</p>
         </section>
 
         <div className="review-layout">
           <aside className="card review-list">
             <div className="card-head">
-              <h2 className="card-title">서비스 ({doneCount}/{data.services.length} 검수 완료)</h2>
+              <h2 className="card-title">서비스 목록</h2>
             </div>
             <ul>
               {data.services.map((s) => (
                 <li key={s.id}>
-                  <button className={s.id === sel ? "active" : ""} onClick={() => { setSel(s.id); setHover(null); setPicked(null); setEditing(null); }}>
-                    <span className="rv-name">{s.name}</span>
-                    <span className="rv-sub">{s.provider}</span>
+                  <button className={s.id === sel ? "active" : ""} aria-current={s.id === sel ? "true" : undefined} onClick={() => { setSel(s.id); setHover(null); setPicked(null); setEditing(null); }}>
+                    <span className="rv-top"><span className="rv-name">{s.name}</span>{s.id === sel && <span className="pill s-done">선택됨</span>}</span>
+                    <span className="rv-sub">{s.provider} · 복지로</span>
                     <span className="rv-badges">
-                      <span className={`pill ${s.eval.service_ok ? "s-ok" : "s-warn"}`}>{s.eval.service_ok ? "AI 정답" : "차이 있음"}</span>
-                      {store[s.id]?.done && <span className="pill s-done">검수 완료</span>}
+                      <span className={`pill ${s.eval.service_ok ? "s-ok" : "s-bad"}`}>{s.eval.service_ok ? "AI 정답" : "AI 확인 필요"}</span>
+                      <span className={`pill ${store[s.id]?.done ? "s-ok" : "s-wait"}`}>{store[s.id]?.done ? "검수 완료" : "검수 대기"}</span>
                     </span>
                   </button>
                 </li>
@@ -202,8 +232,9 @@ export default function Review() {
             <div className="review-cols">
               <div className="card">
                 <h3 className="card-title">복지로 원문</h3>
-                <p className="hint">노란색 = AI가 근거로 인용한 문장. 오른쪽 조건에 마우스를 올리면 근거가 진하게, 누르면 원문의 그 위치로 이동합니다.</p>
+                <p className="hint">지원 대상 및 선정 기준 · 노란색 = AI가 근거로 인용한 문장. 오른쪽 규칙을 누르면 원문의 그 위치로 이동해요.</p>
                 <Highlighted text={svc.text} evidences={conds.map((c) => c.evidence)} active={active} jump={jump} />
+                {active != null && conds[active] && <LinkedRule c={conds[active]} d={rec.conditions[active]} />}
               </div>
 
               <div className="card">

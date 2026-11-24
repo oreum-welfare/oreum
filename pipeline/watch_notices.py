@@ -31,6 +31,9 @@ from pathlib import Path
 
 import requests
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from supabase_rest import select, upsert  # noqa: E402
+
 HERE = Path(__file__).resolve().parent
 CONFIG = HERE / "notices.json"
 OUT_DIR = HERE / "notices"
@@ -98,6 +101,17 @@ def collect(node, keys: set[str]) -> dict[str, list[str]]:
     return got
 
 
+def watched_notices() -> tuple[list[dict], str]:
+    """감시 고시: 관리자 화면 '운영 설정'(Supabase watched_notices, 사용 중인 것) → 없으면 pipeline/notices.json"""
+    rows = select("watched_notices", "select=*&active=eq.true&order=key")
+    if rows:
+        out = [{"key": r["key"], "source": r.get("source") or "", "query": r["query"], "match": list(r.get("match") or []),
+                "keys": list(r.get("keys") or []), "hint": r.get("hint") or ""} for r in rows if r.get("query") and r.get("keys")]
+        if out:
+            return out, "관리자 화면 설정"
+    return json.loads(CONFIG.read_text(encoding="utf-8"))["notices"], "notices.json"
+
+
 def latest_version(oc: str, notice: dict, in_force_only: bool = False) -> dict | None:
     """가장 최근 고시. in_force_only면 오늘 이미 시행 중인 것 중 가장 최근 (기준 기록용:
     계산기 값은 지금 시행 중인 고시 기준이라, 시행 전인 다음 연도 고시는 '새 고시'로 잡혀야 한다)"""
@@ -129,7 +143,7 @@ def save_body(oc: str, notice: dict, ver: dict) -> str:
     text += ["[조문]"] + got["조문내용"] + ["", "[별표]"] + got["별표내용"] + ["", "[부칙]"] + got["부칙내용"]
     (OUT_DIR / f"{stem}.txt").write_text("\n".join(text) + "\n", encoding="utf-8")
     pdfs = ["https://www.law.go.kr" + p if p.startswith("/") else p for p in got["별표서식PDF파일링크"]]
-    meta = {"notice": notice["key"], "source": notice["source"], "keys": notice["keys"], **ver,
+    meta = {"notice": notice["key"], "source": notice["source"], "keys": notice["keys"], "hint": notice.get("hint", ""), **ver,
             "tables": got["별표제목"], "table_pdfs": [p for p in pdfs if p.startswith("https://www.law.go.kr/")]}
     (OUT_DIR / f"{stem}.json").write_text(json.dumps(meta, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     return stem
@@ -144,17 +158,20 @@ def main() -> None:
     if not oc:
         sys.exit("LAW_OC 환경변수에 국가법령정보 공동활용 API 인증값(OC)을 넣어 주세요.")
 
-    notices = json.loads(CONFIG.read_text(encoding="utf-8"))["notices"]
+    notices, origin = watched_notices()
+    print(f"감시 고시 {len(notices)}종 ({origin})")
     state = json.loads(STATE.read_text(encoding="utf-8")) if STATE.exists() else {}
     init = args.init or not state
     if init:
         print("기준 기록 모드: 지금 고시를 기록만 하고 AI 제안은 만들지 않습니다.")
     STATE_DIR.mkdir(exist_ok=True)
 
-    new, failed, missing = [], [], []
+    new, failed, missing, added = [], [], [], []
     for n in notices:
+        # 관리자 화면에서 새로 더한 고시(기록 없음)는 이번엔 시행 중인 버전을 기준으로만 기록한다
+        first = n["key"] not in state
         try:
-            ver = latest_version(oc, n, in_force_only=init)
+            ver = latest_version(oc, n, in_force_only=init or first)
         except RuntimeError as e:
             failed.append(f"{n['key']} ({e})")
             continue
@@ -168,7 +185,9 @@ def main() -> None:
             continue
         if not init and int(ver["issued"] or 0) < int(old.get("issued") or 0):
             continue  # 더 옛 버전이 검색되면 무시
-        if not init:
+        if first and not init:
+            added.append(n["key"])  # 새로 더한 고시: 기준만 기록, 다음 실행부터 새 버전을 잡는다
+        elif not init:
             try:
                 stem = save_body(oc, n, ver)
             except RuntimeError as e:
@@ -185,17 +204,20 @@ def main() -> None:
     if init:
         lines.append(f"처음 실행이라 지금 고시 {len(state)}건을 기준으로 기록했어요. 내일부터 새 고시만 잡아요.")
     elif new:
-        lines += ["새 고시가 올라왔어요. AI가 바뀐 값을 제안했고, **원문과 대조한 뒤 시행일에 맞춰 합쳐 주세요** "
-                  "(합치는 순간 계산기에 반영돼요).", "",
+        lines += ["새 고시가 올라왔어요. AI가 바뀐 값을 관리자 화면 **중앙 기준값**에 제안해요. 원문과 대조해 승인하면 시행일부터 반영돼요.", "",
                   "| 출처 | 고시 | 발령 | 시행일 |", "|---|---|---|---|"]
         lines += [f"| {x['source']} | {x['name']} | {x['issued']} {x['number']} | {x['effective']} |" for x in new]
-    else:
+    elif not added:
         lines.append("새 고시가 없어요.")
+    if added:
+        lines += ["", "새로 감시하기 시작한 고시 (지금 시행 중인 버전을 기준으로 기록): " + ", ".join(added)]
     if missing:
-        lines += ["", "검색되지 않은 고시 (이름이 바뀌었을 수 있어요, `pipeline/notices.json` 확인): " + ", ".join(missing)]
+        lines += ["", "검색되지 않은 고시 (이름이 바뀌었을 수 있어요, 관리자 화면 '운영 설정'에서 확인): " + ", ".join(missing)]
     if failed:
         lines += ["", "확인하지 못한 것 (다음 실행 때 다시): " + ", ".join(failed)]
     SUMMARY.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    upsert("system_status", {"key": "notice_watch", "checked_at": datetime.now(timezone.utc).isoformat(),
+                             "summary": {"notices": len(notices), "new": len(new)}})
     print(f"완료: 새 고시 {len(new)}건")
 
 

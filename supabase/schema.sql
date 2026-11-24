@@ -268,3 +268,129 @@ grant select, update on public.central_values to authenticated;  -- 관리자만
 grant select on public.central_events to authenticated;
 grant all on public.central_values, public.central_events to service_role;
 grant execute on function public.is_admin() to anon, authenticated;
+
+-- 7. 담당자 계정 관리 (개발자 없이): 담당자가 관리자 화면에서 가입 신청 → 시스템 관리자가 승인하며 지역 지정
+-- (Supabase Authentication → Sign In / Providers → Email의 "Confirm email"을 끄면 .test 같은 주소로도 바로 신청할 수 있다)
+alter table public.profiles add column if not exists email text;
+
+create table if not exists public.access_requests (
+  id uuid primary key references auth.users (id) on delete cascade,
+  email text,
+  name text not null,
+  requested_region text,          -- 희망 담당 지역 (rules.json 지역 키)
+  requested_sido text,
+  note text,
+  status text not null default '대기' check (status in ('대기', '승인', '반려')),
+  decided_by text,
+  decided_at timestamptz,
+  created_at timestamptz not null default now()
+);
+alter table public.access_requests enable row level security;
+drop policy if exists "본인 가입 신청" on public.access_requests;
+create policy "본인 가입 신청" on public.access_requests for insert with check (id = auth.uid() and status = '대기');
+drop policy if exists "본인·관리자 신청 읽기" on public.access_requests;
+create policy "본인·관리자 신청 읽기" on public.access_requests for select using (id = auth.uid() or public.is_admin());
+drop policy if exists "관리자 신청 결정" on public.access_requests;
+create policy "관리자 신청 결정" on public.access_requests for update using (public.is_admin()) with check (public.is_admin());
+
+-- 권한(profiles)은 시스템 관리자만 주고·바꾸고·회수한다. 본인은 여전히 자기 것만 읽는다(1절)
+drop policy if exists "관리자 전체 권한 읽기" on public.profiles;
+create policy "관리자 전체 권한 읽기" on public.profiles for select using (public.is_admin());
+drop policy if exists "관리자 권한 부여" on public.profiles;
+create policy "관리자 권한 부여" on public.profiles for insert with check (public.is_admin());
+drop policy if exists "관리자 권한 변경" on public.profiles;
+create policy "관리자 권한 변경" on public.profiles for update using (public.is_admin()) with check (public.is_admin());
+drop policy if exists "관리자 권한 회수" on public.profiles;
+create policy "관리자 권한 회수" on public.profiles for delete using (public.is_admin());
+
+-- 관리자가 자기 권한을 없애 아무도 관리할 수 없게 되는 일을 막는다
+create or replace function public.guard_profile_change() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  if auth.uid() is not null and old.id = auth.uid() and (tg_op = 'DELETE' or new.role <> 'admin') then
+    raise exception '자기 관리자 권한은 없앨 수 없어요 (다른 관리자에게 부탁하세요)';
+  end if;
+  return case when tg_op = 'DELETE' then old else new end;
+end $$;
+drop trigger if exists guard_profile_change on public.profiles;
+create trigger guard_profile_change before update or delete on public.profiles
+  for each row execute function public.guard_profile_change();
+
+grant select, insert, update, delete on public.profiles to authenticated;   -- 관리자만 (RLS·트리거)
+grant select, insert, update on public.access_requests to authenticated;
+grant all on public.access_requests to service_role;
+
+-- 8. 감시 지역 (매일 지자체 제도 변경 확인할 시군구). 시스템 관리자가 관리자 화면 '운영 설정'에서 더하고 뺀다
+-- 매일 확인(.github/workflows/policy-watch.yml)이 서비스 키로 읽는다. 새로 더한 지역은 다음 날부터 제도가 '검토 대기'로 들어온다
+create table if not exists public.watch_regions (
+  region text primary key,         -- rules.json 지역 키 (예: 경상북도 경산시)
+  active boolean not null default true,
+  added_by text,
+  created_at timestamptz not null default now()
+);
+alter table public.watch_regions enable row level security;
+drop policy if exists "관리자 감시 지역 읽기" on public.watch_regions;
+create policy "관리자 감시 지역 읽기" on public.watch_regions for select using (public.is_admin());
+drop policy if exists "관리자 감시 지역 추가" on public.watch_regions;
+create policy "관리자 감시 지역 추가" on public.watch_regions for insert with check (public.is_admin());
+drop policy if exists "관리자 감시 지역 변경" on public.watch_regions;
+create policy "관리자 감시 지역 변경" on public.watch_regions for update using (public.is_admin()) with check (public.is_admin());
+drop policy if exists "관리자 감시 지역 삭제" on public.watch_regions;
+create policy "관리자 감시 지역 삭제" on public.watch_regions for delete using (public.is_admin());
+insert into public.watch_regions (region, added_by) values
+  ('경상북도 경산시', '처음 설정'), ('대구광역시 북구', '처음 설정'), ('경상북도 영천시', '처음 설정')
+on conflict (region) do nothing;
+grant select, insert, update, delete on public.watch_regions to authenticated;
+grant all on public.watch_regions to service_role;
+
+-- 9. 감시 고시 (계산 기준값을 정하는 중앙 고시 목록). 시스템 관리자가 '운영 설정'에서 더하고 뺀다
+-- 매일 고시 확인(.github/workflows/notice-watch.yml)이 서비스 키로 읽는다. 표가 비었거나 못 읽으면 pipeline/notices.json
+create table if not exists public.watched_notices (
+  key text primary key,            -- 고시 구분 이름 (영문·숫자)
+  source text,                     -- 출처 번호 (예: S04)
+  query text not null,             -- 국가법령정보 검색어 (연도 뺀 고시 이름 일부)
+  match jsonb not null default '[]',   -- 행정규칙명에 모두 들어 있어야 하는 말
+  keys jsonb not null default '[]',    -- 이 고시가 정하는 rules.json 값 (AI는 이 값만 제안)
+  hint text,                       -- AI에게 주는 값 설명
+  active boolean not null default true,
+  added_by text,
+  created_at timestamptz not null default now()
+);
+alter table public.watched_notices enable row level security;
+drop policy if exists "관리자 감시 고시 읽기" on public.watched_notices;
+create policy "관리자 감시 고시 읽기" on public.watched_notices for select using (public.is_admin());
+drop policy if exists "관리자 감시 고시 추가" on public.watched_notices;
+create policy "관리자 감시 고시 추가" on public.watched_notices for insert with check (public.is_admin());
+drop policy if exists "관리자 감시 고시 변경" on public.watched_notices;
+create policy "관리자 감시 고시 변경" on public.watched_notices for update using (public.is_admin()) with check (public.is_admin());
+drop policy if exists "관리자 감시 고시 삭제" on public.watched_notices;
+create policy "관리자 감시 고시 삭제" on public.watched_notices for delete using (public.is_admin());
+insert into public.watched_notices (key, source, query, match, keys, hint, added_by) values
+  ('median_saeng', 'S04', '기준 중위소득', '["기준 중위소득", "생계"]'::jsonb, '["lines.saeng_32"]'::jsonb, '생계급여 선정기준(기준 중위소득 32%) 가구원수별 월 금액. 1~6인', '처음 설정'),
+  ('housing', 'S05', '주거급여 선정기준', '["주거급여", "선정기준"]'::jsonb, '["lines.jugeo_48", "params.rent", "params.jugeo_self_share"]'::jsonb, '주거급여 선정기준(기준 중위소득 48%) 1~5인, 급지별·가구원수별 기준임대료(1~6인, 원/월), 자기부담 비율(소수, 예: 0.3)', '처음 설정'),
+  ('education', 'S06', '교육급여의 선정기준', '["교육급여", "선정기준"]'::jsonb, '["params.edu_annual"]'::jsonb, '교육활동지원비 연액: elem(초)·middle(중)·high(고)', '처음 설정'),
+  ('basic_pension', 'S08', '기초연금 지급대상자 선정기준액', '["기초연금", "선정기준액"]'::jsonb, '["params.basic_pension_line", "params.basic_pension_amount", "params.basic_pension_earned_deduction"]'::jsonb, '선정기준액 single(단독)·couple(부부) 월액, 기준연금액 월액, 근로소득 공제액(월)', '처음 설정'),
+  ('disability_pension', 'S10', '장애인연금 수급권자 선정기준액', '["장애인연금", "선정기준액"]'::jsonb, '["params.dis_pension"]'::jsonb, '선정기준액 line_single·line_couple, 근로소득 공제(earned_deduction), 기초급여액 등. 나이(age_min·age_max)는 고시가 아니라 법이 정하므로 그대로 둔다', '처음 설정'),
+  ('single_parent', 'S11', '한부모가족 지원대상자의 범위', '["한부모가족", "지원대상자"]'::jsonb, '["params.sp_child"]'::jsonb, '아동양육비 소득 기준(기준 중위소득 %)과 자녀 1인당 월 금액', '처음 설정'),
+  ('nhis_caps', 'S13', '월별 건강보험료액의 상한과 하한', '["건강보험료액", "상한", "하한"]'::jsonb, '["params.bukgu_min_premium"]'::jsonb, '지역가입자 월별 보험료액의 하한(최저보험료, 원/월)', '처음 설정')
+on conflict (key) do nothing;
+grant select, insert, update, delete on public.watched_notices to authenticated;
+grant all on public.watched_notices to service_role;
+
+-- 10. 중앙 기준값 직접 입력: 감시 고시 밖의 값(에너지바우처·통신요금 감면·근로장려금 등)은 시스템 관리자가 근거와 함께 입력한다.
+-- 입력하면 '검토 대기'로 들어가고, 승인해야 시행일부터 반영된다 (6절 규칙 그대로)
+drop policy if exists "관리자 직접 입력" on public.central_values;
+create policy "관리자 직접 입력" on public.central_values for insert with check (public.is_admin() and status = '검토 대기');
+grant insert on public.central_values to authenticated;
+
+-- 11. 자동 확인 상태 (매일 확인이 마지막으로 돈 시각과 요약). 계산기 화면에 "매일 자동 확인 · 마지막 확인 ○월 ○일"로 보여 준다
+create table if not exists public.system_status (
+  key text primary key,            -- local_watch (지자체 제도) / notice_watch (중앙 고시)
+  checked_at timestamptz not null default now(),
+  summary jsonb not null default '{}'
+);
+alter table public.system_status enable row level security;
+drop policy if exists "자동 확인 상태는 누구나 읽기" on public.system_status;
+create policy "자동 확인 상태는 누구나 읽기" on public.system_status for select using (true);
+grant select on public.system_status to anon, authenticated;
+grant all on public.system_status to service_role;   -- 쓰기는 매일 확인(서비스 키)만

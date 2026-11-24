@@ -1,3 +1,5 @@
+import { validateFormula } from "./formula.js";
+
 // 지자체 제도 검토 권한과 상태 규칙 (관리자 화면·데모 저장소·테스트가 함께 쓴다)
 // 실제 운영(Supabase)에서는 같은 규칙을 DB의 행 단위 보안(RLS)과 트리거가 다시 검사한다 (supabase/schema.sql).
 
@@ -35,18 +37,21 @@ export function computable(program, facts) {
   const used = (program.conditions || []).filter((_, i) => !skip.has(i));
   const unknown = used.filter((c) => !known.has(c.field));
   const meaningful = used.some((c) => known.has(c.field) && c.field !== "residence_region");
-  const amountOk = program.amount && (program.amount.type !== "fixed" || program.amount.param || Number.isFinite(Number(program.amount.monthly)));
+  const amountOk = program.amount && (program.amount.type === "formula" ? validateFormula(program.amount).ok
+    : program.amount.type !== "fixed" || program.amount.param || Number.isFinite(Number(program.amount.monthly)));
   return { ok: unknown.length === 0 && meaningful && amountOk, unknown, meaningful };
 }
 
 // 결정 하나를 검사하고 기록을 만든다. 문제가 있으면 error 문자열
-export function decide(user, program, to, { reason = "", monthly, applyChecks, facts = [] } = {}, now = new Date()) {
+export function decide(user, program, to, { reason = "", monthly, amount, applyChecks, facts = [] } = {}, now = new Date()) {
   if (!canReview(user, program)) return { error: "이 지자체 제도를 검토할 권한이 없어요" };
   if (!canTransition(program.status, to)) return { error: `'${program.status}'에서 '${to}'(으)로 바꿀 수 없어요` };
   if ((to === "반려" || to === "중지") && !reason.trim()) return { error: "사유를 적어 주세요" };
   const next = { ...program, status: to };
   if (applyChecks && program.status === "검토 대기") next.apply_checks = [...new Set(applyChecks)].filter((i) => (program.conditions || [])[i]?.field === "other").sort((a, b) => a - b);
   if (monthly != null && program.amount?.type === "fixed" && !program.amount.param) next.amount = { ...program.amount, monthly: Math.max(0, Math.round(Number(monthly) || 0)) };
+  // 계산식: 검토 대기 결정 때 담당자가 고친 식·표 (문법 검사는 아래 computable에서)
+  if (amount && program.status === "검토 대기" && amount.type === "formula") next.amount = { ...amount };
   if (to === "승인") {
     const c = computable(next, facts);
     if (!c.ok) return { error: c.unknown.length ? `계산할 수 없는 조건이 있어요: ${c.unknown.map((x) => x.field).join(", ")}` : !c.meaningful ? "계산하는 조건이 하나도 없어요 (거주 지역 말고 소득·나이 같은 조건이 필요해요)" : "금액을 확인해 주세요" };

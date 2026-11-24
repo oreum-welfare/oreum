@@ -56,6 +56,14 @@ SYSTEM_PROMPT = f"""당신은 한국 사회보장 제도의 선정기준을 계�
 8. 기준 금액이 가구 유형별로 다르면(예: 단독가구/부부가구, 단독/홑벌이/맞벌이) 유형마다 같은 field로 조건을 하나씩 만들고 같은 group 이름(예: "가구유형별 기준")을 붙입니다. other에 문장으로 몰아 쓰지 마세요.
 9. 목록의 field로 표현할 수 있으면 other를 쓰지 않습니다. 예: 영유아(7세 이하) → child_age <= 7, 자녀 2명 이상 → child_count >= 2, 노인 가구원 → senior_in_household == true, 차상위계층 → recipient_status 목록에 '차상위' 포함, 1년 이상 거주 → residence_months >= 12.
 10. evidence에는 원문의 연속된 한 구절만 그대로 옮깁니다. 여러 구절을 이어 붙이거나 말을 바꾸지 마세요.
+11. 금액이 가구원 수·소득·자녀 수·나이 등에 따라 달라지면 benefit.formula에 계산식을 씁니다. 고정 금액이면 expr은 빈 문자열입니다.
+   문법: 숫자, + - * / ( ), 비교 < <= > >= == !=, && ||, 함수 min max round floor ceil, if(조건, 참일 때, 거짓일 때),
+   lookup("표 이름", 키) (tables_json의 표에서 찾기, 키가 없으면 그보다 작은 키 중 가장 큰 칸)
+   쓸 수 있는 변수: age, household_size, income_recognized_won, income_recognized_pct_median, total_income_annual, assets,
+   child_count, child_birth_order, residence_months, senior_count, newborn, disabled, single_parent, basic_pension_recipient (참/거짓은 1/0)
+   예: "기준액에서 소득인정액을 뺀 차액" → max(0, lookup("기준액", household_size) - income_recognized_won), 표 {"기준액": {"1": 820556, "2": 1343773}}
+       "자녀 1인당 월 10만 원, 셋째부터 20만 원" → if(child_count >= 3, 200000, 100000) * child_count
+   숫자에는 쉼표를 넣지 않습니다(1000000). 원문 숫자만 쓰고, 연 금액이면 unit을 annual로 합니다. explanation에는 담당자가 읽을 쉬운 설명을 씁니다. 원문만으로 식을 만들 수 없으면 expr을 비웁니다.
 
 사용할 수 있는 field:
 """ + "\n".join(f"- {k}: {v}" for k, v in FIELDS.items())

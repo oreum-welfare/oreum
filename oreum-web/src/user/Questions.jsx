@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { ManwonInput, Option, Seg, Stepper } from "../ui/index.jsx";
 import { ORDINAL, PRESETS, iga, manwon, regionsBySido, short } from "./data.js";
 
 const TOTAL = 5;
-const STEPS = ["사는 곳", "가족", "해당하는 것", "재산", "소득"];
+const STEPS = ["사는 곳", "가족", "해당사항", "재산", "소득"];
 const QUICK = [0, 100, 200, 300, 400];
 
 // 시작 화면 + 질문 5개 (한 화면에 하나). editing이면 소개 없이 바로 질문부터 (startStep: 특정 질문부터)
@@ -45,7 +46,7 @@ export default function Questions({ regions, pilotRegions = [], residenceRegions
             <p className="intro" style={{ "--d": "420ms" }}>몇 가지만 알려 주시면 지금 받을 수 있는 복지와, 소득이 늘 때 혜택이 한꺼번에 끊기는 <b>복지 절벽</b>이 어디에 있는지 계산해 드려요.</p>
           </section>
           <button type="button" className="btn primary desk-cta intro" style={{ "--d": "560ms" }} onClick={() => setStep(1)}>내 상황 계산하기</button>
-          <p className="privacy intro" style={{ "--d": "640ms" }}>입력한 내용은 서버로 보내지 않고, 이 기기 안에서만 계산해요.</p>
+          <p className="privacy intro" style={{ "--d": "640ms" }}>입력한 내용은 서버로 보내지 않고, 이 기기 안에서만 계산해요. · <Link to="/data">어떻게 계산하나요? 데이터·분석 보기</Link></p>
           </div>
           <div className="start-side">
           {example && (
@@ -77,13 +78,14 @@ export default function Questions({ regions, pilotRegions = [], residenceRegions
     <div className="screen">
       <div className="col" style={{ paddingTop: 4 }}>
         <button type="button" className="back" onClick={back} aria-label="이전">‹</button>
-        {/* 단계 탭: 지난 단계는 눌러서 돌아갈 수 있음 */}
+        {/* 단계 막대: 지금 단계만 넓게 번호·이름을 보이고 나머지는 막대만. 지난 단계는 눌러서 돌아갈 수 있음 */}
         <nav className="steps" aria-label={`질문 ${step} / ${TOTAL}`}>
           {STEPS.map((name, i) => {
             const n = i + 1, state = n === step ? "on" : n < step ? "done" : "";
             return (
-              <button type="button" key={name} className={`step ${state}`} disabled={n > step} aria-current={n === step ? "step" : undefined} onClick={() => setStep(n)}>
-                <span className="num">{n}</span><span className="name">{name}</span>
+              <button type="button" key={name} className={`step ${state}`} disabled={n > step} aria-current={n === step ? "step" : undefined}
+                aria-label={`${n}. ${name}`} title={n === step ? undefined : name} onClick={() => setStep(n)}>
+                {n === step && <><span className="num">{n}</span><span className="name">{name}</span></>}
               </button>
             );
           })}

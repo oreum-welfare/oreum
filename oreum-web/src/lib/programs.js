@@ -31,7 +31,9 @@ export function resetOverlay() {
 // 기본 제도(rules.json, 이미 승인) + AI 초안 + 데모 결정 → 지금 상태의 전체 목록
 export function mergePrograms(base = [], drafts = [], overlay = {}) {
   const all = [...base.map((p) => ({ ...p, origin: p.origin || { type: "rules" } })), ...drafts];
-  return all.map((p) => overlay[p.id] || p);
+  const ids = new Set(all.map((p) => p.id));
+  // 담당자가 직접 등록한 제도(목록에 없는 id)도 함께
+  return [...all.map((p) => overlay[p.id] || p), ...Object.values(overlay).filter((p) => !ids.has(p.id))];
 }
 
 // 복지로 서비스 ID (매일 변경 확인과 연결): 직접 적은 service_id → AI 초안의 원문 이름(t12_WLF… / u_WLF…_날짜) → 출처 문구
@@ -51,6 +53,9 @@ export function goneInfo(p, goneMap = {}) {
 // 버전: 자동 수집 초안은 수정일, 그 밖(시범 제도·처음 만든 AI 초안)은 0
 const versionOf = (p) => (String(p.origin?.service_id || "").match(/^u_WLF\d+_(\d+)$/) || [])[1] || "0";
 export function newerVersionOf(p, all = []) {
+  // 담당자가 직접 만든 새 버전 (origin.replaces)이 있으면 그것
+  const manual = all.find((q) => q.origin?.replaces === p.id && q.status !== "반려");
+  if (manual) return manual;
   const sid = serviceIdOf(p);
   if (!sid) return null;
   const v = versionOf(p);
@@ -91,7 +96,11 @@ export function saveCentralOverlay(overlay) {
 export function resetCentralOverlay() {
   try { localStorage.removeItem(CENTRAL_KEY); } catch { /* 저장 불가 환경 */ }
 }
-export const mergeCentral = (drafts = [], overlay = {}) => drafts.map((r) => overlay[r.id] || r);
+// AI 제안 + 이 브라우저의 결정. 직접 입력한 값(제안 목록에 없는 id)도 함께
+export const mergeCentral = (drafts = [], overlay = {}) => {
+  const ids = new Set(drafts.map((r) => r.id));
+  return [...drafts.map((r) => overlay[r.id] || r), ...Object.values(overlay).filter((r) => !ids.has(r.id))];
+};
 
 // 계산기에 넣을 '승인' 기준값 (시행일 고르기는 central.js applyCentral)
 export async function publishedCentral() {

@@ -31,7 +31,7 @@ export function calculate({ engine, data, hh, income, compare, includeInkind }) 
   const sim = engine.simulate(hh, maxIncome, STEP, includeInkind);
   const at = (v) => Math.min(sim.incomes.length - 1, Math.round(v / STEP));
   const cliffs = engine.findCliffs(sim);
-  const benefits = engine.evaluate(hh, inc);
+  const benefits = engine.evaluate(hh, inc, true); // true: 혜택마다 "왜 이 금액?" 계산 단계
   const total = sumCounted(engine, benefits, includeInkind);
   const nowDisp = inc + total;
 

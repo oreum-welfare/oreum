@@ -1,8 +1,10 @@
-import { useCallback, useState } from "react";
+import { Link } from "react-router-dom";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Sheet } from "../ui/index.jsx";
 import { applyInfo } from "./apply.js";
-import Chart from "./Chart.jsx";
-import { CHECK_LABEL, LEVEL_LABEL, STEP, about, baseYear, iga, levelOf, localReady, manwon, short, sourceKeys, statusClass, won } from "./data.js";
+import { freshnessText, useFreshness } from "../lib/freshness.js";
+import Chart, { ChangePoints } from "./Chart.jsx";
+import { CHECK_LABEL, LEVEL_LABEL, STEP, about, baseYear, provenance, iga, levelOf, localReady, manwon, short, sourceKeys, statusClass, won } from "./data.js";
 
 // 데이터 출처 (결과 화면 아래와 계산 기준 시트에 함께 보여 준다)
 const SOURCES = [
@@ -11,14 +13,34 @@ const SOURCES = [
   ["금액 근거", "보건복지부·국토교통부 고시, 한국에너지공단 지침, 국세청, 지자체 조례·추진계획, 2024 건강보험통계"],
 ];
 
+// PC에서 왼쪽 그래프 칸을 고정할 때, 칸이 화면보다 길면 아래 끝(슬라이더)까지 보인 뒤에 고정되도록 top을 맞춘다
+function useStickyFit(gap = 72) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const fit = () => { el.style.top = `${Math.min(gap, window.innerHeight - el.offsetHeight - 16)}px`; };
+    const ro = new ResizeObserver(fit);
+    ro.observe(el);
+    window.addEventListener("resize", fit);
+    fit();
+    return () => { ro.disconnect(); window.removeEventListener("resize", fit); };
+  }, [gap]);
+  return ref;
+}
+
 // 결과 화면: 숫자 하나 → 조심할 곳 한 줄 → 다시 좋아지는 곳 → 그래프 → 비교 → 자세히(시트)
 export default function Result({ data, hh, income, r, includeInkind, setIncludeInkind, setCompare, adoptCompare, onEdit, onRestart }) {
+  const freshness = freshnessText(useFreshness()); // 매일 자동 확인 상태 (지자체 제도·중앙 고시)
   const [sheet, setSheet] = useState(null);
+  const chartRef = useStickyFit();
   const close = useCallback(() => setSheet(null), []);
   const { inc, total, benefits, cliff, curLoss, cmp, diff, maxIncome } = r;
   const hasAssets = hh.housingAsset + hh.financialAsset + hh.debt > 0;
   const soonLost = new Set(cliff?.lost || []);
   const pct = maxIncome ? (cmp / maxIncome) * 100 : 0;
+  const focus = curLoss ? { income: curLoss.cliff.income, recover: curLoss.recover } : cliff ? { income: cliff.income, recover: cliff.recover } : null;
+  const top = benefits.filter((b) => b.kind !== "access" && b.monthly > 0).sort((a, b) => b.monthly - a.monthly).slice(0, 3); // 혜택 미리보기 (큰 금액 3개)
 
   return (
     <div className="screen">
@@ -28,83 +50,99 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
         <div className="r-main">
         {/* 1. 지금 받는 복지 */}
         <section className="result-head">
-          <p className="label">{inc > 0 ? `지금 월 ${manwon(inc)} 원을 벌면` : "지금 근로소득이 없으면"}</p>
+          <p className="label">현재 받을 수 있는 복지 혜택</p>
           {total > 0
-            ? <><p className="big">월 {manwon(total)} 원</p><p className="desc" style={{ margin: 0 }}>복지 혜택을 받을 수 있어요</p></>
-            : <><p className="big" style={{ fontSize: 30 }}>받을 수 있는 복지가 없어요</p><p className="desc" style={{ margin: 0 }}>이 소득에서는 계산되는 혜택이 없어요</p></>}
+            ? <p className="big">월 {manwon(total)} 원</p>
+            : <p className="big" style={{ fontSize: 30 }}>받을 수 있는 복지가 없어요</p>}
+          <p className="desc" style={{ margin: 0 }}>{inc > 0 ? `월급 ${manwon(inc)} 원 기준` : "근로소득 0원 기준"}</p>
           {!hasAssets && total > 0 && <p className="asset-hint">재산 0원으로 계산했어요 · <button type="button" className="link-btn" onClick={() => onEdit(4)}>재산 넣기</button></p>}
           {!localReady(data, hh.region) && <p className="notice">{short(hh.region)}의 지자체 자체 혜택은 아직 반영되지 않았어요. 전국 공통인 중앙 제도만 계산했어요.</p>}
           {r.capped && <p className="notice">입력한 소득(월 {manwon(income)} 원)이 너무 커서, 계산할 수 있는 가장 큰 소득(월 {manwon(maxIncome)} 원) 기준으로 보여 드려요.</p>}
         </section>
 
-        {/* 2. 조심할 곳 / 3. 다시 좋아지는 곳 */}
+        {/* 2. 주의 구간: 생활비가 줄어드는 곳 한 상자 */}
         {curLoss ? (
-          <>
-            <div className="alert">
-              <p className="alert-title"><span className="icon" aria-hidden="true">⚠️</span>지금은 생활비가 줄어든 구간이에요</p>
-              <p>월 {manwon(curLoss.beforeIncome)} 원일 때보다 생활비가 {manwon(curLoss.shortfall)} 원 적어요</p>
-            </div>
-            {curLoss.recover != null
-              ? <p className="recover">월급이 {manwon(curLoss.recover)} 원이 되면 생활비가 {manwon(curLoss.beforeIncome)} 원 벌 때만큼 돌아와요</p>
-              : <p className="note">계산 범위 안에서는 회복되지 않아요</p>}
-            <p className="reassure"><button type="button" className="link-btn" onClick={() => setSheet("path")}>줄어드는 동안 도움이 되는 제도 보기 ›</button></p>
-          </>
+          <section className="warn-box">
+            <span className="wb-tag">주의 구간</span>
+            <p className="wb-title">월급 {manwon(curLoss.cliff.income)} 원부터</p>
+            <p className="wb-desc">생활비가 줄어든 구간에 있어요.{curLoss.recover != null ? ` 월급 ${manwon(curLoss.recover)} 원이 되면 돌아와요.` : ""}</p>
+            <p className="wb-amt">−{manwon(curLoss.shortfall)} 원</p>
+          </section>
         ) : cliff ? (
-          <>
-            <div className="alert">
-              <p className="alert-title"><span className="icon" aria-hidden="true">⚠️</span>월급 {manwon(cliff.income)} 원부터 생활비가 줄어요</p>
-              <p>{cliff.lost[0]}{iga(cliff.lost[0])} 끊겨 {cliff.vsNow != null ? `약 ${about(cliff.vsNow)} 원 줄어요` : `바로 전(${manwon(cliff.before)} 원)보다 ${manwon(cliff.drop)} 원 줄어요`}</p>
-            </div>
-            {cliff.recover != null
-              ? <p className="recover">월급이 {manwon(cliff.recover)} 원이 되면 생활비가 {manwon(cliff.before)} 원 벌 때만큼 돌아와요</p>
-              : <p className="note">계산 범위 안에서는 다시 회복되지 않아요</p>}
-            <p className="reassure"><button type="button" className="link-btn" onClick={() => setSheet("path")}>줄어드는 동안 도움이 되는 제도 보기 ›</button></p>
-          </>
+          <section className="warn-box">
+            <span className="wb-tag">주의 구간</span>
+            <p className="wb-title">월급 {manwon(cliff.income)} 원부터</p>
+            <p className="wb-desc">생활비가 줄어들기 시작해요.</p>
+            <p className="wb-amt">−{manwon(cliff.drop)} 원</p>
+          </section>
         ) : (
-          <div className="alert calm">
-            <p className="alert-title">앞으로 생활비가 줄어드는 구간은 없어요</p>
-            <p>소득이 늘수록 생활비도 계속 늘어나요</p>
-          </div>
+          <section className="warn-box calm">
+            <span className="wb-tag">안심 구간</span>
+            <p className="wb-title">줄어드는 구간이 없어요</p>
+            <p className="wb-desc">소득이 늘수록 생활비도 계속 늘어나요.</p>
+          </section>
         )}
 
-        <div className="desk-actions">
-          <button type="button" className="btn primary" onClick={() => setSheet("path")}>넘는 방법 보기</button>
-          <button type="button" className="btn ghost" onClick={onEdit}>정보 수정</button>
-        </div>
+        {/* 3. 복지 절벽 넘는 방법: 이 화면의 핵심 행동이라 바로 아래에 크게 */}
+        <button type="button" className={`path-cta${cliff || curLoss ? "" : " calm"}`} onClick={() => setSheet("path")}>
+          <span className="pc-text"><span className="pc-title">복지 절벽 넘는 방법</span>
+            <b>{pathCount(r.programs, r.gains) ? `${pathCount(r.programs, r.gains)}가지 방법` : "확인하기"}</b>
+            <span className="pc-sub">도움이 되는 제도와 소득을 늘리는 방법을 확인하세요.</span></span>
+          <span className="pc-go" aria-hidden="true">자세히 보기 →</span>
+        </button>
         </div>
 
-        <div className="r-chart">
+        <div className="r-chart" ref={chartRef}>
         {/* 4. 그래프 */}
         <Chart sim={r.sim} inc={inc} cmp={cmp} cliffs={r.cliffs}
-          focus={curLoss ? { income: curLoss.cliff.income, recover: curLoss.recover } : cliff ? { income: cliff.income, recover: cliff.recover } : null} />
+          focus={focus} />
+        {/* 주요 변화 지점 (현재 소득·혜택 감소·회복 구간) */}
+        <ChangePoints sim={r.sim} inc={inc} cmp={cmp} cliffs={r.cliffs} focus={focus} curLoss={curLoss} />
 
-        {/* 5. 비교 */}
+        {/* 5. 비교: 슬라이더는 트랙만 초록, 바꾼 소득과 생활비 변화를 크게 */}
         <section className="compare" aria-label="소득을 바꿔 보기">
-          <div className="compare-top"><span className="label">소득을 바꿔 보면</span><b>월 {manwon(cmp)} 원</b></div>
+          <div className="compare-top"><span className="label">소득을 변경해 보세요</span><b>월 {manwon(cmp)} 원</b></div>
           <input className="range" type="range" min="0" max={maxIncome} step={STEP} value={cmp} style={{ "--p": `${pct}%` }}
             aria-label="비교할 월 근로소득" aria-valuetext={`월 ${manwon(cmp)} 원`} onChange={(e) => setCompare(Number(e.target.value))} />
           {cmp === inc
             ? <p className="compare-result">슬라이더를 움직이면 생활비가 어떻게 바뀌는지 보여 드려요</p>
             : <>
-                <p className="compare-result">생활비 <b className={diff.disp >= 0 ? "up" : "bad"}>{diff.disp >= 0 ? "+" : "−"}{manwon(Math.abs(diff.disp))} 원</b> · 지금과 비교
-                  {diff.lost.length > 0 && <><br />{diff.lost.slice(0, 2).join(", ")}{diff.lost.length > 2 ? ` 외 ${diff.lost.length - 2}개` : ""} 끊김</>}
-                  {diff.gained.length > 0 && <><br />{diff.gained.slice(0, 2).join(", ")} 새로 받음</>}</p>
-                <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                {(diff.lost.length > 0 || diff.gained.length > 0) && <p className="compare-result">
+                  {diff.lost.length > 0 && <>{diff.lost.slice(0, 2).join(", ")}{diff.lost.length > 2 ? ` 외 ${diff.lost.length - 2}개` : ""} 끊김</>}
+                  {diff.lost.length > 0 && diff.gained.length > 0 && <br />}
+                  {diff.gained.length > 0 && <>{diff.gained.slice(0, 2).join(", ")} 새로 받음</>}</p>}
+                <div className="compare-actions">
                   <button type="button" className="btn ghost small" onClick={() => setCompare(inc)}>내 소득으로</button>
-                  <button type="button" className="btn ghost small" onClick={adoptCompare}>이 소득으로 다시 계산</button>
+                  <button type="button" className="btn primary small" onClick={adoptCompare}>이 소득으로 다시 계산</button>
                 </div>
               </>}
         </section>
         </div>
 
+        {/* 6. 자세히: 받는 혜택(미리보기)·왜 줄어드나요 — PC에서는 오른쪽 요약 아래 */}
+        <nav className="cards r-side" aria-label="혜택과 줄어드는 이유">
+          <button type="button" className="card-link benefit wide" onClick={() => setSheet("benefits")}>
+            <span className="cl-title">받는 혜택 {benefits.length}가지</span><b className="cl-value">월 {manwon(total)} 원</b>
+            {top.length > 0 && <span className="cl-preview">{top.map((b) => <span key={b.id}><span>{b.name}</span><b>{manwon(b.monthly)} 원</b></span>)}
+              {benefits.length > top.length && <small>외 {benefits.length - top.length}가지</small>}</span>}
+            <span className="cl-sub">금액 근거 및 상세 내역 보기 →</span>
+          </button>
+          {cliff && <button type="button" className="card-link cliff wide" onClick={() => setSheet("cliff")}>
+            <span className="cl-title">왜 줄어드나요?</span><b className="cl-value">{cliff.lost[0]}{cliff.lost.length > 1 ? ` 외 ${cliff.lost.length - 1}` : ""}</b>
+            {cliff.causes.length > 0 && <span className="cl-preview">{cliff.causes.slice(0, 3).map((c) => <span key={c.id}><span>{c.name}</span><b className="bad">−{manwon(c.reduction)} 원</b></span>)}</span>}
+            <span className="cl-sub">혜택 중단 조건과 이유 확인 →</span>
+          </button>}
+        </nav>
+
         <div className="r-more">
-        {/* 6. 자세히 */}
-        <nav className="rows" aria-label="자세히 보기">
-          <button type="button" className="row" onClick={() => setSheet("benefits")}><span>받는 혜택 {benefits.length}가지</span><span className="chev">월 {manwon(total)} 원</span></button>
-          {cliff && <button type="button" className="row" onClick={() => setSheet("cliff")}><span>왜 줄어드나요?</span><span className="chev">{cliff.lost[0]}</span></button>}
-          <button type="button" className="row" onClick={() => setSheet("path")}><span>줄어드는 구간 넘는 방법</span><span className="chev">{pathCount(r.programs, r.gains)}가지</span></button>
-          <button type="button" className="row" onClick={() => setSheet("region")}><span>다른 지역이라면?</span><span className="chev" /></button>
-          <button type="button" className="row" onClick={() => setSheet("basis")}><span>계산 기준</span><span className="chev" /></button>
+        {/* 7. 지역 비교·계산 기준 — PC에서는 아래 한 줄 전체 */}
+        <nav className="cards" aria-label="자세히 보기">
+          <button type="button" className="card-link" onClick={() => setSheet("region")}>
+            <b className="cl-value">지역 비교</b><span className="cl-sub">다른 지역과 비교하기 →</span>
+          </button>
+          <button type="button" className="card-link" onClick={() => setSheet("basis")}>
+            <b className="cl-value">계산 기준</b><span className="cl-sub">출처 및 기준 확인 →</span>
+          </button>
         </nav>
 
         {/* 6. 상담 연결: 결과 링크 복사 (입력값이 주소에 저장돼 있어 같은 화면이 열림) */}
@@ -115,15 +153,14 @@ export default function Result({ data, hh, income, r, includeInkind, setIncludeI
         <footer className="footer">
           <p style={{ margin: "0 0 8px" }}>{short(hh.region)} · {hh.age}세{hh.spouse ? " · 배우자" : ""}{hh.infants + hh.elem + hh.middle + hh.high ? ` · 자녀 ${hh.infants + hh.elem + hh.middle + hh.high}명` : ""}{hh.singleParent ? " · 한부모" : ""}</p>
           <p style={{ margin: "0 0 8px" }}>데이터: 복지로 · 한국사회보장정보원 복지서비스 API, 보건복지부·국토교통부 고시 ({baseYear(data)}년 기준) · <button type="button" className="link-btn" onClick={() => setSheet("basis")} style={{ fontSize: 13 }}>출처 자세히</button></p>
+          {freshness && <p style={{ margin: "0 0 8px" }} className="freshness">{freshness}</p>}
           <p style={{ margin: "0 0 12px" }}>{baseYear(data)}년 기준 참고용이에요. 실제 수급은 읍면동 행정복지센터에서 결정돼요.</p>
           <button type="button" className="link-btn" onClick={onRestart} style={{ fontSize: 13 }}>처음부터 다시</button>
+          <span style={{ margin: "0 8px" }}>·</span>
+          <Link to="/data" style={{ fontSize: 13 }}>데이터·분석 보기</Link>
         </footer>
       </div>
 
-      <div className="bottom mobile-bottom"><div className="col">
-        <button type="button" className="btn ghost" onClick={onEdit}>정보 수정</button>
-        <button type="button" className="btn primary" onClick={() => setSheet("path")}>넘는 방법 보기</button>
-      </div></div>
 
       {sheet === "benefits" && <BenefitsSheet {...{ data, benefits, total, inc, soonLost, hasAssets, includeInkind, setIncludeInkind, close }} />}
       {sheet === "cliff" && cliff && <CliffSheet cliff={cliff} cliffs={r.cliffs} m={r.m} close={close} />}
@@ -144,18 +181,20 @@ function BenefitsSheet({ data, benefits, total, inc, soonLost, hasAssets, includ
       <ul className="list">
         {benefits.map((b) => {
           const lv = levelOf(data, b.id, hasAssets);
+          const pv = provenance(data, b);
           return (
             <li className="item" key={b.id}>
               <button type="button" className="item-btn" aria-expanded={open === b.id} onClick={() => setOpen(open === b.id ? null : b.id)}>
-                <span className="item-name">{b.name}{soonLost.has(b.name) && <span className="tag red">곧 끊김</span>}{lv !== "ok" && <span className="tag gray">{LEVEL_LABEL[lv]}</span>}
+                <span className="item-name">{b.name}{soonLost.has(b.name) && <span className="tag red">곧 끊김</span>}{lv !== "ok" && <span className="tag gray">{LEVEL_LABEL[lv]}</span>}{pv.ai && b.level === "지자체" && <span className="tag ai">AI 초안·승인</span>}
                   <small>{b.level} · {b.kind === "cash" ? "현금" : b.kind === "inkind" ? "감면·현물" : "자격·융자"}</small></span>
                 <span className="item-amt">{b.kind === "access" ? "자격" : won(b.monthly)}</span>
               </button>
-              {open === b.id && <div className="item-detail"><p>{b.note}</p><Apply id={b.id} soon={soonLost.has(b.name)} /><Evidence data={data} id={b.id} hasAssets={hasAssets} /></div>}
+              {open === b.id && <div className="item-detail"><p className="prov">{pv.text}</p><WhyAmount steps={b.steps} /><p>{b.note}</p><Apply id={b.id} soon={soonLost.has(b.name)} /><Evidence data={data} id={b.id} hasAssets={hasAssets} /></div>}
             </li>
           );
         })}
       </ul>
+      <p className="note ai-note">AI 사용: 중앙 제도는 법령·고시 기준값으로 계산해요 (AI 미사용). 지자체 제도는 AI가 원문에서 만든 초안을 그 지자체 담당자가 확인·승인한 것만 계산해요.</p>
       <p className="membership">내 실제 소득·재산으로 정확히 확인하려면 <a href="https://www.bokjiro.go.kr/ssis-tbu/index.do" target="_blank" rel="noopener noreferrer">복지로</a>의 <b>맞춤형급여안내(복지멤버십)</b>에 가입해 보세요. 동의하면 받을 수 있는 복지를 정부가 직접 알려 줘요.</p>
       <label style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 12, fontSize: 15 }}>
         <input type="checkbox" checked={includeInkind} onChange={(e) => setIncludeInkind(e.target.checked)} style={{ width: 20, height: 20, accentColor: "var(--brand-strong)" }} />
@@ -188,6 +227,35 @@ function ShareBox() {
 }
 
 // 신청 안내: 어디서·어떻게, 문의처, 복지로 바로가기
+// "왜 이 금액?": 계산 단계를 위에서 아래로 (기준선 − 소득인정액 = 금액 처럼). 소득인정액 계산은 접어서 따로
+const MARK = { "-": "−", "+": "+", "=": "=", x: "×", ok: "✓" };
+function StepRows({ rows }) {
+  return (
+    <table className="why-table">
+      <tbody>
+        {rows.map((r, i) => (
+          <tr key={i} className={r.mark === "=" ? "total" : r.mark === "ok" ? "cond" : ""}>
+            <td className="why-mark">{MARK[r.mark] || ""}</td>
+            <td>{r.label}{r.mark === "ok" && typeof r.value === "number" ? <small> 이하라서 해당</small> : null}</td>
+            <td className="why-val">{typeof r.value === "number" ? won(Math.round(r.value)) : r.value}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+function WhyAmount({ steps }) {
+  if (!steps?.length) return null;
+  const rows = steps.filter((s) => !s.sub), subs = steps.filter((s) => s.sub);
+  return (
+    <div className="why">
+      <p className="why-title">왜 이 금액?</p>
+      <StepRows rows={rows} />
+      {subs.map((s) => <details key={s.sub} className="why-sub"><summary>{s.sub}</summary><StepRows rows={s.rows} /></details>)}
+    </div>
+  );
+}
+
 function Apply({ id, soon }) {
   const a = applyInfo(id);
   return (

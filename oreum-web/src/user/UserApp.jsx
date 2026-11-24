@@ -60,7 +60,7 @@ export default function UserApp() {
     <>
       <header className="topbar"><div className="col wide">
         <Link to="/" className="wordmark" onClick={goHome} aria-label="오름 처음 화면"><Logo height={26} /></Link>
-        {started && !editing && <button type="button" className="top-action" onClick={() => setEditing(1)}>수정</button>}
+        {started && !editing && <button type="button" className="top-action" onClick={() => setEditing(1)}>정보 수정</button>}
       </div></header>
       <main>
         {showQuestions ? (

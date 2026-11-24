@@ -87,5 +87,39 @@ check("AI 초안은 모두 '검토 대기'로 들어옴", drafts.every((d) => d.
   check("중앙 기준값: 계산 엔진이 새 기준선을 씀", Math.round(eng.medianIncome(1)) === Math.round(900000 / 0.32));
 }
 
+// 담당자 직접 등록·새 버전
+{
+  const base = { id: "gs_birth", status: "승인", origin: { type: "rules" } };
+  const v2 = { id: "manual_x", status: "검토 대기", origin: { type: "manual", by: "경산 담당", replaces: "gs_birth" } };
+  check("직접 등록: 새 버전이 있으면 이전 버전에 '새 버전 있음'", newerVersionOf(base, [base, v2])?.id === "manual_x" && !newerVersionOf(base, [base, { ...v2, status: "반려" }]));
+  const merged = mergePrograms(data.local_programs, [], { manual_x: { ...v2, region: "경상북도 경산시" } });
+  check("직접 등록: 데모 저장소에서도 목록에 보임", merged.some((p) => p.id === "manual_x") && merged.length === data.local_programs.length + 1);
+  const prog = { id: "manual_y", name: "난방비", region: "경상북도 경산시", sido: "경상북도", kind: "cash", status: "검토 대기", apply_checks: [],
+    conditions: [{ field: "residence_region", op: "in", value: "경상북도 경산시", group: "" }, { field: "age", op: ">=", value: "65", group: "" }], amount: { type: "fixed", monthly: 30000 } };
+  const ok = decide(gs, prog, "승인", { facts });
+  check("직접 등록: 담당자가 넣은 제도도 같은 규칙으로 승인·계산", ok.program?.status === "승인" &&
+    createEngine({ ...data, local_programs: [ok.program] }).evaluate({ region: "경상북도 경산시", age: 70 }, 0).some((b) => b.id === "manual_y" && b.monthly === 30000), ok.error);
+  check("직접 등록: 다른 지역 담당자는 승인 불가", Boolean(decide(bk, prog, "승인", { facts }).error));
+}
+
+// AI 계산식: 허용한 문법만, 안전하게 계산, 잘못된 식은 승인 불가
+{
+  const { validateFormula, evalFormula } = await import(pathToFileURL(join(root, "oreum-web/src/lib/formula.js")));
+  const amt = { type: "formula", expr: 'max(0, lookup("기준액", household_size) - income_recognized_won)', tables: { 기준액: { 1: 820556, 2: 1343773, 6: 2737905 } }, unit: "monthly" };
+  check("계산식: 차액 계산·7인은 6인 칸", evalFormula(amt, { household_size: 1, income_recognized_won: 300000 }) === 520556 && evalFormula(amt, { household_size: 7, income_recognized_won: 0 }) === 2737905);
+  check("계산식: 음수는 0, 연 금액은 12로 나눔", evalFormula(amt, { household_size: 1, income_recognized_won: 9e6 }) === 0 && evalFormula({ type: "formula", expr: "1200000", unit: "annual" }, {}) === 100000);
+  check("계산식: if·비교·자녀 수", evalFormula({ type: "formula", expr: "if(child_count >= 3, 200000, 100000) * child_count" }, { child_count: 3 }) === 600000);
+  const bads = ["process.exit()", "constructor", "toString(1)", "__proto__", "valueOf()", "x + 1", "alert(1)", 'lookup("없는표", 1)', "1 +", "a=1", "max()", "`1`"];
+  check("계산식: 허용 밖 변수·함수·문법은 거절", bads.every((e) => !validateFormula({ type: "formula", expr: e, tables: {} }).ok), bads.filter((e) => validateFormula({ type: "formula", expr: e, tables: {} }).ok).join(" | "));
+  check("계산식: 표에 숫자가 아닌 값은 거절", !validateFormula({ ...amt, tables: { 기준액: { 1: "abc" } } }).ok);
+  const prog = { ...gsDraft, conditions: gsDraft.conditions, amount: amt };
+  check("계산식: 잘못된 식은 승인 불가", Boolean(decide(gs, { ...prog, amount: { ...amt, expr: "hack()" } }, "승인", { facts, applyChecks: laterIdx }).error));
+  const okp = decide(gs, prog, "승인", { facts, applyChecks: laterIdx });
+  check("계산식: 올바른 식은 승인", okp.program?.status === "승인", okp.error);
+  const eng = createEngine({ ...data, local_programs: [...data.local_programs, { ...okp.program, conditions: [{ field: "residence_region", op: "in", value: "경상북도 경산시", group: "" }, { field: "age", op: ">=", value: "0", group: "" }] }] });
+  const got = eng.evaluate({ region: "경상북도 경산시", age: 70 }, 0).find((b) => b.id === gsDraft.id);
+  check("계산식: 승인 후 계산기에서 계산", got && got.monthly > 0, got?.monthly);
+}
+
 if (bad) { console.error(`${bad}개 검사 실패`); process.exit(1); }
 console.log("권한·상태 규칙 검사 모두 통과");

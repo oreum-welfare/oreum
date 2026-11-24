@@ -101,3 +101,7 @@ python analysis/cliff_analysis.py
 | (이름) | 데이터 분석 · 발표 · 서류 제출 |
 | (이름) | UI · 배포 |
 | (이름) | 코드 검증 · 서류 검토 |
+
+## 운영
+
+개발자 없이 관리자 화면만으로 운영하는 방법은 [OPERATIONS.md](OPERATIONS.md)에 정리했습니다.
